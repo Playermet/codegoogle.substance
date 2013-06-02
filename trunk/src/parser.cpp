@@ -58,7 +58,7 @@ void Parser::ProcessError(enum TokenType type)
   wstring msg = error_msgs[type];
 #ifdef _DEBUG
   wcout << L"\tError: "
-				<< msg << endl;
+        << msg << endl;
 #endif
 
   errors.push_back(msg);
@@ -103,13 +103,13 @@ Statement* Parser::Parse()
 #endif
   scanner = new Scanner(input);
   NextToken();
-	
-	// parse input
+  
+  // parse input
   Statement* statement = ParseStatement(0);
   if(CheckErrors()) {
     return statement;
   }
-	
+  
   return NULL;
 }
 
@@ -118,8 +118,30 @@ Statement* Parser::Parse()
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
-	Expression* expression = ParseExpression(depth + 1);
-	return NULL;
+  Statement* statement = ParseAssignment(0);
+  return statement;
+}
+
+/****************************
+ * Parses a bundle.
+ ****************************/
+Statement* Parser::ParseAssignment(int depth)
+{
+  Expression* left = ParseReference(depth + 1);
+  NextToken();
+  
+  if(!Match(TOKEN_ASSIGN)) {
+    ProcessError(TOKEN_ASSIGN);
+    return NULL;
+  }  
+  NextToken();  
+  
+  Expression* right = ParseExpression(depth + 1);
+  if(left && right) {
+    return TreeFactory::Instance()->MakeAssignmentStatement(left, right);
+  }
+  
+  return NULL;
 }
 
 /****************************

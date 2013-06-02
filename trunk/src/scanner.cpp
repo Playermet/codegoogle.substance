@@ -465,15 +465,8 @@ void Scanner::ParseToken(int index)
   else {
     switch(cur_char) {
     case L':':
-      if(nxt_char == L'=') {
-        NextChar();
-        tokens[index]->SetType(TOKEN_ASSIGN);
-        NextChar();
-      } 
-      else {
-        tokens[index]->SetType(TOKEN_COLON);
-        NextChar();
-      }
+      tokens[index]->SetType(TOKEN_COLON);
+      NextChar();
       break;
 
     case L'-':
@@ -544,16 +537,31 @@ void Scanner::ParseToken(int index)
       break;
 
     case L'=':
-      tokens[index]->SetType(TOKEN_EQL);
-      NextChar();
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_EQL);
+        NextChar();
+      } 
+      else {
+        tokens[index]->SetType(TOKEN_ASSIGN);
+        NextChar();
+      }           
       break;
-
-    case L'<':
-      if(nxt_char == L'>') {
+      
+    case L'!':
+      if(nxt_char == L'=') {
         NextChar();
         tokens[index]->SetType(TOKEN_NEQL);
         NextChar();
-      } else if(nxt_char == L'=') {
+      } 
+      else {
+        tokens[index]->SetType(TOKEN_NOT);
+        NextChar();
+      }
+      break;
+      
+    case L'<':
+      if(nxt_char == L'=') {
         NextChar();
         tokens[index]->SetType(TOKEN_LEQL);
         NextChar();

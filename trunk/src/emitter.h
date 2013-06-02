@@ -1,5 +1,5 @@
 /***************************************************************************
- * Debugger parser.
+ * Instruction emitter
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
@@ -29,84 +29,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __EMITTER_H__
+#define __EMITTER_H__
 
-#include "scanner.h"
+#include "common.h"
 #include "tree.h"
 
-#define SECOND_INDEX 1
-#define THIRD_INDEX 2
-
 /****************************
- * Parsers source files.
+ * Translate trees to byte code
  ****************************/
-class Parser {
-  Scanner* scanner;
-  map<enum TokenType, wstring> error_msgs;
-  vector<wstring> errors;
-	wstring input;
-  
-  inline void NextToken() {
-    scanner->NextToken();
-  }
-
-  inline bool Match(enum TokenType type, int index = 0) {
-    return scanner->GetToken(index)->GetType() == type;
-  }
-
-  inline enum TokenType GetToken(int index = 0) {
-    return scanner->GetToken(index)->GetType();
-  }
-
-  void Show(const wstring &msg, int depth) {
-    for(int i = 0; i < depth; i++) {
-      wcout << L"  ";
-    }
-    wcout << msg << endl;
-  }
-  
-  inline wstring ToString(int v) {
-    wostringstream str;
-    str << v;
-    return str.str();
-  }
-
-  // error processing
-  void LoadErrorCodes();
-  void ProcessError(const enum TokenType type);
-  void ProcessError(const wstring &msg);
-  bool CheckErrors();
-
-  // parsing operations
-	Statement* ParseStatement(int depth);
-  Statement* ParseAssignment(int depth);
-	ExpressionList* ParseIndices(int depth);
-  Expression* ParseExpression(int depth);
-  Expression* ParseLogic(int depth);
-  Expression* ParseMathLogic(int depth);
-  Expression* ParseTerm(int depth);
-  Expression* ParseFactor(int depth);
-  Expression* ParseSimpleExpression(int depth);
-  Reference* ParseReference(int depth);
-  Reference* ParseReference(const wstring &ident, int depth);
-  void ParseReference(Reference* reference, int depth);
+class Emitter {
+  void EmitStatement();
   
  public:
-  Parser(const wstring &input) {
-		this->input = input;
-    LoadErrorCodes();
-		scanner = new Scanner(input);
+  Emitter() {
   }
   
-  ~Parser() {
-		if(scanner) {
-			delete scanner;
-			scanner = NULL;
-		}
+  ~Emitter() {
   }
-  
-  Statement* Parse();
+
+  vector<Instruction*> Emit();
 };
 
 #endif

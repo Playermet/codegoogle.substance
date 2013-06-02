@@ -71,6 +71,18 @@ inline wstring IntToString(int v)
 }
 
 /****************************
+ * TODO: doc
+ ****************************/
+class Instruction {
+ public:
+  Instruction() {
+  }
+  
+  ~Instruction() {
+  }
+};
+
+/****************************
  * Converts a UTF-8 bytes to
  * native a unicode string
  ****************************/

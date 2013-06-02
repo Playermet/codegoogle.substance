@@ -68,6 +68,7 @@ enum TokenType {
   TOKEN_ASSESSOR,
   TOKEN_AND,
   TOKEN_OR,
+  TOKEN_NOT,
   TOKEN_EQL,
   TOKEN_NEQL,
   TOKEN_LES,
