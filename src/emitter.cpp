@@ -1,11 +1,11 @@
 /***************************************************************************
- * Debugger parse tree.
+ * Instruction emitter
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted provided that the following conditions are met
  *
  * - Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
@@ -29,18 +29,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#include "tree.h"
+#include "emitter.h"
 
 /****************************
- * TreeFactory class
+ * TODO: doc
  ****************************/
-TreeFactory* TreeFactory::instance;
-
-TreeFactory* TreeFactory::Instance()
+vector<Instruction*> Emitter::Emit()
 {
-  if(!instance) {
-    instance = new TreeFactory;
-  }
+  vector<Instruction*> instructions;
+  return instructions;
+}
 
-  return instance;
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitStatement()
+{
+
 }
