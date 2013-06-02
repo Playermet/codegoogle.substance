@@ -42,9 +42,12 @@
 
 // runtime types
 enum RuntimeType {
+	BOOL_TYPE,
   INT_VALUE,
   FLOAT_VALUE,
-  STRING_VALUE
+  STRING_VALUE,
+	LIST_VALUE,
+	HASH_VALUE
 };
 
 typedef union _BaseValue {
