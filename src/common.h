@@ -63,6 +63,7 @@ namespace std {
 
 using namespace std;
 
+// utility functions
 inline wstring IntToString(int v)
 {
   wostringstream str;
@@ -71,16 +72,36 @@ inline wstring IntToString(int v)
 }
 
 /****************************
- * TODO: doc
+ * Runtime instructions
  ****************************/
-class Instruction {
- public:
-  Instruction() {
-  }
-  
-  ~Instruction() {
-  }
+enum InstructionType {
+  LOAD_INT_LIT = -1000,
+  LOAD_FLOAT_LIT,
+  LOAD_VAR,
+  STOR_VAR,
+  AND,
+  OR,
+  EQL,
+  NEQL,
+  GTR,
+  LES,
+  GTR_EQL,
+  LES_EQL,  
+  ADD,
+  SUB,
+  MUL,
+  DIV,
+  MOD,
+  RTRN
 };
+
+typedef struct _Instruction {
+  InstructionType type;
+  int operand1;
+  int operand2;
+  double operand3;
+  wstring operand4;
+} Instruction;
 
 /****************************
  * Converts a UTF-8 bytes to

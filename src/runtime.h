@@ -1,5 +1,5 @@
 /***************************************************************************
- * Debugger parser.
+ * Runtime system
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
@@ -29,85 +29,98 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#ifndef __PARSER_H__
-#define __PARSER_H__
+#ifndef __RUNTIME_H__
+#define __RUNTIME_H__
 
-#include "scanner.h"
-#include "tree.h"
-
-#define SECOND_INDEX 1
-#define THIRD_INDEX 2
+#include "common.h"
 
 /****************************
- * Parsers source files.
+ * Runtime support structures
  ****************************/
-class Parser {
-  Scanner* scanner;
-  map<enum TokenType, wstring> error_msgs;
-  vector<wstring> errors;
-	wstring input;
+// size of execution stack
+#define EXECUTION_STACK_SIZE 128
+
+// runtime types
+enum RuntimeType {
+  INT_VALUE,
+  FLOAT_VALUE,
+  STRING_VALUE
+};
+
+typedef union _BaseValue {
+  int int_value;
+  double float_value;
+  void* pointer_value;
+} BaseValue;
+
+// runtime execution values
+typedef struct _Value {
+  RuntimeType type;
+  BaseValue value;
+} Value;
+
+/****************************
+ * Execution engine
+ ****************************/
+class Runtime {
+  stack<Value*> execution_stack;
+  stack<Value*> value_pool;
+  vector<Instruction*> instructions;
   
-  inline void NextToken() {
-    scanner->NextToken();
-  }
-
-  inline bool Match(enum TokenType type, int index = 0) {
-    return scanner->GetToken(index)->GetType() == type;
-  }
-
-  inline enum TokenType GetToken(int index = 0) {
-    return scanner->GetToken(index)->GetType();
-  }
-
-  void Show(const wstring &msg, int depth) {
-    for(int i = 0; i < depth; i++) {
-      wcout << L"  ";
+  inline Value* GetPoolValue() {
+    if(value_pool.empty()) {
+      wcerr << L">>> execution value pool empty <<<" << endl;
+      exit(1);
     }
-    wcout << msg << endl;
+    
+    Value* value = value_pool.top();
+    value_pool.pop();
+
+    return value;
   }
   
-  inline wstring ToString(int v) {
-    wostringstream str;
-    str << v;
-    return str.str();
+  inline void ReleasePoolValue(Value* value) {
+    value_pool.push(value);
   }
 
-  // error processing
-  void LoadErrorCodes();
-  void ProcessError(const enum TokenType type);
-  void ProcessError(const wstring &msg);
-  bool CheckErrors();
+  inline void PushValue(Value* value) {
+    execution_stack.push(value);
+  }
+  
+  Value* PopValue() {
+    if(execution_stack.empty()) {
+      wcerr << L">>> execution stack bounds exceeded <<<" << endl;
+      exit(1);
+    }
 
-  // parsing operations
-  StatementList* ParseStatements(int depth);
-	Statement* ParseStatement(int depth);
-  Statement* ParseAssignment(int depth);
-	ExpressionList* ParseIndices(int depth);
-  Expression* ParseExpression(int depth);
-  Expression* ParseLogic(int depth);
-  Expression* ParseMathLogic(int depth);
-  Expression* ParseTerm(int depth);
-  Expression* ParseFactor(int depth);
-  Expression* ParseSimpleExpression(int depth);
-  Reference* ParseReference(int depth);
-  Reference* ParseReference(const wstring &ident, int depth);
-  void ParseReference(Reference* reference, int depth);
+    Value* value = execution_stack.top();
+    execution_stack.pop();
+    return value;
+  }
+
+  // member operations
+  void ExecuteAdd();
+  void ExecuteMultiply();
   
  public:
-  Parser(const wstring &input) {
-		this->input = input;
-    LoadErrorCodes();
-		scanner = new Scanner(input);
+  Runtime(vector<Instruction*> instructions) {
+    this->instructions = instructions;
+    for(size_t i = 0; i < EXECUTION_STACK_SIZE; ++i) {
+      value_pool.push(new Value);
+    }
   }
   
-  ~Parser() {
-		if(scanner) {
-			delete scanner;
-			scanner = NULL;
-		}
+  ~Runtime() {
+    while(!value_pool.empty()) {
+      Value* tmp = value_pool.top();
+      value_pool.pop();
+      // delete
+      delete tmp;
+      tmp = NULL;
+    }
   }
   
-  StatementList* Parse();
+  void Run();
 };
 
 #endif

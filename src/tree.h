@@ -154,20 +154,51 @@ class Statement : public ParseNode {
 };
 
 /****************************
+ * StatementList class
+ ****************************/
+class StatementList {
+  friend class TreeFactory;
+  vector<Statement*> statements;
+  
+  StatementList() {
+  }
+  
+  ~StatementList() {
+  }
+  
+ public:
+  vector<Statement*> GetStatements() {
+    return statements;
+  }
+  
+  void AddStatement(Statement* s) {
+    statements.push_back(s);
+  }
+};
+
+/****************************
  * Assignment statement
  ****************************/
 class Assignment : public Statement {
   friend class TreeFactory;
-  Expression* left;
-  Expression* right;
+  Reference* reference;
+  Expression* expression;
   
  public:
-   Assignment(Expression* left, Expression* right) : Statement() {
-    this->left = left;
-    this->right = left;
+   Assignment(Reference* reference, Expression* expression) : Statement() {
+    this->reference = reference;
+    this->expression = expression;
   }
   
   ~Assignment() {
+  }
+
+  Reference* GetReference() {
+    return reference;
+  }
+  
+  Expression* GetExpression() {
+    return expression;
   }
   
   const StatementType GetStatementType() {
@@ -419,7 +450,7 @@ class FloatLiteral : public Expression {
  ****************************/
 class Reference : public Expression {
   friend class TreeFactory;
-  wstring variable_name;
+  wstring name;
   ExpressionList* indices;
   Reference* reference;
   bool is_self;
@@ -427,7 +458,7 @@ class Reference : public Expression {
   int array_dim;
 
  Reference() : Expression() {
-    variable_name = L"@self";
+    name = L"@self";
     is_self = true;
     reference	= NULL;
     array_size = 0;
@@ -436,7 +467,7 @@ class Reference : public Expression {
   }
 
  Reference(const wstring &v) : Expression() {
-    variable_name = v;
+    name = v;
     is_self = false;
     reference	= NULL;
     indices = NULL;
@@ -446,8 +477,8 @@ class Reference : public Expression {
   }
 
  public:
-  const wstring& GetVariableName() const {
-    return variable_name;
+  const wstring& GetName() const {
+    return name;
   }
 
   void SetReference(Reference* call) {
@@ -502,6 +533,7 @@ class TreeFactory {
   vector<Statement*> statements;
   vector<Reference*> references;
   vector<ExpressionList*> expression_lists;
+  vector<StatementList*> statement_lists;
 
   TreeFactory() {
   }
@@ -529,6 +561,14 @@ class TreeFactory {
       tmp = NULL;
     }
 
+    while(!statement_lists.empty()) {
+      StatementList* tmp = statement_lists.front();
+      statement_lists.erase(statement_lists.begin());
+      // delete
+      delete tmp;
+      tmp = NULL;
+    }
+    
     while(!statements.empty()) {
       Statement* tmp = statements.front();
       statements.erase(statements.begin());
@@ -563,8 +603,14 @@ class TreeFactory {
     return tmp;
   }
 
-  Assignment* MakeAssignmentStatement(Expression* left, Expression* right) {
-    Assignment* tmp = new Assignment(left, right);
+  StatementList* MakeStatementList() {
+    StatementList* tmp = new StatementList;
+    statement_lists.push_back(tmp);
+    return tmp;
+  }
+  
+  Assignment* MakeAssignmentStatement(Reference* reference, Expression* expression) {
+    Assignment* tmp = new Assignment(reference, expression);
     statements.push_back(tmp);
     return tmp;
   }

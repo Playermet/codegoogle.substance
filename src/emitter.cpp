@@ -31,19 +31,247 @@
 
 #include "emitter.h"
 
+vector<Instruction*> Emitter::instruction_factory;
+
 /****************************
  * TODO: doc
  ****************************/
 vector<Instruction*> Emitter::Emit()
 {
-  vector<Instruction*> instructions;
-  return instructions;
+#ifdef _DEBUG
+  wcout << L"\n---------- Emitting ---------" << endl;
+#endif
+  
+  return EmitBlock(parsed_program);
 }
 
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitStatement()
+vector<Instruction*> Emitter::EmitBlock(StatementList* block_statements)
 {
+  vector<Instruction*> block_instructions;
+  vector<Statement*> statements = block_statements->GetStatements();
+  for(size_t i = 0; i < statements.size(); ++i) {
+    Statement* statement = statements[i];
+    switch(statement->GetStatementType()) {
+    case ASSIGNMENT_STATEMENT:
+      EmitAssignment(static_cast<Assignment*>(statement), block_instructions);
+      break;
+      
+    default:
+      // TODO: report error
+      break;
+    }
+  }
+  
+  block_instructions.push_back(MakeInstruction(RTRN));
+  return block_instructions;
+}
 
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions)
+{
+  EmitExpression(assignment->GetExpression(), block_instructions);
+  EmitReference(assignment->GetReference(), true, block_instructions);
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions)
+{
+  wstring name = reference->GetName();
+  if(is_store) {
+#ifdef _DEBUG
+    wcout << L"Emitting store: reference=" << reference->GetName() << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(STOR_VAR, name));
+  }
+  else {
+#ifdef _DEBUG
+    wcout << L"Emitting load: reference=" << reference->GetName() << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LOAD_VAR, name));
+  }
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block_instructions)
+{
+  switch(expression->GetExpressionType()) {
+  case CHAR_LIT_EXPR:
+    // TODO: implement
+    break;
+    
+  case INT_LIT_EXPR:
+#ifdef _DEBUG
+    wcout << L"Emitting integer literal: value=" 
+          << static_cast<IntegerLiteral*>(expression)->GetValue() << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, static_cast<IntegerLiteral*>(expression)->GetValue()));
+    break;
+    
+  case FLOAT_LIT_EXPR:
+#ifdef _DEBUG
+    wcout << L"Emitting float literal: value=" 
+          << static_cast<FloatLiteral*>(expression)->GetValue() << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, static_cast<FloatLiteral*>(expression)->GetValue()));
+    break;
+
+  case BOOLEAN_LIT_EXPR:
+    break;
+
+  case AND_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '&&'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(AND));
+  }
+    break;
+
+  case OR_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '||'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(OR));
+  }
+    break;
+    
+  case EQL_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '=='" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(EQL));
+  }
+    break;
+
+  case NEQL_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '!='" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(NEQL));
+  }
+    break;
+
+  case LES_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '<'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LES));
+  }
+    break;
+
+  case GTR_EQL_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '>='" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(GTR_EQL));
+  }
+    break;
+
+  case LES_EQL_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '<='" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LES_EQL));
+  }
+    break;
+    
+  case GTR_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '>'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(GTR));
+  }
+    break;
+
+  case ADD_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '+'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(ADD));
+  }
+    break;
+    
+  case SUB_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '-'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(SUB));
+  }
+    break;
+
+  case MUL_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '*'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(MUL));
+  }
+    break;
+
+  case DIV_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '/'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(DIV));
+  }
+    break;
+    
+  case MOD_EXPR: {    
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
+    EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
+#ifdef _DEBUG
+    wcout << L"Emitting operator: '%'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(MOD));
+  }
+    break;
+    
+  default:
+    // TODO: error
+    break;
+  }
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::ClearInstructions() {
+  while(!instruction_factory.empty()) {
+    Instruction* tmp = instruction_factory.front();
+    instruction_factory.erase(instruction_factory.begin());
+    // delete
+    delete tmp;
+    tmp = NULL;
+  }
 }

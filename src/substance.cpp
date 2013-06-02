@@ -30,12 +30,30 @@
  ***************************************************************************/
 
 #include "parser.h"
+#include "emitter.h"
+#include "runtime.h"
 
 int main(int argc, const char* argv[]) {
 	if(argc == 2) {
+    // parse program
 		Parser parser(BytesToUnicode(argv[1]));
-		parser.Parse();
+		StatementList* parsed_program = parser.Parse();    
+    // emit code
+    if(parsed_program) {
+      Emitter emitter(parsed_program);
+      vector<Instruction*> instructions = emitter.Emit();
+      // run code
+      if(instructions.size() > 0) {
+        Runtime runtime(instructions);
+        runtime.Run();        
+        // clean up and exit
+        Emitter::ClearInstructions();        
+        return 0;
+      }      
+    }
 	}
-
-	return 0;
+  
+  // clean up and exit
+  Emitter::ClearInstructions();  
+	return 1;
 }

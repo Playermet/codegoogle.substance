@@ -2,7 +2,7 @@ CC=g++
 # ARGS=-g -D_SYSTEM -D_DEBUG -Wall -Wno-unused-function
 ARGS=-g -D_DEBUG -Wall -Wno-unused-function
 # ARGS=-O3 -Wall -Wno-unused-function
-SRC=scanner.o tree.o parser.o substance.o
+SRC=scanner.o tree.o parser.o emitter.o runtime.o substance.o
 
 EXE=subc
 
