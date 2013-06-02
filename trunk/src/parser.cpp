@@ -152,6 +152,10 @@ Statement* Parser::ParseStatement(int depth)
     
     // value dump
   case TOKEN_DUMP_ID: {
+#ifdef _DEBUG
+    Show(L"Dump", depth);
+#endif
+    
     NextToken();
     if(!Match(TOKEN_IDENT)) {
       ProcessError(TOKEN_IDENT);
@@ -185,6 +189,10 @@ Statement* Parser::ParseStatement(int depth)
  ****************************/
 Statement* Parser::ParseAssignment(int depth)
 {
+#ifdef _DEBUG
+  Show(L"Assignment", depth);
+#endif
+  
   if(!Match(TOKEN_IDENT)) {
     ProcessError(TOKEN_IDENT);
     return NULL;
@@ -569,7 +577,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
 Reference* Parser::ParseReference(int depth)
 {
 #ifdef _DEBUG
-  Show(L"Instance reference", depth);
+  Show(L"Reference", depth);
 #endif
 
   // self reference
@@ -589,7 +597,7 @@ Reference* Parser::ParseReference(int depth)
 Reference* Parser::ParseReference(const wstring &ident, int depth)
 {
 #ifdef _DEBUG
-  Show(L"Instance reference", depth);
+  Show(L"Reference", depth);
 #endif
 
   Reference* inst_ref = TreeFactory::Instance()->MakeReference(ident);

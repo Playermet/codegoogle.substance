@@ -40,7 +40,7 @@ void Runtime::Run()
   Value *left, *right;
   
 #ifdef _DEBUG
-  wcerr << L"---------- Executing ---------" << endl;
+  wcerr << L"---------- Executing Code ---------" << endl;
 #endif
   
   size_t ip = 0L;
