@@ -92,10 +92,9 @@ class Emitter {
 
   }
   
-  static Instruction* MakeInstruction(InstructionType type, int operand1, double operand3) {
+  static Instruction* MakeInstruction(InstructionType type, double operand3) {
     Instruction* instruction = new Instruction;
     instruction->type = type;
-    instruction->operand1 = operand1;
     instruction->operand3 = operand3;
     instruction_factory.push_back(instruction);
     
