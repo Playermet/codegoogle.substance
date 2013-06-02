@@ -1,33 +1,33 @@
 /***************************************************************************
-* Debugger parse tree.
-*
-* Copyright (c) 2013 Randy Hollines
-* All rights reserved.
-*
-* Redistribution and uses in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-* - Redistributions of source code must retain the above copyright
-* notice, this list of conditions and the following disclaimer.
-* - Redistributions in binary form must reproduce the above copyright
-* notice, this list of conditions and the following disclaimer in
-* the documentation and/or other materials provided with the distribution.
-* - Neither the name of the Substance team nor the names of its
-* contributors may be used to endorse or promote products derived
-* from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-* TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-*  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************************************************************************/
+ * Debugger parse tree.
+ *
+ * Copyright (c) 2013 Randy Hollines
+ * All rights reserved.
+ *
+ * Redistribution and uses in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in
+ * the documentation and/or other materials provided with the distribution.
+ * - Neither the name of the Substance team nor the names of its
+ * contributors may be used to endorse or promote products derived
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ***************************************************************************/
 
 #ifndef __TREE_H__
 #define __TREE_H__
@@ -42,8 +42,8 @@ namespace frontend {
   class ExpressionList;
 
   /****************************
-  * ParseNode base class
-  ****************************/
+	 * ParseNode base class
+	 ****************************/
   class ParseNode {
     bool is_error;
 
@@ -65,8 +65,8 @@ namespace frontend {
   };  
 
   /****************************
-  * ExpressionType enum
-  ****************************/
+	 * ExpressionType enum
+	 ****************************/
   enum ExpressionType {
     REF_EXPR = -100,
     NIL_LIT_EXPR,
@@ -91,8 +91,8 @@ namespace frontend {
   };
 
   /****************************
-  * Expression base class
-  ****************************/
+	 * Expression base class
+	 ****************************/
   class Expression : public ParseNode {
     friend class TreeFactory;
     bool is_float_eval;
@@ -101,7 +101,7 @@ namespace frontend {
     double float_value;
 
   protected:    
-    Expression() : ParseNode() {
+	Expression() : ParseNode() {
       int_value = 0;
       float_value = 0.0;
       is_float_eval = false;
@@ -144,8 +144,8 @@ namespace frontend {
   };
 
   /****************************
-  * ExpressionList class
-  ****************************/
+	 * ExpressionList class
+	 ****************************/
   class ExpressionList {
     friend class TreeFactory;
     vector<Expression*> expressions;
@@ -167,8 +167,8 @@ namespace frontend {
   };
 
   /****************************
-  * StatementType enum
-  ****************************/
+	 * StatementType enum
+	 ****************************/
   enum StatementType {
     EXE_COMMAND = -200,
     SRC_COMMAND,
@@ -191,13 +191,13 @@ namespace frontend {
   };
 
   /****************************
-  * Statement base class
-  ****************************/
+	 * Statement base class
+	 ****************************/
   class Statement : public ParseNode {
     friend class TreeFactory;
 
   public:    
-    Statement() : ParseNode() {
+	Statement() : ParseNode() {
     }
 
     ~Statement() {
@@ -207,14 +207,14 @@ namespace frontend {
   };
 	
   /****************************
-  * CharacterString class
-  ****************************/
+	 * CharacterString class
+	 ****************************/
   class CharacterString : public Expression {
     friend class TreeFactory;
     int id;
     wstring char_string;
 
-    CharacterString(const wstring &orig) : Expression() {
+	CharacterString(const wstring &orig) : Expression() {
       int skip = 2;
       for(size_t i = 0; i < orig.size(); i++) {
         wchar_t c = orig[i];
@@ -292,18 +292,18 @@ namespace frontend {
   };
 
   /****************************
-  * CalculatedExpression class
-  ****************************/
+	 * CalculatedExpression class
+	 ****************************/
   class CalculatedExpression : public Expression {
     friend class TreeFactory;
     ExpressionType type;
     Expression* left;
     Expression* right;
 
-    CalculatedExpression(ExpressionType t) :
-      Expression() {
-        left = right = NULL;
-        type = t;
+	CalculatedExpression(ExpressionType t) :
+		Expression() {
+			left = right = NULL;
+			type = t;
     }
 
     ~CalculatedExpression() {
@@ -332,13 +332,13 @@ namespace frontend {
   };
 
   /****************************
-  * BooleanLiteral class
-  ****************************/
+	 * BooleanLiteral class
+	 ****************************/
   class BooleanLiteral : public Expression {
     friend class TreeFactory;
     bool value;
 
-    BooleanLiteral(bool v) : Expression() {
+	BooleanLiteral(bool v) : Expression() {
       value = v;
     }
 
@@ -356,12 +356,12 @@ namespace frontend {
   };
 
   /****************************
-  * NilLiteral class
-  ****************************/
+	 * NilLiteral class
+	 ****************************/
   class NilLiteral : public Expression {
     friend class TreeFactory;
 
-    NilLiteral(const wstring &f, const int l) : Expression() {
+	NilLiteral(const wstring &f, const int l) : Expression() {
     }
 
     ~NilLiteral() {
@@ -374,13 +374,13 @@ namespace frontend {
   };
 
   /****************************
-  * CharacterLiteral class
-  ****************************/
+	 * CharacterLiteral class
+	 ****************************/
   class CharacterLiteral : public Expression {
     friend class TreeFactory;
     wchar_t value;
 
-    CharacterLiteral(wchar_t v) : Expression() {
+	CharacterLiteral(wchar_t v) : Expression() {
       value = v;
     }
 
@@ -398,13 +398,13 @@ namespace frontend {
   };
 
   /****************************
-  * IntegerLiteral class
-  ****************************/
+	 * IntegerLiteral class
+	 ****************************/
   class IntegerLiteral : public Expression {
     friend class TreeFactory;
     long value;
 
-    IntegerLiteral(long v) : Expression() {
+	IntegerLiteral(long v) : Expression() {
       value = v;
     }
 
@@ -422,13 +422,13 @@ namespace frontend {
   };
 
   /****************************
-  * FloatLiteral class
-  ****************************/
+	 * FloatLiteral class
+	 ****************************/
   class FloatLiteral : public Expression {
     friend class TreeFactory;
     double value;
 
-    FloatLiteral(double v) : Expression() {
+	FloatLiteral(double v) : Expression() {
       value = v;
     }
 
@@ -446,8 +446,8 @@ namespace frontend {
   };
 
   /****************************
-  * Reference class
-  ****************************/
+	 * Reference class
+	 ****************************/
   class Reference : public Expression {
     friend class TreeFactory;
     wstring variable_name;
@@ -457,7 +457,7 @@ namespace frontend {
     int array_size;
     int array_dim;
 
-    Reference() : Expression() {
+	Reference() : Expression() {
       variable_name = L"@self";
       is_self = true;
       reference	= NULL;
@@ -466,7 +466,7 @@ namespace frontend {
       indices = NULL;
     }
 
-    Reference(const wstring &v) : Expression() {
+	Reference(const wstring &v) : Expression() {
       variable_name = v;
       is_self = false;
       reference	= NULL;
@@ -523,8 +523,8 @@ namespace frontend {
   };
 
   /****************************
-  * TreeFactory class
-  ****************************/
+	 * TreeFactory class
+	 ****************************/
   class TreeFactory {
     static TreeFactory* instance;
 
