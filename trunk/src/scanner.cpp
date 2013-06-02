@@ -324,8 +324,8 @@ void Scanner::ParseToken(int index)
         NextChar();
         start_pos = buffer_pos - 1;
         while(isdigit(cur_char) || (cur_char >= L'a' && cur_char <= L'f') ||
-	      (cur_char >= L'A' && cur_char <= L'F')) {
-	  NextChar();
+							(cur_char >= L'A' && cur_char <= L'F')) {
+					NextChar();
         }
         end_pos = buffer_pos - 1;
         ParseUnicodeChar(index);
@@ -397,7 +397,7 @@ void Scanner::ParseToken(int index)
     start_pos = buffer_pos - 1;
 
     while((isalpha(cur_char) || isdigit(cur_char) || cur_char == L'_' || 
-	   cur_char == L'@' || cur_char == L'?' || cur_char == L'.') && cur_char != EOB) {
+					 cur_char == L'@' || cur_char == L'?' || cur_char == L'.') && cur_char != EOB) {
       NextChar();
     }
     // mark
@@ -418,29 +418,29 @@ void Scanner::ParseToken(int index)
       hex_state = 1;
     }
     while(iswdigit(cur_char) || (cur_char == L'.' && iswdigit(nxt_char)) || cur_char == L'x' ||
-	  (cur_char >= L'a' && cur_char <= L'f') ||
-	  (cur_char >= L'A' && cur_char <= L'F')) {
+					(cur_char >= L'a' && cur_char <= L'f') ||
+					(cur_char >= L'A' && cur_char <= L'F')) {
       // decimal double
       if(cur_char == L'.') {
-	// error
-	if(is_double) {
-	  tokens[index]->SetType(TOKEN_UNKNOWN);
-	  NextChar();
-	  break;
-	}
-	is_double = true;
+				// error
+				if(is_double) {
+					tokens[index]->SetType(TOKEN_UNKNOWN);
+					NextChar();
+					break;
+				}
+				is_double = true;
       }
       // hex integer
       if(cur_char == L'x') {
-	if(hex_state == 1) {
-	  hex_state = 2;
-	}
-	else {
-	  hex_state = 1;
-	}
+				if(hex_state == 1) {
+					hex_state = 2;
+				}
+				else {
+					hex_state = 1;
+				}
       }
       else {
-	hex_state = 0;
+				hex_state = 0;
       }
       // next character
       NextChar();
