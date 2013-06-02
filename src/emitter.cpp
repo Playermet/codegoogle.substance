@@ -59,6 +59,14 @@ vector<Instruction*> Emitter::EmitBlock(StatementList* block_statements)
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions);
       break;
       
+    case DUMP_STATEMENT:
+#ifdef _DEBUG
+    wcout << L"Emitting value dump" << endl;
+#endif
+      EmitReference(static_cast<Dump*>(statement)->GetReference(), false, block_instructions);
+      block_instructions.push_back(MakeInstruction(DUMP_VALUE));
+      break;
+      
     default:
       // TODO: report error
       break;

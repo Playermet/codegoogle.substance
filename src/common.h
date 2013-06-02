@@ -92,6 +92,7 @@ enum InstructionType {
   MUL,
   DIV,
   MOD,
+  DUMP_VALUE,
   RTRN
 };
 

@@ -70,37 +70,8 @@ Scanner::~Scanner()
  ****************************/
 void Scanner::LoadKeywords()
 {
-  ident_map[L"?next"] = TOKEN_NEXT_LINE_ID;
-  ident_map[L"?n"] = TOKEN_NEXT_LINE_ID;
-  ident_map[L"?step"] = TOKEN_NEXT_ID;
-  ident_map[L"?s"] = TOKEN_NEXT_ID;
-  ident_map[L"?jump"] = TOKEN_OUT_ID;
-  ident_map[L"?j"] = TOKEN_OUT_ID;
-  ident_map[L"?cont"] = TOKEN_CONT_ID;
-  ident_map[L"?c"] = TOKEN_CONT_ID;
-  ident_map[L"?exe"] = TOKEN_EXE_ID;
-  ident_map[L"?src"] = TOKEN_SRC_ID;
-  ident_map[L"?args"] = TOKEN_ARGS_ID;
-  ident_map[L"?quit"] = TOKEN_QUIT_ID;
-  ident_map[L"?q"] = TOKEN_QUIT_ID;  
-  ident_map[L"?break"] = TOKEN_BREAK_ID;
-  ident_map[L"?b"] = TOKEN_BREAK_ID;
-  ident_map[L"?breaks"] = TOKEN_BREAKS_ID;
-  ident_map[L"?stack"] = TOKEN_STACK_ID;
-  ident_map[L"?print"] = TOKEN_PRINT_ID;
-  ident_map[L"?p"] = TOKEN_PRINT_ID;
-  ident_map[L"?info"] = TOKEN_INFO_ID;
-  ident_map[L"?i"] = TOKEN_INFO_ID;
-  ident_map[L"?frame"] = TOKEN_FRAME_ID;
-  ident_map[L"?f"] = TOKEN_FRAME_ID;
-  ident_map[L"?clear"] = TOKEN_CLEAR_ID;
-  ident_map[L"?delete"] = TOKEN_DELETE_ID;
-  ident_map[L"?d"] = TOKEN_DELETE_ID;
-  ident_map[L"?run"] = TOKEN_RUN_ID;
-  ident_map[L"?r"] = TOKEN_RUN_ID;
-  ident_map[L"?list"] = TOKEN_LIST_ID;
-  ident_map[L"?l"] = TOKEN_LIST_ID;
-  ident_map[L"@self"] = TOKEN_SELF_ID;
+  ident_map[L"dump"] = TOKEN_DUMP_ID;
+  ident_map[L"this"] = TOKEN_THIS_ID;
   ident_map[L"class"] = TOKEN_CLASS_ID;
   ident_map[L"method"] = TOKEN_METHOD_ID;
 }
@@ -117,27 +88,10 @@ void Scanner::CheckIdentifier(int index)
   // check wstring
   enum TokenType ident_type = ident_map[ident];
   switch(ident_type) {
-  case TOKEN_STACK_ID:
-  case TOKEN_SRC_ID:
-  case TOKEN_ARGS_ID:
+  case TOKEN_DUMP_ID:
+  case TOKEN_THIS_ID:
   case TOKEN_CLASS_ID:
   case TOKEN_METHOD_ID:
-  case TOKEN_LIST_ID:
-  case TOKEN_SELF_ID:
-  case TOKEN_NEXT_ID:
-  case TOKEN_NEXT_LINE_ID:
-  case TOKEN_OUT_ID:
-  case TOKEN_CONT_ID:
-  case TOKEN_EXE_ID:
-  case TOKEN_QUIT_ID:
-  case TOKEN_BREAK_ID:
-  case TOKEN_BREAKS_ID:
-  case TOKEN_PRINT_ID:
-  case TOKEN_INFO_ID:
-  case TOKEN_FRAME_ID:
-  case TOKEN_CLEAR_ID:
-  case TOKEN_DELETE_ID:
-  case TOKEN_RUN_ID:
     tokens[index]->SetType(ident_type);
     break;
   default:
