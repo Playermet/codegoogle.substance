@@ -58,7 +58,7 @@ void Parser::ProcessError(enum TokenType type)
   wstring msg = error_msgs[type];
 #ifdef _DEBUG
   wcout << L"\tError: "
-       << msg << endl;
+				<< msg << endl;
 #endif
 
   errors.push_back(msg);
