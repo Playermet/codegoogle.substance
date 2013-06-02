@@ -39,7 +39,7 @@ vector<Instruction*> Emitter::instruction_factory;
 vector<Instruction*> Emitter::Emit()
 {
 #ifdef _DEBUG
-  wcout << L"\n---------- Emitting ---------" << endl;
+  wcout << L"\n---------- Emitting Instructions ---------" << endl;
 #endif
   
   return EmitBlock(parsed_program);
@@ -112,6 +112,10 @@ void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruct
 void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block_instructions)
 {
   switch(expression->GetExpressionType()) {
+  case REF_EXPR:
+    EmitReference(static_cast<Reference*>(expression), false, block_instructions);
+    break;
+
   case CHAR_LIT_EXPR:
     // TODO: implement
     break;
