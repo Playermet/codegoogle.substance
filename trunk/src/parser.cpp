@@ -101,7 +101,6 @@ StatementList* Parser::Parse()
 #ifdef _DEBUG
   wcout << L"\n---------- Scanning/Parsing ---------" << endl;
 #endif
-  scanner = new Scanner(input);
   NextToken();
   
   // parse input
@@ -144,7 +143,34 @@ StatementList* Parser::ParseStatements(int depth)
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
-  Statement* statement = ParseAssignment(0);  
+  Statement* statement;
+  switch(scanner->GetToken()->GetType()) {
+    // assignment
+  case TOKEN_IDENT:
+    statement = ParseAssignment(0);
+    break;
+    
+    // value dump
+  case TOKEN_DUMP_ID: {
+    NextToken();
+    if(!Match(TOKEN_IDENT)) {
+      ProcessError(TOKEN_IDENT);
+      return NULL;
+    }
+    wstring identifier = scanner->GetToken()->GetIdentifier();
+    NextToken();
+    Reference* reference = ParseReference(identifier, depth + 1);
+    statement = TreeFactory::Instance()->MakeDumpStatement(reference);
+  }
+    break;
+
+  default:
+    statement = NULL;
+    ProcessError(L"Invalid statement");
+    break;
+  }
+  
+  // statement end
   if(!Match(TOKEN_SEMI_COLON)) {
     ProcessError(TOKEN_SEMI_COLON);
     return NULL;
@@ -460,7 +486,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
     NextToken();
     expression = ParseReference(ident, depth + 1);
   }
-  else if(Match(TOKEN_SELF_ID)) {
+  else if(Match(TOKEN_THIS_ID)) {
     NextToken();
     expression = ParseReference(depth + 1);
   }

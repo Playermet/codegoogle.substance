@@ -134,7 +134,8 @@ class ExpressionList {
  * StatementType enum
  ****************************/
 enum StatementType {
-  ASSIGNMENT_STATEMENT = -200
+  ASSIGNMENT_STATEMENT = -200,
+  DUMP_STATEMENT
 };
 
 /****************************
@@ -173,6 +174,27 @@ class StatementList {
   
   void AddStatement(Statement* s) {
     statements.push_back(s);
+  }
+};
+
+/****************************
+ * Dump statement
+ ****************************/
+class Dump : public Statement {
+  friend class TreeFactory;
+  Reference* reference;
+  
+ public:
+  Dump(Reference* reference) : Statement() {
+    this->reference = reference;
+  }
+  
+  Reference* GetReference() {
+    return reference;
+  }
+
+  const StatementType GetStatementType() {
+    return DUMP_STATEMENT;
   }
 };
 
@@ -611,6 +633,12 @@ class TreeFactory {
   
   Assignment* MakeAssignmentStatement(Reference* reference, Expression* expression) {
     Assignment* tmp = new Assignment(reference, expression);
+    statements.push_back(tmp);
+    return tmp;
+  }
+  
+  Dump* MakeDumpStatement(Reference* reference) {
+    Dump* tmp = new Dump(reference);
     statements.push_back(tmp);
     return tmp;
   }

@@ -39,6 +39,10 @@ void Runtime::Run()
   map<const wstring, Value*> local_table;
   Instruction* instruction;
   Value *left, *right;
+ 
+#ifdef _DEBUG
+  wcerr << L"---------- Executing ---------" << endl;
+#endif
   
   size_t ip = 0;
   do {
@@ -58,7 +62,16 @@ void Runtime::Run()
       PushValue(left);
       break;
       
-    case LOAD_VAR:
+    case LOAD_VAR: {
+      map<const wstring, Value*>::iterator result = local_table.find(instruction->operand4);
+      if(result != local_table.end()) {
+        PushValue(result->second);
+      }
+      else {
+        wcout << L">>> undefined variable: " << instruction->operand4 << endl;
+        exit(1);
+      }
+    }
       break;
       
     case STOR_VAR:
@@ -107,6 +120,23 @@ void Runtime::Run()
       break;
 
     case RTRN:
+      break;
+
+    case DUMP_VALUE:
+      left = PopValue();
+      switch(left->type) {
+      case INT_VALUE:
+        wcout << left->value.int_value << endl;
+        break;
+    
+      case FLOAT_VALUE:
+        wcout << left->value.float_value << endl;
+        break;
+    
+      case STRING_VALUE:
+        wcout << (wchar_t*)left->value.pointer_value << endl;
+        break;
+      }
       break;
     }
   }
