@@ -121,7 +121,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     wcout << L"Emitting integer literal: value=" 
           << static_cast<IntegerLiteral*>(expression)->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, static_cast<IntegerLiteral*>(expression)->GetValue()));
+    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)static_cast<IntegerLiteral*>(expression)->GetValue()));
     break;
     
   case FLOAT_LIT_EXPR:
@@ -129,7 +129,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     wcout << L"Emitting float literal: value=" 
           << static_cast<FloatLiteral*>(expression)->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, static_cast<FloatLiteral*>(expression)->GetValue()));
+    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (double)static_cast<FloatLiteral*>(expression)->GetValue()));
     break;
 
   case BOOLEAN_LIT_EXPR:

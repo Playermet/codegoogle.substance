@@ -37,16 +37,15 @@
 void Runtime::Run()
 {
   map<const wstring, Value*> local_table;
-  Instruction* instruction;
   Value *left, *right;
- 
+  
 #ifdef _DEBUG
   wcerr << L"---------- Executing ---------" << endl;
 #endif
   
-  size_t ip = 0;
-  do {
-    instruction = instructions[ip++];
+  size_t ip = 0L;
+  Instruction* instruction = instructions[ip++];
+  while(instruction->type != RTRN) {   
     switch(instruction->type) {
     case LOAD_INT_LIT:
       left = GetPoolValue();
@@ -126,21 +125,22 @@ void Runtime::Run()
       left = PopValue();
       switch(left->type) {
       case INT_VALUE:
-        wcout << left->value.int_value << endl;
+        wcout << L"type=integer, value=" << left->value.int_value << endl;
         break;
     
       case FLOAT_VALUE:
-        wcout << left->value.float_value << endl;
+        wcout << L"type=float, value=" << left->value.float_value << endl;
         break;
     
       case STRING_VALUE:
-        wcout << (wchar_t*)left->value.pointer_value << endl;
+        wcout << L"type=string, value=" << (wchar_t*)left->value.pointer_value << endl;
         break;
       }
       break;
     }
-  }
-  while(instruction->type != RTRN);
+    // update
+    instruction = instructions[ip++];
+  }  
 }
 
 void Runtime::ExecuteAdd()
@@ -179,7 +179,7 @@ void Runtime::ExecuteAdd()
     switch(right->type) {
     case INT_VALUE:
       left->type = FLOAT_VALUE;
-      left->value.float_value = left->value.float_value + right->value.int_value;
+       left->value.float_value = left->value.float_value + right->value.int_value;
       break;
 
     case FLOAT_VALUE:
