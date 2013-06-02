@@ -33,7 +33,6 @@
 #define __SCANNER_H__
 
 #include "common.h"
-// #include "../../shared/sys.h"
 
 using namespace std;
 

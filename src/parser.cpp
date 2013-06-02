@@ -118,7 +118,7 @@ Statement* Parser::Parse()
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
-	ParseExpression(depth + 1);
+	Expression* expression = ParseExpression(depth + 1);
 	return NULL;
 }
 

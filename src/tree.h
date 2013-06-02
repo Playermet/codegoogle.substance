@@ -95,52 +95,16 @@ namespace frontend {
 	 ****************************/
   class Expression : public ParseNode {
     friend class TreeFactory;
-    bool is_float_eval;
-    long int_value;
-    long int_value2;
-    double float_value;
 
   protected:    
-	Expression() : ParseNode() {
-      int_value = 0;
-      float_value = 0.0;
-      is_float_eval = false;
+	  Expression() : ParseNode() {
     }
-
+		
     virtual ~Expression() {
     }
 
   public:
-    bool GetFloatEval() {
-      return is_float_eval;
-    }
-
-    void SetIntValue(long i) {
-      int_value = i;
-    }
-
-    long GetIntValue() {
-      return int_value;
-    }
-
-    void SetIntValue2(long i) {
-      int_value2 = i;
-    }
-
-    long GetIntValue2() {
-      return int_value2;
-    }
-
-    void SetFloatValue(double f) {
-      float_value = f;
-      is_float_eval = true;
-    }
-
-    double GetFloatValue() {
-      return float_value;
-    }
-
-    virtual const ExpressionType GetExpressionType() = 0;
+		virtual const ExpressionType GetExpressionType() = 0;
   };
 
   /****************************
