@@ -45,7 +45,7 @@ void Parser::LoadErrorCodes()
   error_msgs[TOKEN_CLOSED_BRACE] = L"Expected '}'";
   error_msgs[TOKEN_COLON] = L"Expected ':'";
   error_msgs[TOKEN_COMMA] = L"Expected ','";
-  error_msgs[TOKEN_ASSIGN] = L"Expected ':='";
+  error_msgs[TOKEN_ASSIGN] = L"Expected '='";
   error_msgs[TOKEN_SEMI_COLON] = L"Expected ';'";
   error_msgs[TOKEN_ASSESSOR] = L"Expected '->'";
 }
@@ -96,7 +96,7 @@ bool Parser::CheckErrors()
 /****************************
  * Starts the parsing process.
  ****************************/
-Statement* Parser::Parse()
+StatementList* Parser::Parse()
 {
 #ifdef _DEBUG
   wcout << L"\n---------- Scanning/Parsing ---------" << endl;
@@ -105,30 +105,67 @@ Statement* Parser::Parse()
   NextToken();
   
   // parse input
-  Statement* statement = ParseStatement(0);
+  StatementList* statement_list = ParseStatements(0);
   if(CheckErrors()) {
-    return statement;
+    return statement_list;
   }
   
   return NULL;
 }
 
 /****************************
- * Parses a bundle.
+ * Parses statements
+ ****************************/
+StatementList* Parser::ParseStatements(int depth)
+{
+  StatementList* statement_list = TreeFactory::Instance()->MakeStatementList();
+  
+  if(!Match(TOKEN_OPEN_BRACE)) {
+    ProcessError(TOKEN_OPEN_BRACE);
+    return NULL;
+  }
+  NextToken();
+
+  while(!Match(TOKEN_CLOSED_BRACE) && !Match(TOKEN_END_OF_STREAM)) {
+    statement_list->AddStatement(ParseStatement(0));
+  }
+  
+  if(!Match(TOKEN_CLOSED_BRACE)) {
+    ProcessError(TOKEN_CLOSED_BRACE);
+    return NULL;
+  }
+  NextToken();
+
+  return statement_list;
+}
+
+/****************************
+ * Parses a statement.
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
-  Statement* statement = ParseAssignment(0);
+  Statement* statement = ParseAssignment(0);  
+  if(!Match(TOKEN_SEMI_COLON)) {
+    ProcessError(TOKEN_SEMI_COLON);
+    return NULL;
+  }
+  NextToken();
+  
   return statement;
 }
 
 /****************************
- * Parses a bundle.
+ * Parses an assignment statement.
  ****************************/
 Statement* Parser::ParseAssignment(int depth)
 {
-  Expression* left = ParseReference(depth + 1);
-  NextToken();
+  if(!Match(TOKEN_IDENT)) {
+    ProcessError(TOKEN_IDENT);
+    return NULL;
+  }
+  wstring identifier = scanner->GetToken()->GetIdentifier();
+  NextToken();  
+  Reference* reference = ParseReference(identifier, depth + 1);
   
   if(!Match(TOKEN_ASSIGN)) {
     ProcessError(TOKEN_ASSIGN);
@@ -136,9 +173,9 @@ Statement* Parser::ParseAssignment(int depth)
   }  
   NextToken();  
   
-  Expression* right = ParseExpression(depth + 1);
-  if(left && right) {
-    return TreeFactory::Instance()->MakeAssignmentStatement(left, right);
+  Expression* expression = ParseExpression(depth + 1);
+  if(reference && expression) {
+    return TreeFactory::Instance()->MakeAssignmentStatement(reference, expression);
   }
   
   return NULL;

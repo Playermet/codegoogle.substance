@@ -486,16 +486,16 @@ void Scanner::ParseToken(int index)
       NextChar();
       break;
 
-    case L'.':
-      tokens[index]->SetType(TOKEN_PERIOD);
-      NextChar();
-      break;
-
     case L'}':
       tokens[index]->SetType(TOKEN_CLOSED_BRACE);
       NextChar();
       break;
 
+    case L'.':
+      tokens[index]->SetType(TOKEN_PERIOD);
+      NextChar();
+      break;
+      
     case L'[':
       tokens[index]->SetType(TOKEN_OPEN_BRACKET);
       NextChar();

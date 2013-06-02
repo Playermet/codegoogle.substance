@@ -36,18 +36,74 @@
 #include "tree.h"
 
 /****************************
- * Translate trees to byte code
+ * Translate trees to instructions
  ****************************/
 class Emitter {
-  void EmitStatement();
+  StatementList* parsed_program;
+  static vector<Instruction*> instruction_factory;
+  
+  vector<Instruction*> EmitBlock(StatementList* statement_list);
+  void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions);
+  void EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions);
+  void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions);
   
  public:
-  Emitter() {
+  Emitter(StatementList* parsed_program) {
+    this->parsed_program = parsed_program;
   }
   
   ~Emitter() {
   }
 
+  static Instruction* MakeInstruction(InstructionType type) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+  }
+
+  static Instruction* MakeInstruction(InstructionType type, int operand1) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction->operand1 = operand1;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+  }
+
+  static Instruction* MakeInstruction(InstructionType type, wstring &operand4) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction->operand4 = operand4;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+  }
+
+  static Instruction* MakeInstruction(InstructionType type, int operand1, int operand2) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction->operand1 = operand1;
+    instruction->operand2 = operand2;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+
+  }
+  
+  static Instruction* MakeInstruction(InstructionType type, int operand1, double operand3) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction->operand1 = operand1;
+    instruction->operand3 = operand3;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+  }
+  
+  static void ClearInstructions();
+  
   vector<Instruction*> Emit();
 };
 
