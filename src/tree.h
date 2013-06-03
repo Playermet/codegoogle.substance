@@ -513,13 +513,12 @@ class IfWhile : public Statement {
 	
  public:
    IfWhile(const wstring &file_name, const int line_num, Expression* logical_expression, 
-					 StatementList* block, bool is_if) 
-		 : Statement(file_name, line_num) {
+					 StatementList* block, bool is_if)  : Statement(file_name, line_num) {
 		this->logical_expression = logical_expression;
 	  this->block = block;
 		this->is_if = is_if;
 	}
-
+	
 	Expression* GetExpression() {
 		return logical_expression;
 	}
