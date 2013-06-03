@@ -269,4 +269,65 @@ static bool CharacterToBytes(wchar_t in, std::string &out) {
   return true;
 }
 
+/****************************
+ * Loads a UTF-8 file into memory 
+ * and converts content into native
+ * Unicode format
+****************************/
+static wchar_t* LoadFileBuffer(const wstring &name, size_t& buffer_size) {
+	char* buffer;
+	string open_name(name.begin(), name.end());
+    
+	ifstream in(open_name.c_str(), ios_base::in | ios_base::binary | ios_base::ate);
+	if(in.good()) {
+		// get file size
+		in.seekg(0, ios::end);
+		buffer_size = (size_t)in.tellg();
+		in.seekg(0, ios::beg);
+		buffer = (char*)calloc(buffer_size + 1, sizeof(char));
+		in.read(buffer, buffer_size);
+		// close file
+		in.close();
+	}
+	else {
+		wcerr << L"Unable to open source file: " << name << endl;
+		exit(1);
+	}
+
+	// convert unicode
+#ifdef _WIN32
+	int wsize = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, NULL, 0);
+	if(!wsize) {
+		wcerr << L"Unable to open source file: " << name << endl;
+		exit(1);
+	}
+	wchar_t* wbuffer = new wchar_t[wsize];
+	int check = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wbuffer, wsize);
+	if(!check) {
+		wcerr << L"Unable to open source file: " << name << endl;
+		exit(1);
+	}
+#else
+	size_t wsize = mbstowcs(NULL, buffer, buffer_size);
+	if(wsize == (size_t)-1) {
+		delete buffer;
+		wcerr << L"Unable to open source file: " << name << endl;
+		exit(1);
+	}
+	wchar_t* wbuffer = new wchar_t[wsize + 1];
+	size_t check = mbstowcs(wbuffer, buffer, buffer_size);
+	if(check == (size_t)-1) {
+		delete buffer;
+		delete wbuffer;
+		wcerr << L"Unable to open source file: " << name << endl;
+		exit(1);
+	}
+	wbuffer[wsize] = L'\0';
+#endif
+    
+	free(buffer);
+	return wbuffer;
+}
+
+
 #endif

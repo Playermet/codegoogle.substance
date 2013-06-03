@@ -53,15 +53,16 @@ void Parser::LoadErrorCodes()
 /****************************
  * Emits parsing error.
  ****************************/
-void Parser::ProcessError(enum TokenType type)
+void Parser::ProcessError(TokenType type)
 {
   wstring msg = error_msgs[type];
 #ifdef _DEBUG
-  wcout << L"\tError: "
-        << msg << endl;
+  wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
+	<< msg << endl;
 #endif
 
-  errors.push_back(msg);
+  const wstring &str_line_num = ToString(GetLineNumber());
+  errors.insert(pair<int, wstring>(GetLineNumber(), GetFileName() + L":" + str_line_num + L": " + msg));
 }
 
 /****************************
@@ -70,10 +71,49 @@ void Parser::ProcessError(enum TokenType type)
 void Parser::ProcessError(const wstring &msg)
 {
 #ifdef _DEBUG
-  wcout << L"\tError: " << msg << endl;
+  wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
+	<< msg << endl;
 #endif
 
-  errors.push_back(msg);
+  const wstring &str_line_num = ToString(GetLineNumber());
+  errors.insert(pair<int, wstring>(GetLineNumber(), GetFileName() + L":" + 
+				   str_line_num + L": " + msg));
+}
+
+/****************************
+ * Emits parsing error.
+ ****************************/
+void Parser::ProcessError(const wstring &msg, TokenType sync)
+{
+#ifdef _DEBUG
+  wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
+	<< msg << endl;
+#endif
+
+  const wstring &str_line_num = ToString(GetLineNumber());
+  errors.insert(pair<int, wstring>(GetLineNumber(),
+				   GetFileName() + L":" + str_line_num +
+				   L": " + msg));
+  TokenType token = GetToken();
+  while(token != sync && token != TOKEN_END_OF_STREAM) {
+    NextToken();
+    token = GetToken();
+  }
+}
+
+/****************************
+ * Emits parsing error.
+ ****************************/
+void Parser::ProcessError(const wstring &msg, ParseNode* node)
+{
+#ifdef _DEBUG
+  wcout << L"\tError: " << node->GetFileName() << L":" << node->GetLineNumber()
+	<< L": " << msg << endl;
+#endif
+
+  const wstring &str_line_num = ToString(node->GetLineNumber());
+  errors.insert(pair<int, wstring>(node->GetLineNumber(), node->GetFileName() +
+				   L":" + str_line_num + L": " + msg));
 }
 
 /****************************
@@ -104,7 +144,7 @@ StatementList* Parser::Parse()
   NextToken();
   
   // parse input
-  StatementList* statement_list = ParseStatements(0);
+  StatementList* statement_list = ParseBlock(0);
   if(CheckErrors()) {
     return statement_list;
   }
@@ -113,11 +153,14 @@ StatementList* Parser::Parse()
 }
 
 /****************************
- * Parses statements
+ * Parses a statement block
  ****************************/
-StatementList* Parser::ParseStatements(int depth)
+StatementList* Parser::ParseBlock(int depth)
 {
-  StatementList* statement_list = TreeFactory::Instance()->MakeStatementList();
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
+  StatementList* statement_list = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
   
   if(!Match(TOKEN_OPEN_BRACE)) {
     ProcessError(TOKEN_OPEN_BRACE);
@@ -143,11 +186,24 @@ StatementList* Parser::ParseStatements(int depth)
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
   Statement* statement;
   switch(scanner->GetToken()->GetType()) {
     // assignment
   case TOKEN_IDENT:
-    statement = ParseAssignment(0);
+    statement = ParseAssignment(depth + 1);
+    break;
+
+		// if
+  case TOKEN_IF_ID:
+    statement = ParseIf(depth + 1);
+    break;
+		
+		// while
+  case TOKEN_WHILE_ID:
+    statement = ParseWhile(depth + 1);
     break;
     
     // value dump
@@ -164,7 +220,7 @@ Statement* Parser::ParseStatement(int depth)
     wstring identifier = scanner->GetToken()->GetIdentifier();
     NextToken();
     Reference* reference = ParseReference(identifier, depth + 1);
-    statement = TreeFactory::Instance()->MakeDumpStatement(reference);
+    statement = TreeFactory::Instance()->MakeDumpStatement(file_name, line_num, reference);
   }
     break;
 
@@ -185,10 +241,37 @@ Statement* Parser::ParseStatement(int depth)
 }
 
 /****************************
+ * Parses an 'if' statement.
+ ****************************/
+Statement* Parser::ParseIf(int depth)
+{
+#ifdef _DEBUG
+	Show(L"If", depth);
+#endif
+	
+	return NULL;
+}
+
+/****************************
+ * Parses a 'while' statement.
+ ****************************/
+Statement* Parser::ParseWhile(int depth)
+{
+#ifdef _DEBUG
+	Show(L"While", depth);
+#endif
+	
+	return NULL;
+}
+
+/****************************
  * Parses an assignment statement.
  ****************************/
 Statement* Parser::ParseAssignment(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Assignment", depth);
 #endif
@@ -209,7 +292,7 @@ Statement* Parser::ParseAssignment(int depth)
   
   Expression* expression = ParseExpression(depth + 1);
   if(reference && expression) {
-    return TreeFactory::Instance()->MakeAssignmentStatement(reference, expression);
+    return TreeFactory::Instance()->MakeAssignmentStatement(file_name, line_num, reference, expression);
   }
   
   return NULL;
@@ -234,6 +317,9 @@ Expression* Parser::ParseExpression(int depth)
  ****************************/
 Expression* Parser::ParseLogic(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
 #ifdef _DEBUG
   Show(L"Boolean logic", depth);
 #endif
@@ -248,10 +334,10 @@ Expression* Parser::ParseLogic(int depth)
 
     switch(GetToken()) {
     case TOKEN_AND:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(AND_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, AND_EXPR);
       break;
     case TOKEN_OR:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(OR_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, OR_EXPR);
       break;
 
     default:
@@ -281,7 +367,9 @@ Expression* Parser::ParseLogic(int depth)
  ****************************/
 Expression* Parser::ParseMathLogic(int depth)
 {
-
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Boolean math", depth);
 #endif
@@ -294,22 +382,22 @@ Expression* Parser::ParseMathLogic(int depth)
     CalculatedExpression* expression = NULL;
     switch(GetToken()) {
     case TOKEN_LES:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(LES_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, LES_EXPR);
       break;
     case TOKEN_GTR:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(GTR_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, GTR_EXPR);
       break;
     case TOKEN_LEQL:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(LES_EQL_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, LES_EQL_EXPR);
       break;
     case TOKEN_GEQL:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(GTR_EQL_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, GTR_EQL_EXPR);
       break;
     case TOKEN_EQL:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(EQL_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, EQL_EXPR);
       break;
     case TOKEN_NEQL:
-      expression = TreeFactory::Instance()->MakeCalculatedExpression(NEQL_EXPR);
+      expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, NEQL_EXPR);
       break;
 
     default:
@@ -337,7 +425,9 @@ Expression* Parser::ParseMathLogic(int depth)
  ****************************/
 Expression* Parser::ParseTerm(int depth)
 {
-
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Term", depth);
 #endif
@@ -356,9 +446,9 @@ Expression* Parser::ParseTerm(int depth)
     if(expression) {
       CalculatedExpression* right;
       if(Match(TOKEN_ADD)) {
-        right = TreeFactory::Instance()->MakeCalculatedExpression(ADD_EXPR);
+        right = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, ADD_EXPR);
       } else {
-        right = TreeFactory::Instance()->MakeCalculatedExpression(SUB_EXPR);
+        right = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, SUB_EXPR);
       }
       NextToken();
 
@@ -371,9 +461,9 @@ Expression* Parser::ParseTerm(int depth)
     // first time in loop
     else {
       if(Match(TOKEN_ADD)) {
-        expression = TreeFactory::Instance()->MakeCalculatedExpression(ADD_EXPR);
+        expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, ADD_EXPR);
       } else {
-        expression = TreeFactory::Instance()->MakeCalculatedExpression(SUB_EXPR);
+        expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, SUB_EXPR);
       }
       NextToken();
 
@@ -396,7 +486,9 @@ Expression* Parser::ParseTerm(int depth)
  ****************************/
 Expression* Parser::ParseFactor(int depth)
 {
-
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Factor", depth);
 #endif
@@ -412,11 +504,11 @@ Expression* Parser::ParseFactor(int depth)
     if(expression) {
       CalculatedExpression* right;
       if(Match(TOKEN_MUL)) {
-        right = TreeFactory::Instance()->MakeCalculatedExpression(MUL_EXPR);
+        right = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, MUL_EXPR);
       } else if(Match(TOKEN_MOD)) {
-        right = TreeFactory::Instance()->MakeCalculatedExpression(MOD_EXPR);
+        right = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, MOD_EXPR);
       } else {
-        right = TreeFactory::Instance()->MakeCalculatedExpression(DIV_EXPR);
+        right = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, DIV_EXPR);
       }
       NextToken();
 
@@ -428,11 +520,11 @@ Expression* Parser::ParseFactor(int depth)
     // first time in loop
     else {
       if(Match(TOKEN_MUL)) {
-        expression = TreeFactory::Instance()->MakeCalculatedExpression(MUL_EXPR);
+        expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, MUL_EXPR);
       } else if(Match(TOKEN_MOD)) {
-        expression = TreeFactory::Instance()->MakeCalculatedExpression(MOD_EXPR);
+        expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, MOD_EXPR);
       } else {
-        expression = TreeFactory::Instance()->MakeCalculatedExpression(DIV_EXPR);
+        expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, DIV_EXPR);
       }
       NextToken();
 
@@ -452,9 +544,12 @@ Expression* Parser::ParseFactor(int depth)
  ****************************/
 ExpressionList* Parser::ParseIndices(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
   ExpressionList* expressions = NULL;
   if(Match(TOKEN_OPEN_BRACKET)) {
-    expressions = TreeFactory::Instance()->MakeExpressionList();
+    expressions = TreeFactory::Instance()->MakeExpressionList(file_name, line_num);
     NextToken();
 
     while(!Match(TOKEN_CLOSED_BRACKET) && !Match(TOKEN_END_OF_STREAM)) {
@@ -484,6 +579,9 @@ ExpressionList* Parser::ParseIndices(int depth)
  ****************************/
 Expression* Parser::ParseSimpleExpression(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Simple expression", depth);
 #endif
@@ -503,12 +601,14 @@ Expression* Parser::ParseSimpleExpression(int depth)
 
     switch(GetToken()) {
     case TOKEN_INT_LIT:
-      expression = TreeFactory::Instance()->MakeIntegerLiteral(-scanner->GetToken()->GetIntLit());
+      expression = TreeFactory::Instance()->MakeIntegerLiteral(file_name, line_num, 
+																															 -scanner->GetToken()->GetIntLit());
       NextToken();
       break;
 
     case TOKEN_FLOAT_LIT:
-      expression = TreeFactory::Instance()->MakeFloatLiteral(-scanner->GetToken()->GetFloatLit());
+      expression = TreeFactory::Instance()->MakeFloatLiteral(file_name, line_num, 
+																														 -scanner->GetToken()->GetFloatLit());
       NextToken();
       break;
 
@@ -529,23 +629,26 @@ Expression* Parser::ParseSimpleExpression(int depth)
   else {
     switch(GetToken()) {
     case TOKEN_CHAR_LIT:
-      expression = TreeFactory::Instance()->MakeCharacterLiteral(scanner->GetToken()->GetCharLit());
+      expression = TreeFactory::Instance()->MakeCharacterLiteral(file_name, line_num, 
+																																 scanner->GetToken()->GetCharLit());
       NextToken();
       break;
 
     case TOKEN_INT_LIT:
-      expression = TreeFactory::Instance()->MakeIntegerLiteral(scanner->GetToken()->GetIntLit());
+      expression = TreeFactory::Instance()->MakeIntegerLiteral(file_name, line_num, 
+																															 scanner->GetToken()->GetIntLit());
       NextToken();
       break;
 
     case TOKEN_FLOAT_LIT:
-      expression = TreeFactory::Instance()->MakeFloatLiteral(scanner->GetToken()->GetFloatLit());
+      expression = TreeFactory::Instance()->MakeFloatLiteral(file_name, line_num, 
+																														 scanner->GetToken()->GetFloatLit());
       NextToken();
       break;
 
     case TOKEN_CHAR_STRING_LIT: {
       const wstring &ident = scanner->GetToken()->GetIdentifier();
-      expression = TreeFactory::Instance()->MakeCharacterString(ident);
+      expression = TreeFactory::Instance()->MakeCharacterString(file_name, line_num, ident);
       NextToken();
     }
       break;
@@ -576,12 +679,15 @@ Expression* Parser::ParseSimpleExpression(int depth)
  ****************************/
 Reference* Parser::ParseReference(int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Reference", depth);
 #endif
 
   // self reference
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference();
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num);
 
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
@@ -596,11 +702,14 @@ Reference* Parser::ParseReference(int depth)
  ****************************/
 Reference* Parser::ParseReference(const wstring &ident, int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
   Show(L"Reference", depth);
 #endif
 
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(ident);
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, ident);
   if(Match(TOKEN_OPEN_BRACKET)) {
     inst_ref->SetIndices(ParseIndices(depth + 1));
   }
@@ -638,4 +747,3 @@ void Parser::ParseReference(Reference* reference, int depth)
     }
   }
 }
-
