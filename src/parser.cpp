@@ -198,12 +198,12 @@ Statement* Parser::ParseStatement(int depth)
 
 		// if
   case TOKEN_IF_ID:
-    statement = ParseIf(depth + 1);
+    statement = ParseIfWhile(true, depth + 1);
     break;
 		
 		// while
   case TOKEN_WHILE_ID:
-    statement = ParseWhile(depth + 1);
+    statement = ParseIfWhile(false, depth + 1);
     break;
     
     // value dump
@@ -241,25 +241,39 @@ Statement* Parser::ParseStatement(int depth)
 }
 
 /****************************
- * Parses an 'if' statement.
+ * Parses an 'if' and 'while' 
+ * statements.
  ****************************/
-Statement* Parser::ParseIf(int depth)
+Statement* Parser::ParseIfWhile(bool is_if, int depth)
 {
+	const int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
 #ifdef _DEBUG
 	Show(L"If", depth);
 #endif
-	
-	return NULL;
-}
 
-/****************************
- * Parses a 'while' statement.
- ****************************/
-Statement* Parser::ParseWhile(int depth)
-{
-#ifdef _DEBUG
-	Show(L"While", depth);
-#endif
+	NextToken();
+
+  if(!Match(TOKEN_OPEN_PAREN)) {
+    ProcessError(TOKEN_OPEN_PAREN);
+    return NULL;
+  }
+  NextToken();
+
+	Expression* expression = ParseExpression(depth + 1);
+
+	if(!Match(TOKEN_CLOSED_PAREN)) {
+    ProcessError(TOKEN_CLOSED_PAREN);
+    return NULL;
+  }
+  NextToken();
+
+	StatementList* block = ParseBlock(depth + 1);
+	
+	if(expression && block) {
+		return TreeFactory::Instance()->MakeIfWhileStatement(file_name, line_num, expression, block, is_if);
+	}
 	
 	return NULL;
 }

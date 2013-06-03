@@ -91,8 +91,7 @@ class Parser {
   // parsing operations
   StatementList* ParseBlock(int depth);
 	Statement* ParseStatement(int depth);
-	Statement* ParseIf(int depth);
-	Statement* ParseWhile(int depth);
+	Statement* ParseIfWhile(bool is_if, int depth);
   Statement* ParseAssignment(int depth);
 	ExpressionList* ParseIndices(int depth);
   Expression* ParseExpression(int depth);
