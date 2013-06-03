@@ -43,8 +43,8 @@
  ****************************/
 class Parser {
   Scanner* scanner;
-  map<enum TokenType, wstring> error_msgs;
-  vector<wstring> errors;
+	map<TokenType, wstring> error_msgs;
+  map<int, wstring> errors;
 	wstring input;
   
   inline void NextToken() {
@@ -55,6 +55,14 @@ class Parser {
     return scanner->GetToken(index)->GetType() == type;
   }
 
+	inline int GetLineNumber() {
+    return scanner->GetToken()->GetLineNumber();
+  }
+
+  inline const wstring GetFileName() {
+    return scanner->GetToken()->GetFileName();
+  }
+	
   inline enum TokenType GetToken(int index = 0) {
     return scanner->GetToken(index)->GetType();
   }
@@ -71,16 +79,20 @@ class Parser {
     str << v;
     return str.str();
   }
-
+	
   // error processing
   void LoadErrorCodes();
-  void ProcessError(const enum TokenType type);
+  void ProcessError(const TokenType type);
   void ProcessError(const wstring &msg);
+  void ProcessError(const wstring &msg, ParseNode* node);
+  void ProcessError(const wstring &msg, const TokenType sync);
   bool CheckErrors();
-
+	
   // parsing operations
-  StatementList* ParseStatements(int depth);
+  StatementList* ParseBlock(int depth);
 	Statement* ParseStatement(int depth);
+	Statement* ParseIf(int depth);
+	Statement* ParseWhile(int depth);
   Statement* ParseAssignment(int depth);
 	ExpressionList* ParseIndices(int depth);
   Expression* ParseExpression(int depth);

@@ -45,23 +45,26 @@ class ExpressionList;
  * ParseNode base class
  ****************************/
 class ParseNode {
-  bool is_error;
-
+ protected:
+	wstring file_name;
+	int line_num;
+	
  public:
-  ParseNode() {
-    is_error = false;
-  }
+	ParseNode(const std::wstring &file_name, const int line_num) {
+		this->file_name = file_name;
+		this->line_num = line_num;
+	}
+  
+	virtual ~ParseNode() {
+	}
+    
+	const std::wstring GetFileName() {
+		return file_name;
+	}
 
-  virtual ~ParseNode() {
-  }
-
-  void SetError() {
-    is_error = false;
-  }
-
-  bool IsError() {
-    return is_error;
-  }
+	const int GetLineNumber() {
+		return line_num;
+	}
 };  
 
 /****************************
@@ -97,7 +100,7 @@ class Expression : public ParseNode {
   friend class TreeFactory;
 
  protected:    
- Expression() : ParseNode() {
+  Expression(const std::wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
   }
 		
   virtual ~Expression() {
@@ -110,11 +113,11 @@ class Expression : public ParseNode {
 /****************************
  * ExpressionList class
  ****************************/
-class ExpressionList {
+class ExpressionList : public ParseNode {
   friend class TreeFactory;
   vector<Expression*> expressions;
-
-  ExpressionList() {
+	
+  ExpressionList(const std::wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
   }
 
   ~ExpressionList() {
@@ -145,7 +148,7 @@ class Statement : public ParseNode {
   friend class TreeFactory;
 
  public:    
-  Statement() : ParseNode() {
+  Statement(const std::wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
   }
 
   ~Statement() {
@@ -157,11 +160,11 @@ class Statement : public ParseNode {
 /****************************
  * StatementList class
  ****************************/
-class StatementList {
+class StatementList : public ParseNode {
   friend class TreeFactory;
   vector<Statement*> statements;
   
-  StatementList() {
+  StatementList(const std::wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
   }
   
   ~StatementList() {
@@ -185,7 +188,8 @@ class Dump : public Statement {
   Reference* reference;
   
  public:
-  Dump(Reference* reference) : Statement() {
+   Dump(const std::wstring &file_name, const int line_num, Reference* reference) 
+		 : Statement(file_name, line_num) {
     this->reference = reference;
   }
   
@@ -207,7 +211,8 @@ class Assignment : public Statement {
   Expression* expression;
   
  public:
-   Assignment(Reference* reference, Expression* expression) : Statement() {
+   Assignment(const std::wstring &file_name, const int line_num, Reference* reference, Expression* expression) 
+		 : Statement(file_name, line_num) {
     this->reference = reference;
     this->expression = expression;
   }
@@ -236,7 +241,8 @@ class CharacterString : public Expression {
   int id;
   wstring char_string;
 
- CharacterString(const wstring &orig) : Expression() {
+   CharacterString(const std::wstring &file_name, const int line_num, const wstring &orig) 
+		 : Expression(file_name, line_num) {
     int skip = 2;
     for(size_t i = 0; i < orig.size(); i++) {
       wchar_t c = orig[i];
@@ -322,8 +328,8 @@ class CalculatedExpression : public Expression {
   Expression* left;
   Expression* right;
 
- CalculatedExpression(ExpressionType t) :
-  Expression() {
+  CalculatedExpression(const std::wstring &file_name, const int line_num, ExpressionType t) 
+		: Expression(file_name, line_num) {
     left = right = NULL;
     type = t;
   }
@@ -360,7 +366,7 @@ class BooleanLiteral : public Expression {
   friend class TreeFactory;
   bool value;
 
- BooleanLiteral(bool v) : Expression() {
+  BooleanLiteral(const std::wstring &file_name, const int line_num, bool v) : Expression(file_name, line_num) {
     value = v;
   }
 
@@ -383,7 +389,7 @@ class BooleanLiteral : public Expression {
 class NilLiteral : public Expression {
   friend class TreeFactory;
 
- NilLiteral(const wstring &f, const int l) : Expression() {
+  NilLiteral(const wstring &f, const int l) : Expression(file_name, line_num) {
   }
 
   ~NilLiteral() {
@@ -402,10 +408,11 @@ class CharacterLiteral : public Expression {
   friend class TreeFactory;
   wchar_t value;
 
- CharacterLiteral(wchar_t v) : Expression() {
+  CharacterLiteral(const std::wstring &file_name, const int line_num, wchar_t v) 
+		: Expression(file_name, line_num) {
     value = v;
   }
-
+	
   ~CharacterLiteral() {
   }
 
@@ -426,7 +433,8 @@ class IntegerLiteral : public Expression {
   friend class TreeFactory;
   long value;
 
- IntegerLiteral(long v) : Expression() {
+  IntegerLiteral(const std::wstring &file_name, const int line_num, long v) 
+		: Expression(file_name, line_num) {
     value = v;
   }
 
@@ -450,7 +458,8 @@ class FloatLiteral : public Expression {
   friend class TreeFactory;
   double value;
 
- FloatLiteral(double v) : Expression() {
+  FloatLiteral(const std::wstring &file_name, const int line_num, double v) 
+		: Expression(file_name, line_num) {
     value = v;
   }
 
@@ -479,7 +488,7 @@ class Reference : public Expression {
   int array_size;
   int array_dim;
 
- Reference() : Expression() {
+ Reference(const std::wstring &file_name, const int line_num) : Expression(file_name, line_num) {
     name = L"@self";
     is_self = true;
     reference	= NULL;
@@ -488,7 +497,8 @@ class Reference : public Expression {
     indices = NULL;
   }
 
- Reference(const wstring &v) : Expression() {
+  Reference(const std::wstring &file_name, const int line_num, const wstring &v) 
+		: Expression(file_name, line_num) {
     name = v;
     is_self = false;
     reference	= NULL;
@@ -619,80 +629,83 @@ class TreeFactory {
     instance = NULL;
   }
 
-  ExpressionList* MakeExpressionList() {
-    ExpressionList* tmp = new ExpressionList;
+  ExpressionList* MakeExpressionList(const std::wstring &file_name, const int line_num) {
+    ExpressionList* tmp = new ExpressionList(file_name, line_num);
     expression_lists.push_back(tmp);
     return tmp;
   }
 
-  StatementList* MakeStatementList() {
-    StatementList* tmp = new StatementList;
+  StatementList* MakeStatementList(const std::wstring &file_name, const int line_num) {
+    StatementList* tmp = new StatementList(file_name, line_num);
     statement_lists.push_back(tmp);
     return tmp;
   }
   
-  Assignment* MakeAssignmentStatement(Reference* reference, Expression* expression) {
-    Assignment* tmp = new Assignment(reference, expression);
+  Assignment* MakeAssignmentStatement(const std::wstring &file_name, const int line_num, 
+																			Reference* reference, Expression* expression) {
+    Assignment* tmp = new Assignment(file_name, line_num, reference, expression);
     statements.push_back(tmp);
     return tmp;
   }
   
-  Dump* MakeDumpStatement(Reference* reference) {
-    Dump* tmp = new Dump(reference);
+  Dump* MakeDumpStatement(const std::wstring &file_name, const int line_num, Reference* reference) {
+    Dump* tmp = new Dump(file_name, line_num, reference);
     statements.push_back(tmp);
     return tmp;
   }
   
-  CalculatedExpression* MakeCalculatedExpression(ExpressionType type) {
-    CalculatedExpression* tmp = new CalculatedExpression(type);
+  CalculatedExpression* MakeCalculatedExpression(const std::wstring &file_name, const int line_num, 
+																								 ExpressionType type) {
+    CalculatedExpression* tmp = new CalculatedExpression(file_name, line_num, type);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  IntegerLiteral* MakeIntegerLiteral(long value) {
-    IntegerLiteral* tmp = new IntegerLiteral(value);
+  IntegerLiteral* MakeIntegerLiteral(const std::wstring &file_name, const int line_num, long value) {
+    IntegerLiteral* tmp = new IntegerLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  FloatLiteral* MakeFloatLiteral(double value) {
-    FloatLiteral* tmp = new FloatLiteral(value);
+  FloatLiteral* MakeFloatLiteral(const std::wstring &file_name, const int line_num, double value) {
+    FloatLiteral* tmp = new FloatLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  CharacterLiteral* MakeCharacterLiteral(wchar_t value) {
-    CharacterLiteral* tmp = new CharacterLiteral(value);
+  CharacterLiteral* MakeCharacterLiteral(const std::wstring &file_name, const int line_num, wchar_t value) {
+    CharacterLiteral* tmp = new CharacterLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
-
-  CharacterString* MakeCharacterString(const wstring &char_string) {
-    CharacterString* tmp = new CharacterString(char_string);
-    expressions.push_back(tmp);
-    return tmp;
-  }
-
+	
+  CharacterString* MakeCharacterString(const std::wstring &file_name, const int line_num, 
+																			 const wstring &char_string) {
+		CharacterString* tmp = new CharacterString(file_name, line_num, char_string);
+		expressions.push_back(tmp);
+		return tmp;
+	}
+	
   NilLiteral* MakeNilLiteral(const wstring &file_name, const int line_num) {
     NilLiteral* tmp = new NilLiteral(file_name, line_num);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  BooleanLiteral* MakeBooleanLiteral(bool boolean) {
-    BooleanLiteral* tmp = new BooleanLiteral(boolean);
+  BooleanLiteral* MakeBooleanLiteral(const std::wstring &file_name, const int line_num, bool boolean) {
+    BooleanLiteral* tmp = new BooleanLiteral(file_name, line_num, boolean);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  Reference* MakeReference() {
-    Reference* tmp = new Reference();
+  Reference* MakeReference(const wstring &file_name, const int line_num) {
+    Reference* tmp = new Reference(file_name, line_num);
     references.push_back(tmp);
     return tmp;
   }
 
-  Reference* MakeReference(const wstring &v) {
-    Reference* tmp = new Reference(v);
+  Reference* MakeReference(const std::wstring &file_name, const int line_num, const wstring &name) {
+    Reference* tmp = new Reference(file_name, line_num, name);
     references.push_back(tmp);
     return tmp;
   }

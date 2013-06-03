@@ -87,6 +87,8 @@ enum TokenType {
   TOKEN_CHAR_LIT,
   TOKEN_CHAR_STRING_LIT,
   // reserved words
+	TOKEN_IF_ID,
+	TOKEN_WHILE_ID,
   TOKEN_DUMP_ID,
   TOKEN_THIS_ID,
   TOKEN_CLASS_ID,
@@ -100,20 +102,39 @@ class Token {
  private:
   enum TokenType token_type;
   wstring ident;
-
+	int line_num;
+  wstring file_name;
+	
   int int_lit;
   double double_lit;
   wchar_t char_lit;
   char byte_lit;
-
+	
  public:
-
   inline void Copy(Token* token) {
+		line_num = token->GetLineNumber();
     char_lit = token->GetCharLit();
     int_lit = token->GetIntLit();
     double_lit = token->GetFloatLit();
     ident = token->GetIdentifier();
     token_type = token->GetType();
+    file_name = token->GetFileName();
+  }
+	
+	inline const wstring GetFileName() {
+    return file_name;
+  }
+
+  inline void SetFileName(wstring f) {
+    file_name = f;
+  }
+
+  inline const int GetLineNumber() {
+    return line_num;
+  }
+
+	inline void SetLineNbr(int l) {
+    line_num = l;
   }
   
   inline void  SetIntLit(int i) {
@@ -171,12 +192,16 @@ class Token {
  **********************************/
 class Scanner {
  private:
+	// input file name
+  wstring file_name;
+	// line number
+  int line_num;
   // input buffer
   wchar_t* buffer;
   // buffer size
-  std::streamoff buffer_size;
+  size_t buffer_size;
   // input buffer position
-  int buffer_pos;
+  size_t buffer_pos;
   // start marker position
   int start_pos;
   // end marker position
@@ -187,12 +212,12 @@ class Scanner {
   map<const wstring, enum TokenType> ident_map;
   // array of tokens for lookahead
   Token* tokens[LOOK_AHEAD];
-
+	
   // warning message
   void ProcessWarning() {
     wcout << L"Parse warning: Unknown token: '" << cur_char << L"'" << endl;
   }
-
+	
   // parsers a character wstring
   inline void CheckString(int index) {
     // copy wstring
@@ -200,7 +225,9 @@ class Scanner {
     wstring char_string(buffer, start_pos, length);
     // set wstring
     tokens[index]->SetType(TOKEN_CHAR_STRING_LIT);
+		tokens[index]->SetLineNbr(line_num);
     tokens[index]->SetIdentifier(char_string);
+		tokens[index]->SetFileName(file_name);
   }
 
   // parse an integer
@@ -212,6 +239,8 @@ class Scanner {
     // set token
     wchar_t* end;
     tokens[index]->SetType(TOKEN_INT_LIT);
+		tokens[index]->SetLineNbr(line_num);
+		tokens[index]->SetFileName(file_name);
     tokens[index]->SetIntLit(wcstol(ident.c_str(), &end, base));
   }
 
@@ -222,6 +251,8 @@ class Scanner {
     wstring wident(buffer, start_pos, length);
     // set token
     tokens[index]->SetType(TOKEN_FLOAT_LIT);
+		tokens[index]->SetLineNbr(line_num);
+		tokens[index]->SetFileName(file_name);
     const string ident(wident.begin(), wident.end());
     tokens[index]->SetFloatLit(atof(ident.c_str()));
   }
@@ -234,9 +265,14 @@ class Scanner {
     // set token
     wchar_t* end;
     tokens[index]->SetType(TOKEN_CHAR_LIT);
+		tokens[index]->SetLineNbr(line_num);
+		tokens[index]->SetFileName(file_name);
     tokens[index]->SetCharLit((wchar_t)wcstol(ident.c_str(), &end, 16));
   }
 
+
+  // reads a file into memory
+	void ReadFile(const wstring &name);
   // reads a line as input
   void ReadLine(const wstring &line);
   // ignore white space
@@ -252,7 +288,7 @@ class Scanner {
 
  public:
   // default constructor
-  Scanner(const wstring &line);
+  Scanner(const wstring &name, bool is_file = true);
   // default destructor
   ~Scanner();
 
