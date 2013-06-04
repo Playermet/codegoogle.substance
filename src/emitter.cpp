@@ -58,10 +58,14 @@ vector<Instruction*> Emitter::EmitBlock(StatementList* block_statements)
     case ASSIGNMENT_STATEMENT:
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions);
       break;
-      
+			
+		case IF_WHILE_STATEMENT:
+			EmitIfWhile(static_cast<IfWhile*>(statement), block_instructions);
+      break;
+
     case DUMP_STATEMENT:
 #ifdef _DEBUG
-    wcout << L"Emitting value dump" << endl;
+    wcout << L"dump value" << endl;
 #endif
       EmitReference(static_cast<Dump*>(statement)->GetReference(), false, block_instructions);
       block_instructions.push_back(MakeInstruction(DUMP_VALUE));
@@ -82,7 +86,42 @@ vector<Instruction*> Emitter::EmitBlock(StatementList* block_statements)
  ****************************/
 void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions)
 {
+	const long top_label = label_id++;
+	const long end_label = label_id++;
 	
+	// 'while'; top label
+	if(!if_while->IsIf()) {
+#ifdef _DEBUG
+    wcout << L"label: id=" << top_label << endl;
+#endif
+		block_instructions.push_back(MakeInstruction(LBL, (int)top_label));
+	}
+	
+	// emit conditional expression
+	EmitExpression(if_while->GetExpression(), block_instructions);
+
+	// emit; jump true
+#ifdef _DEBUG
+    wcout << L"jump false: id=" << end_label << endl;
+#endif
+	block_instructions.push_back(MakeInstruction(JMP, -1, (int)end_label));
+	
+	// emit block
+	EmitBlock(if_while->GetBlock());
+	
+	// 'while'; jump
+	if(!if_while->IsIf()) {
+#ifdef _DEBUG
+    wcout << L"jump" << endl;
+#endif
+		block_instructions.push_back(MakeInstruction(JMP, 0, (int)top_label));
+	}
+	
+	// end label
+#ifdef _DEBUG
+    wcout << L"label: id=" << end_label << endl;
+#endif
+	block_instructions.push_back(MakeInstruction(LBL, (int)end_label));
 }
 
 /****************************
@@ -90,26 +129,30 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
  ****************************/
 void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions)
 {
+	// emit expression
   EmitExpression(assignment->GetExpression(), block_instructions);
+
+	// emit reference
   EmitReference(assignment->GetReference(), true, block_instructions);
 }
 
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions)
+void Emitter::EmitReference(Reference* reference, bool is_store, 
+														vector<Instruction*> &block_instructions)
 {
   wstring name = reference->GetName();
   if(is_store) {
 #ifdef _DEBUG
-    wcout << L"Emitting store: name='" << reference->GetName() 
+    wcout << L"store: name='" << reference->GetName() 
 					<< L"', reference=" << reference->GetValue() << endl;
 #endif
     block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetValue()));
   }
   else {
 #ifdef _DEBUG
-    wcout << L"Emitting load: name='" << reference->GetName() 
+    wcout << L"load: name='" << reference->GetName() 
 					<< L"', reference=" << reference->GetValue() << endl;
 #endif
     block_instructions.push_back(MakeInstruction(LOAD_VAR, reference->GetValue()));
@@ -132,7 +175,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     
   case INT_LIT_EXPR:
 #ifdef _DEBUG
-    wcout << L"Emitting integer literal: value=" 
+    wcout << L"load literal: type=integer, value=" 
           << static_cast<IntegerLiteral*>(expression)->GetValue() << endl;
 #endif
     block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)static_cast<IntegerLiteral*>(expression)->GetValue()));
@@ -140,7 +183,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     
   case FLOAT_LIT_EXPR:
 #ifdef _DEBUG
-    wcout << L"Emitting float literal: value=" 
+    wcout << L"load literal: type=float, value=" 
           << static_cast<FloatLiteral*>(expression)->GetValue() << endl;
 #endif
     block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (double)static_cast<FloatLiteral*>(expression)->GetValue()));
@@ -153,7 +196,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '&&'" << endl;
+    wcout << L"operator: '&&'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(AND));
   }
@@ -163,7 +206,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '||'" << endl;
+    wcout << L"operator: '||'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(OR));
   }
@@ -173,7 +216,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '=='" << endl;
+    wcout << L"operator: '=='" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(EQL));
   }
@@ -183,7 +226,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '!='" << endl;
+    wcout << L"operator: '!='" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(NEQL));
   }
@@ -193,7 +236,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '<'" << endl;
+    wcout << L"operator: '<'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(LES));
   }
@@ -203,7 +246,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '>='" << endl;
+    wcout << L"operator: '>='" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(GTR_EQL));
   }
@@ -213,7 +256,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '<='" << endl;
+    wcout << L"operator: '<='" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(LES_EQL));
   }
@@ -223,7 +266,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '>'" << endl;
+    wcout << L"operator: '>'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(GTR));
   }
@@ -233,7 +276,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '+'" << endl;
+    wcout << L"operator: '+'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(ADD));
   }
@@ -243,7 +286,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '-'" << endl;
+    wcout << L"operator: '-'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(SUB));
   }
@@ -253,7 +296,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '*'" << endl;
+    wcout << L"operator: '*'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(MUL));
   }
@@ -263,7 +306,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '/'" << endl;
+    wcout << L"operator: '/'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(DIV));
   }
@@ -273,7 +316,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions);
 #ifdef _DEBUG
-    wcout << L"Emitting operator: '%'" << endl;
+    wcout << L"operator: '%'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(MOD));
   }

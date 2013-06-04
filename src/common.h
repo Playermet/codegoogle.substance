@@ -69,10 +69,12 @@ struct _Value;
  * Runtime instructions
  ****************************/
 enum InstructionType {
-  LOAD_INT_LIT = -1000,
+	// literals and variables
+  LOAD_INT_LIT = -256,
   LOAD_FLOAT_LIT,
   LOAD_VAR,
   STOR_VAR,
+	// operations
   AND,
   OR,
   EQL,
@@ -86,8 +88,10 @@ enum InstructionType {
   MUL,
   DIV,
   MOD,
-	NEW_SCOPE,
-	PREV_SCOPE,
+	// jumps
+	JMP,
+	LBL,
+	// misc
   DUMP_VALUE,
   RTRN
 };
