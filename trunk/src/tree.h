@@ -442,7 +442,7 @@ class Reference : public Expression {
  ****************************/
 enum StatementType {
   ASSIGNMENT_STATEMENT = -200,
-	IF_STATEMENT,
+	IF_WHILE_STATEMENT,
 	WHILE_STATEMENT,
   DUMP_STATEMENT
 };
@@ -538,7 +538,7 @@ class IfWhile : public Statement {
 	}
 
 	const StatementType GetStatementType() {
-    return IF_STATEMENT;
+    return IF_WHILE_STATEMENT;
   }
 };
 

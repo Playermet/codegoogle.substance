@@ -41,6 +41,7 @@
 class Emitter {
   StatementList* parsed_program;
   static vector<Instruction*> instruction_factory;
+	long label_id;
   
   vector<Instruction*> EmitBlock(StatementList* statement_list);
 	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions);
@@ -51,6 +52,7 @@ class Emitter {
  public:
   Emitter(StatementList* parsed_program) {
     this->parsed_program = parsed_program;
+		label_id = 0;
   }
   
   ~Emitter() {
