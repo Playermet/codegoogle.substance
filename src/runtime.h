@@ -40,28 +40,6 @@
 // size of execution stack
 #define EXECUTION_STACK_SIZE 128
 
-// runtime types
-enum RuntimeType {
-	BOOL_TYPE,
-  INT_VALUE,
-  FLOAT_VALUE,
-  STRING_VALUE,
-	LIST_VALUE,
-	HASH_VALUE
-};
-
-typedef union _BaseValue {
-  int int_value;
-  double float_value;
-  void* pointer_value;
-} BaseValue;
-
-// runtime execution values
-typedef struct _Value {
-  RuntimeType type;
-  BaseValue value;
-} Value;
-
 /****************************
  * Execution engine
  ****************************/

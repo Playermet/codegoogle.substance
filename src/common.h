@@ -63,13 +63,7 @@ namespace std {
 
 using namespace std;
 
-// utility functions
-inline wstring IntToString(int v)
-{
-  wostringstream str;
-  str << v;
-  return str.str();
-}
+struct _Value;
 
 /****************************
  * Runtime instructions
@@ -92,6 +86,8 @@ enum InstructionType {
   MUL,
   DIV,
   MOD,
+	NEW_SCOPE,
+	PREV_SCOPE,
   DUMP_VALUE,
   RTRN
 };
@@ -101,8 +97,41 @@ typedef struct _Instruction {
   int operand1;
   int operand2;
   double operand3;
-  wstring operand4;
+	struct _Value* operand4;
 } Instruction;
+
+/****************************
+ * Runtime types and values
+ ****************************/
+enum RuntimeType {
+	BOOL_TYPE,
+  INT_VALUE,
+  FLOAT_VALUE,
+  STRING_VALUE,
+	LIST_VALUE,
+	HASH_VALUE
+};
+
+typedef union _BaseValue {
+  int int_value;
+  double float_value;
+  void* pointer_value;
+} BaseValue;
+
+// runtime execution values
+typedef struct _Value {
+  RuntimeType type;
+  BaseValue value;
+} Value;
+
+/****************************
+ * Utility functions
+ ****************************/
+inline wstring IntToString(int v) {
+  wostringstream str;
+  str << v;
+  return str.str();
+}
 
 /****************************
  * Converts a UTF-8 bytes to

@@ -359,29 +359,31 @@ class FloatLiteral : public Expression {
 class Reference : public Expression {
   friend class TreeFactory;
   wstring name;
+	Value* value;
   ExpressionList* indices;
   Reference* reference;
   bool is_self;
   int array_size;
   int array_dim;
 
- Reference(const wstring &file_name, const int line_num) : Expression(file_name, line_num) {
+	Reference(const wstring &file_name, const int line_num, Value* v) 
+	 : Expression(file_name, line_num) {
     name = L"@self";
+		value = v;
     is_self = true;
     reference	= NULL;
-    array_size = 0;
-    array_dim = 0;
     indices = NULL;
   }
-
-  Reference(const wstring &file_name, const int line_num, const wstring &v) 
+	
+  Reference(const wstring &file_name, const int line_num, const wstring &n, Value* v) 
 		: Expression(file_name, line_num) {
-    name = v;
+    name = n;
+		value = v;
     is_self = false;
     reference	= NULL;
     indices = NULL;
   }
-
+	
   ~Reference() {
   }
 
@@ -413,6 +415,10 @@ class Reference : public Expression {
   bool IsSelf() {
     return is_self;
   }
+	
+	Value* GetValue() {
+		return value;
+	}
 
   void SetArraySize(int s) {
     array_size = s;
@@ -740,15 +746,16 @@ class TreeFactory {
     expressions.push_back(tmp);
     return tmp;
   }
-
-  Reference* MakeReference(const wstring &file_name, const int line_num) {
-    Reference* tmp = new Reference(file_name, line_num);
+	
+	Reference* MakeReference(const wstring &file_name, const int line_num, Value* value) {
+    Reference* tmp = new Reference(file_name, line_num, value);
     references.push_back(tmp);
     return tmp;
-  }
+	}
 	
-  Reference* MakeReference(const wstring &file_name, const int line_num, const wstring &name) {
-    Reference* tmp = new Reference(file_name, line_num, name);
+  Reference* MakeReference(const wstring &file_name, const int line_num, 
+													 const wstring &name, Value* value) {
+    Reference* tmp = new Reference(file_name, line_num, name, value);
     references.push_back(tmp);
     return tmp;
   }

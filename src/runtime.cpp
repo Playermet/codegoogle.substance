@@ -61,21 +61,13 @@ void Runtime::Run()
       PushValue(left);
       break;
       
-    case LOAD_VAR: {
-      map<const wstring, Value*>::iterator result = local_table.find(instruction->operand4);
-      if(result != local_table.end()) {
-        PushValue(result->second);
-      }
-      else {
-        wcout << L">>> undefined variable: " << instruction->operand4 << endl;
-        exit(1);
-      }
-    }
+    case LOAD_VAR:
+			PushValue(instruction->operand4);
       break;
       
     case STOR_VAR:
       left = PopValue();
-      local_table.insert(pair<const wstring, Value*>(instruction->operand4, left));
+      memcpy(instruction->operand4, left, sizeof(Value));
       break;
 
     case AND:
