@@ -43,6 +43,7 @@ class Emitter {
   static vector<Instruction*> instruction_factory;
   
   vector<Instruction*> EmitBlock(StatementList* statement_list);
+	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions);
   void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions);
   void EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions);
   void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions);
@@ -62,20 +63,11 @@ class Emitter {
     
     return instruction;
   }
-
-  static Instruction* MakeInstruction(InstructionType type, int operand1) {
+	
+  static Instruction* MakeInstruction(InstructionType type, int operand) {
     Instruction* instruction = new Instruction;
     instruction->type = type;
-    instruction->operand1 = operand1;
-    instruction_factory.push_back(instruction);
-    
-    return instruction;
-  }
-
-  static Instruction* MakeInstruction(InstructionType type, wstring &operand4) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction->operand4 = operand4;
+    instruction->operand1 = operand;
     instruction_factory.push_back(instruction);
     
     return instruction;
@@ -92,10 +84,19 @@ class Emitter {
 
   }
   
-  static Instruction* MakeInstruction(InstructionType type, double operand3) {
+  static Instruction* MakeInstruction(InstructionType type, double operand) {
     Instruction* instruction = new Instruction;
     instruction->type = type;
-    instruction->operand3 = operand3;
+    instruction->operand3 = operand;
+    instruction_factory.push_back(instruction);
+    
+    return instruction;
+  }
+
+	static Instruction* MakeInstruction(InstructionType type, Value* operand) {
+    Instruction* instruction = new Instruction;
+    instruction->type = type;
+    instruction->operand4 = operand;
     instruction_factory.push_back(instruction);
     
     return instruction;

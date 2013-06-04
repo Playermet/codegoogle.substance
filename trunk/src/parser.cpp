@@ -144,9 +144,9 @@ StatementList* Parser::Parse()
   NextToken();
   
   // parse input
-  StatementList* statement_list = ParseBlock(0);
+  StatementList* block = ParseBlock(true, 0);
   if(CheckErrors()) {
-    return statement_list;
+    return block;
   }
   
   return NULL;
@@ -155,12 +155,16 @@ StatementList* Parser::Parse()
 /****************************
  * Parses a statement block
  ****************************/
-StatementList* Parser::ParseBlock(int depth)
+StatementList* Parser::ParseBlock(bool new_scope, int depth)
 {
 	const int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
-  StatementList* statement_list = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
+	if(new_scope) {
+		symbol_table.NewScope();
+	}
+
+  StatementList* block = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
   
   if(!Match(TOKEN_OPEN_BRACE)) {
     ProcessError(TOKEN_OPEN_BRACE);
@@ -169,7 +173,7 @@ StatementList* Parser::ParseBlock(int depth)
   NextToken();
 
   while(!Match(TOKEN_CLOSED_BRACE) && !Match(TOKEN_END_OF_STREAM)) {
-    statement_list->AddStatement(ParseStatement(0));
+    block->AddStatement(ParseStatement(0));
   }
   
   if(!Match(TOKEN_CLOSED_BRACE)) {
@@ -177,8 +181,12 @@ StatementList* Parser::ParseBlock(int depth)
     return NULL;
   }
   NextToken();
+	
+	if(new_scope) {
+		symbol_table.PreviousScope();
+	}
 
-  return statement_list;
+  return block;
 }
 
 /****************************
@@ -269,7 +277,7 @@ Statement* Parser::ParseIfWhile(bool is_if, int depth)
   }
   NextToken();
 
-	StatementList* block = ParseBlock(depth + 1);
+	StatementList* block = ParseBlock(true, depth + 1);
 	
 	if(expression && block) {
 		return TreeFactory::Instance()->MakeIfWhileStatement(file_name, line_num, expression, block, is_if);
@@ -295,7 +303,9 @@ Statement* Parser::ParseAssignment(int depth)
     return NULL;
   }
   wstring identifier = scanner->GetToken()->GetIdentifier();
-  NextToken();  
+  NextToken(); 
+	
+	symbol_table.AddEntry(identifier); 
   Reference* reference = ParseReference(identifier, depth + 1);
   
   if(!Match(TOKEN_ASSIGN)) {
@@ -700,8 +710,15 @@ Reference* Parser::ParseReference(int depth)
   Show(L"Reference", depth);
 #endif
 
-  // self reference
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num);
+	// self reference
+	const wstring ident = L"@self";
+	Value* entry = symbol_table.GetEntry(ident);
+	if(!entry) {
+		ProcessError(L"Unknown refernce '" + ident + L"'");
+		return NULL;
+	}
+	
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, entry);
 
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
@@ -722,8 +739,15 @@ Reference* Parser::ParseReference(const wstring &ident, int depth)
 #ifdef _DEBUG
   Show(L"Reference", depth);
 #endif
-
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, ident);
+	
+	// self reference
+	Value* entry = symbol_table.GetEntry(ident);
+	if(!entry) {
+		ProcessError(L"Unknown refernce '" + ident + L"'");
+		return NULL;
+	}
+	
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, ident, entry);
   if(Match(TOKEN_OPEN_BRACKET)) {
     inst_ref->SetIndices(ParseIndices(depth + 1));
   }
@@ -742,7 +766,7 @@ Reference* Parser::ParseReference(const wstring &ident, int depth)
 void Parser::ParseReference(Reference* reference, int depth)
 {
 #ifdef _DEBUG
-  Show(L"Instance reference", depth);
+  Show(L"Nested reference", depth);
 #endif
 
   NextToken();

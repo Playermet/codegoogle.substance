@@ -39,14 +39,112 @@
 #define THIRD_INDEX 2
 
 /****************************
+ * Local symbol table
+ ****************************/
+class InnerTable {
+	unordered_map<wstring, Value*> table;
+	
+ public:
+	InnerTable() {
+	}
+	
+	~InnerTable() {
+		unordered_map<wstring, Value*>::iterator iter;
+		for(iter = table.begin(); iter != table.end(); ++iter) {
+			delete[] iter->second;
+			iter->second = NULL;			
+		}
+	}
+	
+	void AddEntry(const wstring &name) {
+		table.insert(pair<wstring, Value*>(name, new Value));
+	}
+
+	Value* GetEntry(const wstring &name) {
+		unordered_map<wstring, Value*>::iterator result = table.find(name);
+		if(result != table.end()) {
+			return result->second;
+		}
+		
+		return NULL;
+	}
+	
+	bool HasValue(const wstring &name) {
+		return GetEntry(name) != NULL;
+	}
+};
+
+/****************************
+ * Hierarchical symbol table
+ ****************************/
+class SymbolTable {
+	deque<InnerTable*> table_hierarchy;
+	vector<InnerTable*> all_tables;
+	
+ public:
+	SymbolTable() {
+	}
+	
+	~SymbolTable() {
+		while(!all_tables.empty()) {
+      InnerTable* tmp = all_tables.front();
+      all_tables.erase(all_tables.begin());
+      // delete
+      delete tmp;
+      tmp = NULL;
+    }
+	}
+	
+	void NewScope() {
+		InnerTable* table = new InnerTable;
+		table_hierarchy.push_front(table);
+		all_tables.push_back(table);
+	}
+	
+	bool PreviousScope() {
+		if(!table_hierarchy.empty()) {
+			table_hierarchy.pop_front();
+			return true;
+		}
+
+		return false;
+	}
+	
+	bool AddEntry(const wstring &name) {
+		if(!table_hierarchy.empty()) {
+			table_hierarchy.front()->AddEntry(name);
+			return true;
+		}
+
+		return false;
+	}
+	
+	Value* GetEntry(const wstring &name) {
+		for(size_t i = 0; i < table_hierarchy.size(); ++i) {
+			Value* value = table_hierarchy[i]->GetEntry(name);
+			if(value) {
+				return value;
+			}
+		}
+		
+		return NULL;
+	}
+	
+	bool HasValue(wstring &name) {
+		return GetEntry(name) != NULL;
+	}
+};	
+
+/****************************
  * Parsers source files.
  ****************************/
 class Parser {
+	wstring input;
   Scanner* scanner;
+	SymbolTable symbol_table;
 	map<TokenType, wstring> error_msgs;
   map<int, wstring> errors;
-	wstring input;
-  
+	
   inline void NextToken() {
     scanner->NextToken();
   }
@@ -89,7 +187,7 @@ class Parser {
   bool CheckErrors();
 	
   // parsing operations
-  StatementList* ParseBlock(int depth);
+  StatementList* ParseBlock(bool new_scope, int depth);
 	Statement* ParseStatement(int depth);
 	Statement* ParseIfWhile(bool is_if, int depth);
   Statement* ParseAssignment(int depth);

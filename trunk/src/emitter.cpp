@@ -80,6 +80,14 @@ vector<Instruction*> Emitter::EmitBlock(StatementList* block_statements)
 /****************************
  * TODO: doc
  ****************************/
+void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions)
+{
+	
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
 void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions)
 {
   EmitExpression(assignment->GetExpression(), block_instructions);
@@ -94,15 +102,17 @@ void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruct
   wstring name = reference->GetName();
   if(is_store) {
 #ifdef _DEBUG
-    wcout << L"Emitting store: reference=" << reference->GetName() << endl;
+    wcout << L"Emitting store: name='" << reference->GetName() 
+					<< L"', reference=" << reference->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(STOR_VAR, name));
+    block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetValue()));
   }
   else {
 #ifdef _DEBUG
-    wcout << L"Emitting load: reference=" << reference->GetName() << endl;
+    wcout << L"Emitting load: name='" << reference->GetName() 
+					<< L"', reference=" << reference->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_VAR, name));
+    block_instructions.push_back(MakeInstruction(LOAD_VAR, reference->GetValue()));
   }
 }
 
