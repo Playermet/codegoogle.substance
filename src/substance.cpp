@@ -40,16 +40,13 @@ int main(int argc, const char* argv[]) {
 		StatementList* parsed_program = parser.Parse();    
     // emit code
     if(parsed_program) {
+			// emit and run code
       Emitter emitter(parsed_program);
-      vector<Instruction*> instructions = emitter.Emit();
-      // run code
-      if(instructions.size() > 0) {
-        Runtime runtime(instructions);
-        runtime.Run();        
-        // clean up and exit
-        Emitter::ClearInstructions();        
-        return 0;
-      }      
+			Runtime runtime(emitter.Emit());
+			runtime.Run();        
+			// clean up and exit
+			Emitter::ClearInstructions();        
+			return 0;
     }
 	}
   

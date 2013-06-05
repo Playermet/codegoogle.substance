@@ -32,7 +32,7 @@
 #ifndef __RUNTIME_H__
 #define __RUNTIME_H__
 
-#include "common.h"
+#include "emitter.h"
 
 /****************************
  * Runtime support structures
@@ -47,6 +47,7 @@ class Runtime {
   stack<Value*> execution_stack;
   stack<Value*> value_pool;
   vector<Instruction*> instructions;
+	unordered_map<long, size_t> jump_table;
   
   inline Value* GetPoolValue() {
     if(value_pool.empty()) {
@@ -73,19 +74,21 @@ class Runtime {
       wcerr << L">>> execution stack bounds exceeded <<<" << endl;
       exit(1);
     }
-
+		
     Value* value = execution_stack.top();
     execution_stack.pop();
     return value;
-  }
-
+	}
+  	
   // member operations
   void ExecuteAdd();
   void ExecuteMultiply();
-  
+	void ExecuteLess();
+	
  public:
-  Runtime(vector<Instruction*> instructions) {
-    this->instructions = instructions;
+	Runtime(ExecutableProgram *p) {
+    this->instructions = p->GetInstructions();
+		this->jump_table = p->GetJumpTable();
     for(size_t i = 0; i < EXECUTION_STACK_SIZE; ++i) {
       value_pool.push(new Value);
     }

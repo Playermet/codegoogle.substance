@@ -38,16 +38,45 @@
 /****************************
  * Translate trees to instructions
  ****************************/
+class ExecutableProgram {
+	vector<Instruction*> block_instructions; 
+	unordered_map<long, size_t> jump_table;	
+	
+ public:
+	ExecutableProgram(vector<Instruction*> block_instructions, 
+										unordered_map<long, size_t> jump_table) {
+		this->block_instructions = block_instructions;
+		this->jump_table = jump_table;
+	}
+	
+	~ExecutableProgram() {
+	}
+	
+	vector<Instruction*> &GetInstructions() {
+		return block_instructions; 
+	}
+	
+	unordered_map<long, size_t> &GetJumpTable() {
+		return jump_table;
+	}
+};
+
 class Emitter {
   StatementList* parsed_program;
   static vector<Instruction*> instruction_factory;
 	long label_id;
   
-  vector<Instruction*> EmitBlock(StatementList* statement_list);
-	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions);
-  void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions);
-  void EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions);
-  void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions);
+  void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
+								 unordered_map<long, size_t> &jump_table);
+	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 
+									 unordered_map<long, size_t> &jump_table);
+  void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
+											unordered_map<long, size_t> &jump_table);
+  void EmitReference(Reference* reference, bool is_store, 
+										 vector<Instruction*> &block_instructions, 
+										 unordered_map<long, size_t> &jump_table);
+  void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
+											unordered_map<long, size_t> &jump_table);
   
  public:
   Emitter(StatementList* parsed_program) {
@@ -106,7 +135,7 @@ class Emitter {
   
   static void ClearInstructions();
   
-  vector<Instruction*> Emit();
+   ExecutableProgram* Emit();
 };
 
 #endif
