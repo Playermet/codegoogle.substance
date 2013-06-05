@@ -36,14 +36,13 @@
  ****************************/
 void Runtime::Run()
 {
-	Value* frame[16];
-  Value *left, *right;
-  
 #ifdef _DEBUG
   wcerr << L"---------- Executing Code ---------" << endl;
 #endif
-  
-  size_t ip = 0;
+	
+	Value* frame[8];
+	size_t ip = 0;
+  Value *left, *right;
   Instruction* instruction = instructions[ip++];
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
@@ -51,35 +50,38 @@ void Runtime::Run()
       left = GetPoolValue();
       left->type = INT_VALUE;
       left->value.int_value = instruction->operand1;
-      PushValue(left);
 #ifdef _DEBUG
-			wcout << L"LOAD_INT_LIT: " << left->value.int_value  << endl;
+			wcout << L"LOAD_INT_LIT" << endl;
 #endif
+      PushValue(left);
       break;
       
     case LOAD_FLOAT_LIT:
       left = GetPoolValue();
       left->type = FLOAT_VALUE;
       left->value.float_value = instruction->operand3;
-      PushValue(left);
 #ifdef _DEBUG
-			wcout << L"LOAD_INT_LIT: " << left->value.float_value  << endl;
+			wcout << L"LOAD_FLOAT_LIT: " << endl;
 #endif
+      PushValue(left);
       break;
       
-    case LOAD_VAR:
+    case LOAD_VAR: {
 #ifdef _DEBUG
 			wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
-			PushValue(frame[instruction->operand1]);
+			Value* value = GetPoolValue();
+			memcpy(value, &(frame[instruction->operand1]), sizeof(Value));
+			PushValue(value);
+		}
       break;
       
     case STOR_VAR:
-      left = PopValue();
 #ifdef _DEBUG
 			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
-			frame[instruction->operand1] = left;
+      left = PopValue();
+			memcpy(&(frame[instruction->operand1]), left, sizeof(Value));
       break;
 
 		case LBL:
@@ -104,8 +106,12 @@ void Runtime::Run()
 				wcout << L"JMP: true" << endl;
 #endif
 				left = PopValue();
+				if(left->type != BOOL_TYPE) {
+					cerr << L">>> Expected a boolean value <<<" << endl;
+					exit(1);
+				}
 				if(left->value.int_value) {
-					ip = instruction->operand2;
+					ip = jump_table[instruction->operand2];
 				}
 				break;
 				
@@ -115,8 +121,12 @@ void Runtime::Run()
 				wcout << L"JMP: false" << endl;
 #endif
 				left = PopValue();
+				if(left->type != BOOL_TYPE) {
+					cerr << L">>> Expected a boolean value <<<" << endl;
+					exit(1);
+				}
 				if(!left->value.int_value) {
-					ip = instruction->operand2;
+					ip = jump_table[instruction->operand2];
 				}
 				break;
 			}
@@ -198,7 +208,7 @@ void Runtime::Run()
     }
     // update
     instruction = instructions[ip++];
-  }  
+  } 
 
 #ifdef _DEBUG
 	wcout << L"--------------------------" << endl;
@@ -388,12 +398,12 @@ void Runtime::ExecuteLess()
     switch(right->type) {
       // right
     case INT_VALUE:
-      left->type = INT_VALUE;
+      left->type = BOOL_TYPE;
       left->value.int_value = left->value.int_value < right->value.int_value;
       break;
       
     case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
+      left->type = BOOL_TYPE;
       left->value.float_value = left->value.int_value < right->value.float_value;
       break;
       
@@ -412,12 +422,12 @@ void Runtime::ExecuteLess()
     // right
     switch(right->type) {
     case INT_VALUE:
-      left->type = FLOAT_VALUE;
+      left->type = BOOL_TYPE;
        left->value.float_value = left->value.float_value < right->value.int_value;
       break;
 
     case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
+      left->type = BOOL_TYPE;
       left->value.float_value = left->value.float_value < right->value.float_value;
       break;
 
