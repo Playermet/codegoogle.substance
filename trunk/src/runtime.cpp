@@ -43,7 +43,7 @@ void Runtime::Run()
   wcerr << L"---------- Executing Code ---------" << endl;
 #endif
   
-  size_t ip = 0L;
+  size_t ip = 0;
   Instruction* instruction = instructions[ip++];
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
@@ -52,6 +52,9 @@ void Runtime::Run()
       left->type = INT_VALUE;
       left->value.int_value = instruction->operand1;
       PushValue(left);
+#ifdef _DEBUG
+			wcout << L"LOAD_INT_LIT: " << left->value.int_value  << endl;
+#endif
       break;
       
     case LOAD_FLOAT_LIT:
@@ -59,17 +62,66 @@ void Runtime::Run()
       left->type = FLOAT_VALUE;
       left->value.float_value = instruction->operand3;
       PushValue(left);
+#ifdef _DEBUG
+			wcout << L"LOAD_INT_LIT: " << left->value.float_value  << endl;
+#endif
       break;
       
     case LOAD_VAR:
+#ifdef _DEBUG
+			wcout << L"LOAD_VAR" << endl;
+#endif
 			PushValue(instruction->operand4);
       break;
       
     case STOR_VAR:
       left = PopValue();
-      memcpy(instruction->operand4, left, sizeof(Value));
+#ifdef _DEBUG
+			wcout << L"STOR_VAR: reference=" << instruction->operand4 << endl;
+#endif
+			instruction->operand4 = left;
       break;
 
+		case LBL:
+#ifdef _DEBUG
+			wcout << L"LBL" << endl;
+#endif
+			break;
+			
+		case JMP:
+			switch(instruction->operand1) {
+				// unconditional jump
+			case 0:
+#ifdef _DEBUG
+				wcout << L"JMP: unconditional" << endl;
+#endif
+				ip = instruction->operand2;
+				break;
+				
+				// jump true
+			case 1:
+#ifdef _DEBUG
+				wcout << L"JMP: true" << endl;
+#endif
+				left = PopValue();
+				if(left->value.int_value) {
+					ip = instruction->operand2;
+				}
+				break;
+				
+				// jump false
+			case -1:
+#ifdef _DEBUG
+				wcout << L"JMP: false" << endl;
+#endif
+				left = PopValue();
+				if(!left->value.int_value) {
+					ip = instruction->operand2;
+				}
+				break;
+			}
+			break;
+			
     case AND:
       break;
 
@@ -86,6 +138,10 @@ void Runtime::Run()
       break;
 
     case LES:
+#ifdef _DEBUG
+			wcout << L"LES" << endl;
+#endif
+			ExecuteLess();
       break;
       
     case GTR_EQL:
@@ -93,7 +149,11 @@ void Runtime::Run()
 
     case LES_EQL:
       break;
+			
     case ADD:
+#ifdef _DEBUG
+			wcout << L"ADD" << endl;
+#endif
       ExecuteAdd();
       break;
 
@@ -101,6 +161,9 @@ void Runtime::Run()
       break;
 
     case MUL:
+#ifdef _DEBUG
+			wcout << L"MUL" << endl;
+#endif
       ExecuteMultiply();
       break;
 
@@ -114,6 +177,9 @@ void Runtime::Run()
       break;
 
     case DUMP_VALUE:
+#ifdef _DEBUG
+			wcout << L"DUMP" << endl;
+#endif
       left = PopValue();
       switch(left->type) {
       case INT_VALUE:
@@ -133,13 +199,19 @@ void Runtime::Run()
     // update
     instruction = instructions[ip++];
   }  
+
+#ifdef _DEBUG
+	wcout << L"--------------------------" << endl;
+	wcout << L"ending stack pos=" << execution_stack.size() << endl;
+	wcout << L"pool size=" << value_pool.size() << endl;
+#endif
 }
 
 void Runtime::ExecuteAdd()
 {
-  Value* right = PopValue();
   Value* left = PopValue();
-  
+  Value* right = PopValue();
+	
   switch(left->type) {
     // left
   case INT_VALUE:
@@ -222,9 +294,9 @@ void Runtime::ExecuteAdd()
 
 void Runtime::ExecuteMultiply()
 {
-  Value* right = PopValue();
   Value* left = PopValue();
-  
+  Value* right = PopValue();
+	
   switch(left->type) {
     // left
   case INT_VALUE:
@@ -302,5 +374,90 @@ void Runtime::ExecuteMultiply()
     break;
   }
 
+  PushValue(left);
+}
+
+void Runtime::ExecuteLess()
+{
+  Value* left = PopValue();
+  Value* right = PopValue();
+  
+  switch(left->type) {
+    // left
+  case INT_VALUE:
+    switch(right->type) {
+      // right
+    case INT_VALUE:
+      left->type = INT_VALUE;
+      left->value.int_value = left->value.int_value < right->value.int_value;
+      break;
+      
+    case FLOAT_VALUE:
+      left->type = FLOAT_VALUE;
+      left->value.float_value = left->value.int_value < right->value.float_value;
+      break;
+      
+    case STRING_VALUE:
+      // TODO: implement
+      break;
+
+    default:
+      wcerr << ">>> invalid operation <<<" << endl;
+      break;
+    }
+    ReleasePoolValue(right);
+    break;
+    
+  case FLOAT_VALUE:
+    // right
+    switch(right->type) {
+    case INT_VALUE:
+      left->type = FLOAT_VALUE;
+       left->value.float_value = left->value.float_value < right->value.int_value;
+      break;
+
+    case FLOAT_VALUE:
+      left->type = FLOAT_VALUE;
+      left->value.float_value = left->value.float_value < right->value.float_value;
+      break;
+
+    case STRING_VALUE:
+      // TODO: implement
+      break;
+
+    default:
+      wcerr << ">>> invalid operation <<<" << endl;
+      break;
+    }
+    ReleasePoolValue(right);
+    break;
+
+  case STRING_VALUE:
+    // right
+    switch(right->type) {
+    case INT_VALUE:
+      // TODO: implement
+      break;
+
+    case FLOAT_VALUE:
+      // TODO: implement
+      break;
+
+    case STRING_VALUE:
+      // TODO: implement
+      break;
+
+    default:
+      wcerr << ">>> invalid operation <<<" << endl;
+      break;
+    }
+    ReleasePoolValue(right);
+    break;
+    
+  default:
+    wcerr << ">>> invalid operation <<<" << endl;
+    break;
+  }
+  
   PushValue(left);
 }
