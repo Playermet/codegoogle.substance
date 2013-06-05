@@ -36,7 +36,7 @@
  ****************************/
 void Runtime::Run()
 {
-  map<const wstring, Value*> local_table;
+	Value* frame[16];
   Value *left, *right;
   
 #ifdef _DEBUG
@@ -69,17 +69,17 @@ void Runtime::Run()
       
     case LOAD_VAR:
 #ifdef _DEBUG
-			wcout << L"LOAD_VAR" << endl;
+			wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
-			PushValue(instruction->operand4);
+			PushValue(frame[instruction->operand1]);
       break;
       
     case STOR_VAR:
       left = PopValue();
 #ifdef _DEBUG
-			wcout << L"STOR_VAR: reference=" << instruction->operand4 << endl;
+			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
-			instruction->operand4 = left;
+			frame[instruction->operand1] = left;
       break;
 
 		case LBL:

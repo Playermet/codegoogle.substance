@@ -42,35 +42,30 @@
  * Local symbol table
  ****************************/
 class InnerTable {
-	unordered_map<wstring, Value*> table;
+	unordered_map<wstring, int> table;
 	
  public:
 	InnerTable() {
 	}
 	
-	~InnerTable() {
-		unordered_map<wstring, Value*>::iterator iter;
-		for(iter = table.begin(); iter != table.end(); ++iter) {
-			delete[] iter->second;
-			iter->second = NULL;			
-		}
+	~InnerTable() {		
 	}
 	
-	void AddEntry(const wstring &name) {
-		table.insert(pair<wstring, Value*>(name, new Value));
+	void AddEntry(const wstring &name, int id) {
+		table.insert(pair<wstring, int>(name, id));
 	}
 
-	Value* GetEntry(const wstring &name) {
-		unordered_map<wstring, Value*>::iterator result = table.find(name);
+	int GetEntry(const wstring &name) {
+		unordered_map<wstring, int>::iterator result = table.find(name);
 		if(result != table.end()) {
 			return result->second;
 		}
 		
-		return NULL;
+		return -1;
 	}
 	
-	bool HasValue(const wstring &name) {
-		return GetEntry(name) != NULL;
+	bool HasEntry(const wstring &name) {
+		return GetEntry(name)  > -1;
 	}
 };
 
@@ -80,9 +75,11 @@ class InnerTable {
 class SymbolTable {
 	deque<InnerTable*> table_hierarchy;
 	vector<InnerTable*> all_tables;
+	int entry_id;
 	
  public:
 	SymbolTable() {
+		entry_id = 0;
 	}
 	
 	~SymbolTable() {
@@ -112,26 +109,30 @@ class SymbolTable {
 	
 	bool AddEntry(const wstring &name) {
 		if(!table_hierarchy.empty()) {
-			table_hierarchy.front()->AddEntry(name);
+			table_hierarchy.front()->AddEntry(name, entry_id++);
 			return true;
 		}
 
 		return false;
 	}
 	
-	Value* GetEntry(const wstring &name) {
+	int GetEntry(const wstring &name) {
 		for(size_t i = 0; i < table_hierarchy.size(); ++i) {
-			Value* value = table_hierarchy[i]->GetEntry(name);
-			if(value) {
+			int value = table_hierarchy[i]->GetEntry(name);
+			if(value > -1) {
 				return value;
 			}
 		}
 		
-		return NULL;
+		return -1;
 	}
 	
-	bool HasValue(wstring &name) {
-		return GetEntry(name) != NULL;
+	bool HasEntry(const wstring &name) {
+		return GetEntry(name) > -1;
+	}
+	
+	int GetEntryCount() {
+		return entry_id;
 	}
 };	
 
