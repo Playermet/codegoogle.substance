@@ -60,12 +60,46 @@ class Runtime {
 
     return value;
   }
-  
+
+#ifdef _DEBUG
+	void DumpValue(Value* value, bool is_push) {
+		if(is_push) {
+			wcout << "\t push: ";
+		}
+		else {
+			wcout << "\t pop: ";
+		}
+		
+		switch(value->type) {
+		case BOOL_TYPE:
+			wcout << "boolean=" << (value->value.int_value ? L"true" : L"false") << endl;
+			break;
+
+		case INT_VALUE:
+			wcout << "integer=" << value->value.int_value << endl;
+			break;
+			
+		case FLOAT_VALUE:
+			wcout << "float=" << value->value.float_value << endl;
+			break;
+
+		case STRING_VALUE:
+		case LIST_VALUE:
+		case HASH_VALUE:
+			wcout << "pointer=" << value->value.pointer_value << endl;
+			break;
+		}
+	}
+#endif
+	
   inline void ReleasePoolValue(Value* value) {
-    value_pool.push(value);
+		value_pool.push(value);
   }
 
   inline void PushValue(Value* value) {
+#ifdef _DEBUG
+		DumpValue(value, true);
+#endif
     execution_stack.push(value);
   }
   
@@ -75,7 +109,10 @@ class Runtime {
       exit(1);
     }
 		
-    Value* value = execution_stack.top();
+    Value* value = execution_stack.top();		
+#ifdef _DEBUG
+		DumpValue(value, false);
+#endif
     execution_stack.pop();
     return value;
 	}

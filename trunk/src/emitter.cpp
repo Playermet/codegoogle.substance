@@ -100,7 +100,7 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
     wcout << L"label: id=" << top_label << endl;
 #endif
 		block_instructions.push_back(MakeInstruction(LBL, (int)top_label));
-		jump_table.insert(pair<long, size_t>(top_label, block_instructions.size() - 1));
+		jump_table.insert(pair<long, size_t>(top_label, block_instructions.size()));
 	}
 	
 	// emit conditional expression
@@ -128,7 +128,7 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
     wcout << L"label: id=" << end_label << endl;
 #endif
 	block_instructions.push_back(MakeInstruction(LBL, (int)end_label));
-	jump_table.insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+	jump_table.insert(pair<long, size_t>(end_label, block_instructions.size()));
 }
 
 /****************************
