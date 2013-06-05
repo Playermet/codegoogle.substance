@@ -101,7 +101,6 @@ typedef struct _Instruction {
   int operand1;
   int operand2;
   double operand3;
-	struct _Value* operand4;
 } Instruction;
 
 /****************************

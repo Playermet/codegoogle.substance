@@ -46,6 +46,7 @@ ExecutableProgram* Emitter::Emit()
 	unordered_map<long, size_t> jump_table;
 	
 	EmitBlock(parsed_program, block_instructions, jump_table);
+  block_instructions.push_back(MakeInstruction(RTRN));
 
 	return new ExecutableProgram(block_instructions, jump_table);
 }
@@ -82,8 +83,6 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
       break;
     }
   }
-  
-  block_instructions.push_back(MakeInstruction(RTRN));
 }
 
 /****************************
@@ -156,16 +155,16 @@ void Emitter::EmitReference(Reference* reference, bool is_store,
   if(is_store) {
 #ifdef _DEBUG
     wcout << L"store: name='" << reference->GetName() 
-					<< L"', reference=" << reference->GetValue() << endl;
+					<< L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetValue()));
+    block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetId()));
   }
   else {
 #ifdef _DEBUG
     wcout << L"load: name='" << reference->GetName() 
-					<< L"', reference=" << reference->GetValue() << endl;
+					<< L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_VAR, reference->GetValue()));
+    block_instructions.push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
   }
 }
 

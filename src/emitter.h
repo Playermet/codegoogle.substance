@@ -123,15 +123,6 @@ class Emitter {
     
     return instruction;
   }
-
-	static Instruction* MakeInstruction(InstructionType type, Value* operand) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction->operand4 = operand;
-    instruction_factory.push_back(instruction);
-    
-    return instruction;
-  }
   
   static void ClearInstructions();
   

@@ -302,10 +302,12 @@ Statement* Parser::ParseAssignment(int depth)
     ProcessError(TOKEN_IDENT);
     return NULL;
   }
-  wstring identifier = scanner->GetToken()->GetIdentifier();
+  const wstring identifier = scanner->GetToken()->GetIdentifier();
   NextToken(); 
 	
-	symbol_table.AddEntry(identifier); 
+	if(!symbol_table.HasEntry(identifier)) {
+		symbol_table.AddEntry(identifier); 
+	}
   Reference* reference = ParseReference(identifier, depth + 1);
   
   if(!Match(TOKEN_ASSIGN)) {
@@ -612,9 +614,9 @@ Expression* Parser::ParseSimpleExpression(int depth)
   Expression* expression = NULL;
 
   if(Match(TOKEN_IDENT)) {
-    const wstring &ident = scanner->GetToken()->GetIdentifier();
+    const wstring &identifier = scanner->GetToken()->GetIdentifier();
     NextToken();
-    expression = ParseReference(ident, depth + 1);
+    expression = ParseReference(identifier, depth + 1);
   }
   else if(Match(TOKEN_THIS_ID)) {
     NextToken();
@@ -671,8 +673,8 @@ Expression* Parser::ParseSimpleExpression(int depth)
       break;
 
     case TOKEN_CHAR_STRING_LIT: {
-      const wstring &ident = scanner->GetToken()->GetIdentifier();
-      expression = TreeFactory::Instance()->MakeCharacterString(file_name, line_num, ident);
+      const wstring &identifier = scanner->GetToken()->GetIdentifier();
+      expression = TreeFactory::Instance()->MakeCharacterString(file_name, line_num, identifier);
       NextToken();
     }
       break;
@@ -711,14 +713,14 @@ Reference* Parser::ParseReference(int depth)
 #endif
 
 	// self reference
-	const wstring ident = L"@self";
-	Value* entry = symbol_table.GetEntry(ident);
-	if(!entry) {
-		ProcessError(L"Unknown refernce '" + ident + L"'");
+	const wstring identifier = L"@self";
+	int entry_id = symbol_table.GetEntry(identifier);
+	if(entry_id < 0) {
+		ProcessError(L"Unknown refernce '" + identifier + L"'");
 		return NULL;
 	}
 	
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, entry);
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, entry_id);
 
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
@@ -731,7 +733,7 @@ Reference* Parser::ParseReference(int depth)
 /****************************
  * Parses a instance reference.
  ****************************/
-Reference* Parser::ParseReference(const wstring &ident, int depth)
+Reference* Parser::ParseReference(const wstring &identifier, int depth)
 {
 	const int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
@@ -741,13 +743,13 @@ Reference* Parser::ParseReference(const wstring &ident, int depth)
 #endif
 	
 	// self reference
-	Value* entry = symbol_table.GetEntry(ident);
-	if(!entry) {
-		ProcessError(L"Unknown refernce '" + ident + L"'");
+	int entry_id = symbol_table.GetEntry(identifier);
+	if(entry_id < 0) {
+		ProcessError(L"Unknown refernce '" + identifier + L"'");
 		return NULL;
 	}
 	
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, ident, entry);
+  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
   if(Match(TOKEN_OPEN_BRACKET)) {
     inst_ref->SetIndices(ParseIndices(depth + 1));
   }
@@ -774,11 +776,11 @@ void Parser::ParseReference(Reference* reference, int depth)
     ProcessError(TOKEN_IDENT);
   }
   // identifier
-  const wstring &ident = scanner->GetToken()->GetIdentifier();
+  const wstring &identifier = scanner->GetToken()->GetIdentifier();
   NextToken();
 
   if(reference) {
-    reference->SetReference(ParseReference(ident, depth + 1));
+    reference->SetReference(ParseReference(identifier, depth + 1));
     // subsequent instance references
     if(Match(TOKEN_ASSESSOR)) {
       ParseReference(reference->GetReference(), depth + 1);
