@@ -154,7 +154,7 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"LES" << endl;
 #endif
-			ExecuteLess();
+//			ExecuteLess();
       break;
       
     case GTR_EQL:
@@ -167,7 +167,8 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"ADD" << endl;
 #endif
-      ExecuteAdd();
+// call add on lhs class
+//      ExecuteAdd();
       break;
 
     case SUB:
@@ -177,7 +178,8 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"MUL" << endl;
 #endif
-      ExecuteMultiply();
+// call mul on lhs class
+//      ExecuteMultiply();
       break;
 
     case DIV:
@@ -202,10 +204,6 @@ void Runtime::Run()
       case FLOAT_VALUE:
         wcout << L"type=float, value=" << left->value.float_value << endl;
         break;
-    
-      case STRING_VALUE:
-        wcout << L"type=string, value=" << (wchar_t*)left->value.pointer_value << endl;
-        break;
       }
       break;
     }
@@ -218,259 +216,4 @@ void Runtime::Run()
 	wcout << L"ending stack pos=" << execution_stack.size() << endl;
 	wcout << L"pool size=" << value_pool.size() << endl;
 #endif
-}
-
-void Runtime::ExecuteAdd()
-{
-  Value* left = PopValue();
-  Value* right = PopValue();
-	
-  switch(left->type) {
-    // left
-  case INT_VALUE:
-    switch(right->type) {
-      // right
-    case INT_VALUE:
-      left->type = INT_VALUE;
-      left->value.int_value += right->value.int_value;
-      break;
-      
-    case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value = left->value.int_value + right->value.float_value;
-      break;
-      
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  case FLOAT_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value = left->value.float_value + right->value.int_value;
-      break;
-
-    case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value += right->value.float_value;
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-
-  case STRING_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      // TODO: implement
-      break;
-
-    case FLOAT_VALUE:
-      // TODO: implement
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  default:
-    wcerr << ">>> invalid operation <<<" << endl;
-    break;
-  }
-  
-  PushValue(left);
-}
-
-void Runtime::ExecuteMultiply()
-{
-  Value* left = PopValue();
-  Value* right = PopValue();
-	
-  switch(left->type) {
-    // left
-  case INT_VALUE:
-    switch(right->type) {
-      // right
-    case INT_VALUE:
-      left->type = INT_VALUE;
-      left->value.int_value *= right->value.int_value;
-      break;
-      
-    case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value = left->value.int_value * right->value.float_value;
-      break;
-      
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  case FLOAT_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value = left->value.float_value * right->value.int_value;
-      break;
-
-    case FLOAT_VALUE:
-      left->type = FLOAT_VALUE;
-      left->value.float_value *= right->value.float_value;
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-
-  case STRING_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      // TODO: implement
-      break;
-
-    case FLOAT_VALUE:
-      // TODO: implement
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  default:
-    wcerr << ">>> invalid operation <<<" << endl;
-    break;
-  }
-
-  PushValue(left);
-}
-
-void Runtime::ExecuteLess()
-{
-  Value* left = PopValue();
-  Value* right = PopValue();
-  
-  switch(left->type) {
-    // left
-  case INT_VALUE:
-    switch(right->type) {
-      // right
-    case INT_VALUE:
-      left->type = BOOL_TYPE;
-      left->value.int_value = left->value.int_value < right->value.int_value;
-      break;
-      
-    case FLOAT_VALUE:
-      left->type = BOOL_TYPE;
-      left->value.float_value = left->value.int_value < right->value.float_value;
-      break;
-      
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  case FLOAT_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      left->type = BOOL_TYPE;
-       left->value.float_value = left->value.float_value < right->value.int_value;
-      break;
-
-    case FLOAT_VALUE:
-      left->type = BOOL_TYPE;
-      left->value.float_value = left->value.float_value < right->value.float_value;
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-
-  case STRING_VALUE:
-    // right
-    switch(right->type) {
-    case INT_VALUE:
-      // TODO: implement
-      break;
-
-    case FLOAT_VALUE:
-      // TODO: implement
-      break;
-
-    case STRING_VALUE:
-      // TODO: implement
-      break;
-
-    default:
-      wcerr << ">>> invalid operation <<<" << endl;
-      break;
-    }
-    ReleasePoolValue(right);
-    break;
-    
-  default:
-    wcerr << ">>> invalid operation <<<" << endl;
-    break;
-  }
-  
-  PushValue(left);
 }
