@@ -143,14 +143,14 @@ class Parser {
 	wstring input;
   Scanner* scanner;
 	SymbolTable symbol_table;
-	map<TokenType, wstring> error_msgs;
+	map<ScannerTokenType, wstring> error_msgs;
   map<int, wstring> errors;
 	
   inline void NextToken() {
     scanner->NextToken();
   }
 
-  inline bool Match(enum TokenType type, int index = 0) {
+  inline bool Match(enum ScannerTokenType type, int index = 0) {
     return scanner->GetToken(index)->GetType() == type;
   }
 
@@ -162,7 +162,7 @@ class Parser {
     return scanner->GetToken()->GetFileName();
   }
 	
-  inline enum TokenType GetToken(int index = 0) {
+  inline enum ScannerTokenType GetToken(int index = 0) {
     return scanner->GetToken(index)->GetType();
   }
 
@@ -181,10 +181,10 @@ class Parser {
 	
   // error processing
   void LoadErrorCodes();
-  void ProcessError(const TokenType type);
+  void ProcessError(const ScannerTokenType type);
   void ProcessError(const wstring &msg);
   void ProcessError(const wstring &msg, ParseNode* node);
-  void ProcessError(const wstring &msg, const TokenType sync);
+  void ProcessError(const wstring &msg, const ScannerTokenType sync);
   bool CheckErrors();
 	
   // parsing operations

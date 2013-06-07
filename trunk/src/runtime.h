@@ -64,36 +64,36 @@ class Runtime {
 #ifdef _DEBUG
 	void DumpValue(Value* value, bool is_push) {
 		if(is_push) {
-			wcout << "\t push: ";
+			wcout << L"\t push: ";
 		}
 		else {
-			wcout << "\t pop: ";
+			wcout << L"\t pop: ";
 		}
 		
 		switch(value->type) {
 		case BOOL_TYPE:
-			wcout << "boolean=" << (value->value.int_value ? L"true" : L"false") << endl;
+			wcout << L"boolean=" << (value->value.int_value ? L"true" : L"false") << endl;
 			break;
 
 		case INT_VALUE:
-			wcout << "integer=" << value->value.int_value << endl;
+			wcout << L"integer=" << value->value.int_value << endl;
 			break;
 			
 		case FLOAT_VALUE:
-			wcout << "float=" << value->value.float_value << endl;
+			wcout << L"float=" << value->value.float_value << endl;
 			break;
 
 		case STRING_VALUE:
 		case LIST_VALUE:
 		case HASH_VALUE:
-			wcout << "pointer=" << value->value.pointer_value << endl;
+			wcout << L"pointer=" << value->value.pointer_value << endl;
 			break;
 		}
 	}
 #endif
 	
   inline void ReleasePoolValue(Value* value) {
-		value_pool.push(value);
+    value_pool.push(value);
   }
 
   inline void PushValue(Value* value) {

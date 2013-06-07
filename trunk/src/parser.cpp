@@ -53,7 +53,7 @@ void Parser::LoadErrorCodes()
 /****************************
  * Emits parsing error.
  ****************************/
-void Parser::ProcessError(TokenType type)
+void Parser::ProcessError(ScannerTokenType type)
 {
   wstring msg = error_msgs[type];
 #ifdef _DEBUG
@@ -83,7 +83,7 @@ void Parser::ProcessError(const wstring &msg)
 /****************************
  * Emits parsing error.
  ****************************/
-void Parser::ProcessError(const wstring &msg, TokenType sync)
+void Parser::ProcessError(const wstring &msg, ScannerTokenType sync)
 {
 #ifdef _DEBUG
   wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
@@ -94,7 +94,7 @@ void Parser::ProcessError(const wstring &msg, TokenType sync)
   errors.insert(pair<int, wstring>(GetLineNumber(),
 				   GetFileName() + L":" + str_line_num +
 				   L": " + msg));
-  TokenType token = GetToken();
+  ScannerTokenType token = GetToken();
   while(token != sync && token != TOKEN_END_OF_STREAM) {
     NextToken();
     token = GetToken();

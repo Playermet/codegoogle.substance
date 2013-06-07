@@ -48,7 +48,7 @@ using namespace std;
 /****************************
  * Token types
  ****************************/
-enum TokenType {
+enum ScannerTokenType {
   // misc
   TOKEN_END_OF_STREAM = -1000,
   TOKEN_NO_INPUT,
@@ -100,7 +100,7 @@ enum TokenType {
  ****************************/
 class Token {
  private:
-  enum TokenType token_type;
+  enum ScannerTokenType token_type;
   wstring ident;
 	int line_num;
   wstring file_name;
@@ -177,11 +177,11 @@ class Token {
     return ident;
   }
 
-  inline const enum TokenType GetType() {
+  inline const enum ScannerTokenType GetType() {
     return token_type;
   }
 
-  inline void SetType(enum TokenType t) {
+  inline void SetType(enum ScannerTokenType t) {
     token_type = t;
   }
 };
@@ -209,7 +209,7 @@ class Scanner {
   // input characters
   wchar_t cur_char, nxt_char, nxt_nxt_char;
   // map of reserved identifiers
-  map<const wstring, enum TokenType> ident_map;
+  map<const wstring, enum ScannerTokenType> ident_map;
   // array of tokens for lookahead
   Token* tokens[LOOK_AHEAD];
 	

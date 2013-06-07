@@ -45,9 +45,11 @@ int main(int argc, const char* argv[]) {
 			Runtime runtime(emitter.Emit());
 			runtime.Run();        
 			// clean up and exit
-			Emitter::ClearInstructions();        
+			Emitter::ClearInstructions();
 			return 0;
     }
+
+    return 1;
 	}
   
   // clean up and exit
