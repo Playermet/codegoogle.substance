@@ -96,7 +96,7 @@ void Scanner::CheckIdentifier(int index)
   const int length = end_pos - start_pos;
   wstring ident(buffer, start_pos, length);
   // check wstring
-  enum TokenType ident_type = ident_map[ident];
+  enum ScannerTokenType ident_type = ident_map[ident];
   switch(ident_type) {
 	case TOKEN_IF_ID:
 	case TOKEN_WHILE_ID:
@@ -125,7 +125,11 @@ void Scanner::ReadLine(const wstring &line)
 {
   buffer_pos = 0;
   buffer = new wchar_t[line.size() + 1];
+#ifdef _WIN32
+  wcsncpy_s(buffer, line.size(), line.c_str(), _TRUNCATE);
+#else
   wcsncpy(buffer, line.c_str(), line.size());
+#endif
   buffer[line.size()] = '\0';
   buffer_size = line.size() + 1;
 #ifdef _DEBUG

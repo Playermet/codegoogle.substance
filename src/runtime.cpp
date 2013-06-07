@@ -41,6 +41,10 @@ void Runtime::Run()
 #endif
 	
 	Value* frame[8];
+  for(int i = 0; i < 8; i++) {
+    frame[i] = new Value;
+  }
+
 	size_t ip = 0;
   Value *left, *right;
   Instruction* instruction = instructions[ip++];
@@ -66,14 +70,13 @@ void Runtime::Run()
       PushValue(left);
       break;
       
-    case LOAD_VAR: {
+    case LOAD_VAR:
 #ifdef _DEBUG
 			wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
-			Value* value = GetPoolValue();
-			memcpy(value, &(frame[instruction->operand1]), sizeof(Value));
-			PushValue(value);
-		}
+      left = GetPoolValue();
+      memcpy(left, frame[instruction->operand1], sizeof(Value));
+			PushValue(left);
       break;
       
     case STOR_VAR:
@@ -81,7 +84,7 @@ void Runtime::Run()
 			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-			memcpy(&(frame[instruction->operand1]), left, sizeof(Value));
+      memcpy(frame[instruction->operand1], left, sizeof(Value));
       break;
 
 		case LBL:
@@ -253,7 +256,7 @@ void Runtime::ExecuteAdd()
     switch(right->type) {
     case INT_VALUE:
       left->type = FLOAT_VALUE;
-       left->value.float_value = left->value.float_value + right->value.int_value;
+      left->value.float_value = left->value.float_value + right->value.int_value;
       break;
 
     case FLOAT_VALUE:
