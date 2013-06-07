@@ -83,10 +83,8 @@ class Runtime {
 			wcout << L"float=" << value->value.float_value << endl;
 			break;
 
-		case STRING_VALUE:
-		case LIST_VALUE:
-		case HASH_VALUE:
-			wcout << L"pointer=" << value->value.pointer_value << endl;
+		case CLS_VALUE:
+			wcout << L"class: reference=" << value->value.pointer_value << endl;
 			break;
 		}
 	}
@@ -118,9 +116,7 @@ class Runtime {
 	}
   	
   // member operations
-  void ExecuteAdd();
-  void ExecuteMultiply();
-	void ExecuteLess();
+  
 	
  public:
 	Runtime(ExecutableProgram *p) {

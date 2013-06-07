@@ -53,5 +53,8 @@
     <ClInclude Include="..\tree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\classes\class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -107,12 +107,12 @@ typedef struct _Instruction {
  * Runtime types and values
  ****************************/
 enum RuntimeType {
-	BOOL_TYPE,
+	BOOL_TYPE = -512,
   INT_VALUE,
   FLOAT_VALUE,
-  STRING_VALUE,
-	LIST_VALUE,
-	HASH_VALUE
+  INT_ARY_VALUE,
+  FLOAT_ARY_VALUE,
+  CLS_VALUE
 };
 
 typedef union _BaseValue {
