@@ -51,7 +51,7 @@
 void Runtime::Run()
 {
 #ifdef _DEBUG
-  wcerr << L"---------- Executing Code ---------" << endl;
+  wcout << L"---------- Executing Code ---------" << endl;
 #endif
 	
   // runtime variables
@@ -118,7 +118,7 @@ void Runtime::Run()
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional" << endl;
 #endif
-				ip = instruction->operand2;
+				ip = jump_table[instruction->operand2];
 				break;
 				
 				// jump true

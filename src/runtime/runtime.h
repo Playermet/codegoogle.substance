@@ -32,7 +32,7 @@
 #ifndef __RUNTIME_H__
 #define __RUNTIME_H__
 
-#include "classes/class.h"
+#include "classes.h"
 
 /****************************
  * Runtime support structures
