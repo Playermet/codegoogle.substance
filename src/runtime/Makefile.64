@@ -4,13 +4,19 @@ ARGS=-O3 -Wall -Wno-unused-function -Wno-unused-function
 CC=g++
 AR=ar
 SRC=runtime.o
-LIB=../parser.a
+OBJ_LIBS=classes.a
+CLASSES_PATH=classes
+LIB=../runtime.a
 
-$(LIB): $(SRC)
+$(LIB): $(SRC) $(OBJ_LIBS)
 	$(AR) -cvq $(LIB) $(SRC)
+
+classes.a:
+	cd $(CLASSES_PATH); make
 
 %.o: %.cpp
 	$(CC) -m64 $(ARGS) -c $< 
 
 clean:
+	cd $(CLASSES_PATH); make clean
 	rm -f *.o *~ $(LIB)
