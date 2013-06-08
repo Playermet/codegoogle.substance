@@ -1,16 +1,28 @@
+ARGS=-O3 -pthread -Wall -Wno-unused-function
+# ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+
 CC=g++
-# ARGS=-g -D_SYSTEM -D_DEBUG -Wall -Wno-unused-function
-ARGS=-g -D_DEBUG -Wall -Wno-unused-function
-# ARGS=-O3 -Wall -Wno-unused-function
-SRC=scanner.o tree.o parser.o emitter.o runtime.o substance.o
+SRC=substance.o
+OBJ_LIBS= parser.a runtime.a
+PARSER_PATH=parser
+RUNTIME_PATH=runtime
+EXE=subsc
 
-EXE=subc
+$(EXE): $(SRC) $(OBJ_LIBS)
+	$(CC) -m32 -o $(EXE) $(SRC) $(OBJ_LIBS) 
+#	$(CC) -m32 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 
-$(EXE): $(SRC)
-	$(CC) -m32 -o $(EXE) $(SRC)
-
+parser.a:
+	cd $(PARSER_PATH); make	
+	
+runtime.a:
+	cd $(RUNTIME_PATH); make	
+	
 %.o: %.cpp
 	$(CC) -m32 $(ARGS) -c $< 
 
 clean:
-	rm -f $(EXE) *.o *~
+	cd $(PARSER_PATH); make clean
+	cd $(RUNTIME_PATH); make clean
+	rm -f $(EXE).exe $(EXE) *.exe *.o *~
+
