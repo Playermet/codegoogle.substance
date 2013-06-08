@@ -63,6 +63,7 @@ namespace std {
 
 using namespace std;
 
+class RuntimeClass;
 struct _Value;
 
 /****************************
@@ -107,7 +108,7 @@ typedef struct _Instruction {
  * Runtime types and values
  ****************************/
 enum RuntimeType {
-	BOOL_TYPE = -512,
+	BOOL_VALUE = -512,
   INT_VALUE,
   FLOAT_VALUE,
   INT_ARY_VALUE,
@@ -115,17 +116,49 @@ enum RuntimeType {
   CLS_VALUE
 };
 
+/****************************
+ * Runtime values
+ ****************************/
 typedef union _BaseValue {
   int int_value;
   double float_value;
   void* pointer_value;
 } BaseValue;
 
-// runtime execution values
+/****************************
+ * 'Abstract' value type
+ ****************************/
 typedef struct _Value {
   RuntimeType type;
   BaseValue value;
+  RuntimeClass* klass;
 } Value;
+
+/****************************
+ * Holder for runtime program
+ ****************************/
+class ExecutableProgram {
+	vector<Instruction*> block_instructions; 
+	unordered_map<long, size_t> jump_table;	
+	
+ public:
+	ExecutableProgram(vector<Instruction*> block_instructions, 
+										unordered_map<long, size_t> jump_table) {
+		this->block_instructions = block_instructions;
+		this->jump_table = jump_table;
+	}
+	
+	~ExecutableProgram() {
+	}
+	
+	vector<Instruction*> &GetInstructions() {
+		return block_instructions; 
+	}
+	
+	unordered_map<long, size_t> &GetJumpTable() {
+		return jump_table;
+	}
+};
 
 /****************************
  * Utility functions

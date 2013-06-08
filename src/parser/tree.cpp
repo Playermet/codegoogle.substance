@@ -1,11 +1,11 @@
 /***************************************************************************
- * Language starting point
+ * Debugger parse tree.
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met
+ * modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
@@ -29,30 +29,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#include "parser/parser.h"
-#include "parser/emitter.h"
-#include "runtime/runtime.h"
+#include "tree.h"
 
-int main(int argc, const char* argv[]) {
-	if(argc == 2) {
-    // parse program
-		Parser parser(BytesToUnicode(argv[1]));
-		StatementList* parsed_program = parser.Parse();    
-    // emit code
-    if(parsed_program) {
-			// emit and run code
-      Emitter emitter(parsed_program);
-			Runtime runtime(emitter.Emit());
-			runtime.Run();        
-			// clean up and exit
-			Emitter::ClearInstructions();
-			return 0;
-    }
+/****************************
+ * TreeFactory class
+ ****************************/
+TreeFactory* TreeFactory::instance;
 
-    return 1;
-	}
-  
-  // clean up and exit
-  Emitter::ClearInstructions();  
-	return 1;
+TreeFactory* TreeFactory::Instance()
+{
+  if(!instance) {
+    instance = new TreeFactory;
+  }
+
+  return instance;
 }
