@@ -39,74 +39,76 @@
  * Translate trees to instructions
  ****************************/
 
-class Emitter {
-  StatementList* parsed_program;
-  static vector<Instruction*> instruction_factory;
-	long label_id;
+namespace compiler {
+  class Emitter {
+    StatementList* parsed_program;
+    static vector<Instruction*> instruction_factory;
+	  long label_id;
   
-  void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
-                          unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
-  void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
-								 unordered_map<long, size_t> &jump_table);
-	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 
-									 unordered_map<long, size_t> &jump_table);
-  void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
-											unordered_map<long, size_t> &jump_table);
-  void EmitReference(Reference* reference, bool is_store, 
-										 vector<Instruction*> &block_instructions, 
-										 unordered_map<long, size_t> &jump_table);
-  void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
-											unordered_map<long, size_t> &jump_table);
+    void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
+                            unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
+    void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
+								   unordered_map<long, size_t> &jump_table);
+	  void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 
+									   unordered_map<long, size_t> &jump_table);
+    void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
+											  unordered_map<long, size_t> &jump_table);
+    void EmitReference(Reference* reference, bool is_store, 
+										   vector<Instruction*> &block_instructions, 
+										   unordered_map<long, size_t> &jump_table);
+    void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
+											  unordered_map<long, size_t> &jump_table);
   
- public:
-  Emitter(StatementList* parsed_program) {
-    this->parsed_program = parsed_program;
-		label_id = 0;
-  }
+   public:
+    Emitter(StatementList* parsed_program) {
+      this->parsed_program = parsed_program;
+		  label_id = 0;
+    }
   
-  ~Emitter() {
-  }
+    ~Emitter() {
+    }
 
-  static Instruction* MakeInstruction(InstructionType type) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction_factory.push_back(instruction);
+    static Instruction* MakeInstruction(InstructionType type) {
+      Instruction* instruction = new Instruction;
+      instruction->type = type;
+      instruction_factory.push_back(instruction);
     
-    return instruction;
-  }
+      return instruction;
+    }
 	
-  static Instruction* MakeInstruction(InstructionType type, int operand) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction->operand1 = operand;
-    instruction_factory.push_back(instruction);
+    static Instruction* MakeInstruction(InstructionType type, int operand) {
+      Instruction* instruction = new Instruction;
+      instruction->type = type;
+      instruction->operand1 = operand;
+      instruction_factory.push_back(instruction);
     
-    return instruction;
-  }
+      return instruction;
+    }
 
-  static Instruction* MakeInstruction(InstructionType type, int operand1, int operand2) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction->operand1 = operand1;
-    instruction->operand2 = operand2;
-    instruction_factory.push_back(instruction);
+    static Instruction* MakeInstruction(InstructionType type, int operand1, int operand2) {
+      Instruction* instruction = new Instruction;
+      instruction->type = type;
+      instruction->operand1 = operand1;
+      instruction->operand2 = operand2;
+      instruction_factory.push_back(instruction);
     
-    return instruction;
+      return instruction;
 
-  }
+    }
   
-  static Instruction* MakeInstruction(InstructionType type, double operand) {
-    Instruction* instruction = new Instruction;
-    instruction->type = type;
-    instruction->operand3 = operand;
-    instruction_factory.push_back(instruction);
+    static Instruction* MakeInstruction(InstructionType type, double operand) {
+      Instruction* instruction = new Instruction;
+      instruction->type = type;
+      instruction->operand3 = operand;
+      instruction_factory.push_back(instruction);
     
-    return instruction;
-  }
+      return instruction;
+    }
   
-  static void ClearInstructions();
+    static void ClearInstructions();
   
-   ExecutableProgram* Emit();
-};
+     ExecutableProgram* Emit();
+  };
+ }
 
 #endif

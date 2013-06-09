@@ -16,7 +16,7 @@
     <ClCompile Include="..\parser\scanner.cpp" />
     <ClCompile Include="..\parser\tree.cpp" />
     <ClCompile Include="..\runtime\classes.cpp" />
-    <ClCompile Include="..\runtime\jit\ia32\jit_ia32_compiler.cpp" />
+    <ClCompile Include="..\runtime\jit\ia32\jit_ia32.cpp" />
     <ClCompile Include="..\runtime\runtime.cpp" />
     <ClCompile Include="..\substance.cpp" />
   </ItemGroup>
@@ -27,7 +27,7 @@
     <ClInclude Include="..\parser\scanner.h" />
     <ClInclude Include="..\parser\tree.h" />
     <ClInclude Include="..\runtime\classes.h" />
-    <ClInclude Include="..\runtime\jit\ia32\jit_ia32_compiler.h" />
+    <ClInclude Include="..\runtime\jit\ia32\jit_ia32.h" />
     <ClInclude Include="..\runtime\jit\jit_common.h" />
     <ClInclude Include="..\runtime\runtime.h" />
   </ItemGroup>

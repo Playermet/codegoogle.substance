@@ -36,16 +36,16 @@
 int main(int argc, const char* argv[]) {
 	if(argc == 2) {
     // parse program
-		Parser parser(BytesToUnicode(argv[1]));
-		StatementList* parsed_program = parser.Parse();    
+		compiler::Parser parser(BytesToUnicode(argv[1]));
+		compiler::StatementList* parsed_program = parser.Parse();    
     // emit code
     if(parsed_program) {
 			// emit and run code
-      Emitter emitter(parsed_program);
-			Runtime runtime(emitter.Emit());
+      compiler::Emitter emitter(parsed_program);
+			runtime::Runtime runtime(emitter.Emit());
 			runtime.Run();        
 			// clean up and exit
-			Emitter::ClearInstructions();
+			compiler::Emitter::ClearInstructions();
 			return 0;
     }
 
@@ -53,6 +53,6 @@ int main(int argc, const char* argv[]) {
 	}
   
   // clean up and exit
-  Emitter::ClearInstructions();  
+  compiler::Emitter::ClearInstructions();  
 	return 1;
 }

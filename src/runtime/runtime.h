@@ -34,106 +34,108 @@
 
 #include "classes.h"
 
-/****************************
- * Runtime support structures
- ****************************/
-// size of execution stack
-#define EXECUTION_STACK_SIZE 128
+namespace runtime {
+  /****************************
+   * Runtime support structures
+   ****************************/
+  // size of execution stack
+  #define EXECUTION_STACK_SIZE 128
 
-/****************************
- * Execution engine
- ****************************/
-class Runtime {
-  stack<Value*> execution_stack;
-  stack<Value*> value_pool;
-  vector<Instruction*> instructions;
-	unordered_map<long, size_t> jump_table;
+  /****************************
+   * Execution engine
+   ****************************/
+  class Runtime {
+    stack<Value*> execution_stack;
+    stack<Value*> value_pool;
+    vector<Instruction*> instructions;
+	  unordered_map<long, size_t> jump_table;
   
-  inline Value* GetPoolValue() {
-    if(value_pool.empty()) {
-      wcerr << L">>> execution value pool empty <<<" << endl;
-      exit(1);
-    }
+    inline Value* GetPoolValue() {
+      if(value_pool.empty()) {
+        wcerr << L">>> execution value pool empty <<<" << endl;
+        exit(1);
+      }
     
-    Value* value = value_pool.top();
-    value_pool.pop();
-
-    return value;
-  }
-
-#ifdef _DEBUG
-	void DumpValue(Value* value, bool is_push) {
-		if(is_push) {
-			wcout << L"  push: ";
-		}
-		else {
-			wcout << L"  pop: ";
-		}
-		
-		switch(value->type) {
-		case BOOL_VALUE:
-			wcout << L"boolean=" << (value->value.int_value ? L"true" : L"false") << endl;
-			break;
-
-		case INT_VALUE:
-			wcout << L"integer=" << value->value.int_value << endl;
-			break;
-			
-		case FLOAT_VALUE:
-			wcout << L"float=" << value->value.float_value << endl;
-			break;
-		}
-	}
-#endif
-	
-  inline void ReleasePoolValue(Value* value) {
-    value_pool.push(value);
-  }
-
-  inline void PushValue(Value* value) {
-#ifdef _DEBUG
-		DumpValue(value, true);
-#endif
-    execution_stack.push(value);
-  }
-  
-  Value* PopValue() {
-    if(execution_stack.empty()) {
-      wcerr << L">>> execution stack bounds exceeded <<<" << endl;
-      exit(1);
-    }
-		
-    Value* value = execution_stack.top();		
-#ifdef _DEBUG
-		DumpValue(value, false);
-#endif
-    execution_stack.pop();
-    return value;
-	}
-  	
-  // member operations
-  void Add();
-	
- public:
-	Runtime(ExecutableProgram *p) {
-    this->instructions = p->GetInstructions();
-		this->jump_table = p->GetJumpTable();
-    for(size_t i = 0; i < EXECUTION_STACK_SIZE; ++i) {
-      value_pool.push(new Value);
-    }
-  }
-  
-  ~Runtime() {
-    while(!value_pool.empty()) {
-      Value* tmp = value_pool.top();
+      Value* value = value_pool.top();
       value_pool.pop();
-      // delete
-      delete tmp;
-      tmp = NULL;
+
+      return value;
     }
-  }
+
+  #ifdef _DEBUG
+	  void DumpValue(Value* value, bool is_push) {
+		  if(is_push) {
+			  wcout << L"  push: ";
+		  }
+		  else {
+			  wcout << L"  pop: ";
+		  }
+		
+		  switch(value->type) {
+		  case BOOL_VALUE:
+			  wcout << L"boolean=" << (value->value.int_value ? L"true" : L"false") << endl;
+			  break;
+
+		  case INT_VALUE:
+			  wcout << L"integer=" << value->value.int_value << endl;
+			  break;
+			
+		  case FLOAT_VALUE:
+			  wcout << L"float=" << value->value.float_value << endl;
+			  break;
+		  }
+	  }
+  #endif
+	
+    inline void ReleasePoolValue(Value* value) {
+      value_pool.push(value);
+    }
+
+    inline void PushValue(Value* value) {
+  #ifdef _DEBUG
+		  DumpValue(value, true);
+  #endif
+      execution_stack.push(value);
+    }
   
-  void Run();
-};
+    Value* PopValue() {
+      if(execution_stack.empty()) {
+        wcerr << L">>> execution stack bounds exceeded <<<" << endl;
+        exit(1);
+      }
+		
+      Value* value = execution_stack.top();		
+  #ifdef _DEBUG
+		  DumpValue(value, false);
+  #endif
+      execution_stack.pop();
+      return value;
+	  }
+  	
+    // member operations
+    void Add();
+	
+   public:
+	  Runtime(ExecutableProgram *p) {
+      this->instructions = p->GetInstructions();
+		  this->jump_table = p->GetJumpTable();
+      for(size_t i = 0; i < EXECUTION_STACK_SIZE; ++i) {
+        value_pool.push(new Value);
+      }
+    }
+  
+    ~Runtime() {
+      while(!value_pool.empty()) {
+        Value* tmp = value_pool.top();
+        value_pool.pop();
+        // delete
+        delete tmp;
+        tmp = NULL;
+      }
+    }
+  
+    void Run();
+  };
+}
 
 #endif

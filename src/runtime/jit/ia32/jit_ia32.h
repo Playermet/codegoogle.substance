@@ -119,7 +119,7 @@ namespace jit {
     RegType type;
     long operand;
     RegisterHolder* holder;
-    StackInstr* instr;
+    JitInstruction* instr;
 
   public:    
     RegInstr(RegisterHolder* h) {
@@ -133,7 +133,7 @@ namespace jit {
       instr = NULL;
     }  
 
-    RegInstr(StackInstr* si, double* da) {
+    RegInstr(JitInstruction* si, double* da) {
       type = IMM_FLOAT;
       operand = (long)da;
       holder = NULL;
@@ -145,7 +145,7 @@ namespace jit {
       operand = o;
     }
 
-    RegInstr(StackInstr* si) {
+    RegInstr(JitInstruction* si) {
       switch(si->GetType()) {
       case LOAD_CHAR_LIT:
       case LOAD_INT_LIT:
@@ -169,15 +169,12 @@ namespace jit {
       case STOR_CLS_INST_INT_VAR:
       case LOAD_FUNC_VAR:
       case STOR_FUNC_VAR:
-      case COPY_LOCL_INT_VAR: 
-      case COPY_CLS_INST_INT_VAR:
         type = MEM_INT;
         operand = si->GetOperand3();
         break;
 
       case LOAD_FLOAT_VAR:
       case STOR_FLOAT_VAR:
-      case COPY_FLOAT_VAR:
         type = MEM_FLOAT;
         operand = si->GetOperand3();
         break;
@@ -195,7 +192,7 @@ namespace jit {
     ~RegInstr() {
     }
 
-    StackInstr* GetInstruction() {
+    JitInstruction* GetInstruction() {
       return instr;
     }
 
@@ -224,13 +221,14 @@ namespace jit {
   * JIT compiler class
   ********************************/
   class JitCompiler {
+    vector<JitInstruction*> block_instrs;
     deque<RegInstr*> working_stack;
     vector<RegisterHolder*> aval_regs;
     list<RegisterHolder*> used_regs;
     stack<RegisterHolder*> aux_regs;
     vector<RegisterHolder*> aval_xregs;
     list<RegisterHolder*> used_xregs;
-    unordered_map<int32_t, StackInstr*> jump_table;
+    unordered_map<int32_t, JitInstruction*> jump_table;
     int32_t local_space;
     int32_t instr_count;
     unsigned char* code;
@@ -248,13 +246,13 @@ namespace jit {
   #ifdef _WIN32
         code = (unsigned char*)realloc(code, code_buf_max * 2); 
         if(!code) {
-          wcerr << L"Unable to allocate memory!" << endl;
+          wcerr << L"Unable to allocate memory!" << std::endl;
           exit(1);
         }
   #else
         unsigned char* tmp;	
         if(posix_memalign((void**)&tmp, OUR_PAGE_SIZE, code_buf_max * 2)) {
-          wcerr << L"Unable to reallocate JIT memory!" << endl;
+          wcerr << L"Unable to reallocate JIT memory!" << std::endl;
           exit(1);
         }
         memcpy(tmp, code, code_index);
@@ -372,7 +370,7 @@ namespace jit {
 
         // should never happen for esp
       case ESP:
-        wcerr << L">>> invalid register reference <<<" << endl;
+        wcerr << L">>> invalid register reference <<<" << std::endl;
         exit(1);
         break;
       }
@@ -495,7 +493,7 @@ namespace jit {
         break;
 
       default:
-        wcerr << L"internal error" << endl;
+        wcerr << L"internal error" << std::endl;
         exit(1);
         break;
       }
@@ -506,9 +504,14 @@ namespace jit {
       code = code | reg_id;
     }
 
-    void ProcessIntCalculation(StackInstr* instruction);
-    void ProcessFloatCalculation(StackInstr* instruction);
-    RegInstr* ProcessIntFold(long left_imm, long right_imm, jit::InstructionType type);
+    void Prolog();
+    void Epilog(int32_t imm);
+    void ProcessInstructions();
+    void ProcessLoad(JitInstruction* instr);
+    void ProcessStore(JitInstruction* instruction);
+    void ProcessIntCalculation(JitInstruction* instruction);
+    void ProcessFloatCalculation(JitInstruction* instruction);
+    RegInstr* ProcessIntFold(long left_imm, long right_imm, JitInstructionType type);
 
     /***********************************
     * Gets an avaiable register from
@@ -523,7 +526,7 @@ namespace jit {
         else {
           compile_success = false;
   #ifdef _DEBUG
-          wcout << L">>> No general registers avaiable! <<<" << endl;
+          std::wcout << L">>> No general registers avaiable! <<<" << std::endl;
   #endif
           aux_regs.push(new RegisterHolder(EAX));
           holder = aux_regs.top();
@@ -536,8 +539,8 @@ namespace jit {
         used_regs.push_back(holder);
       }
   #ifdef _VERBOSE
-      wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-        << L" *" << endl;
+      std::wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
+        << L" *" << std::endl;
   #endif
 
       return holder;
@@ -546,8 +549,8 @@ namespace jit {
     // Returns a register to the pool
     void ReleaseRegister(RegisterHolder* h) {
   #ifdef _VERBOSE
-      wcout << L"\t * releasing " << GetRegisterName(h->GetRegister())
-        << L" *" << endl;
+      std::wcout << L"\t * releasing " << GetRegisterName(h->GetRegister())
+        << L" *" << std::endl;
   #endif
 
   #ifdef _DEBUG
@@ -573,7 +576,7 @@ namespace jit {
       if(aval_xregs.empty()) {
         compile_success = false;
   #ifdef _DEBUG
-        wcout << L">>> No XMM registers avaiable! <<<" << endl;
+        std::wcout << L">>> No XMM registers avaiable! <<<" << std::endl;
   #endif
         aval_xregs.push_back(new RegisterHolder(XMM0));
         holder = aval_xregs.back();
@@ -586,8 +589,8 @@ namespace jit {
         used_xregs.push_back(holder);
       }
   #ifdef _VERBOSE
-      wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-        << L" *" << endl;
+      std::wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
+        << L" *" << std::endl;
   #endif
 
       return holder;
@@ -603,8 +606,8 @@ namespace jit {
   #endif
 
   #ifdef _VERBOSE
-      wcout << L"\t * releasing: " << GetRegisterName(h->GetRegister())
-        << L" * " << endl;
+      std::wcout << L"\t * releasing: " << GetRegisterName(h->GetRegister())
+        << L" * " << std::endl;
   #endif
       aval_xregs.push_back(h);
       used_xregs.remove(h);
@@ -635,12 +638,12 @@ namespace jit {
     void move_xreg_xreg(Register src, Register dest);
 
     // math instructions
-    void math_imm_reg(int32_t imm, Register reg, jit::InstructionType type);    
-    void math_imm_xreg(RegInstr* instr, Register reg, jit::InstructionType type);
-    void math_reg_reg(Register src, Register dest, jit::InstructionType type);
-    void math_xreg_xreg(Register src, Register dest, jit::InstructionType type);
-    void math_mem_reg(int32_t offset, Register reg, jit::InstructionType type);
-    void math_mem_xreg(int32_t offset, Register reg, jit::InstructionType type);
+    void math_imm_reg(int32_t imm, Register reg, JitInstructionType type);    
+    void math_imm_xreg(RegInstr* instr, Register reg, JitInstructionType type);
+    void math_reg_reg(Register src, Register dest, JitInstructionType type);
+    void math_xreg_xreg(Register src, Register dest, JitInstructionType type);
+    void math_mem_reg(int32_t offset, Register reg, JitInstructionType type);
+    void math_mem_xreg(int32_t offset, Register reg, JitInstructionType type);
 
     // logical
     void and_imm_reg(int32_t imm, Register reg);
@@ -694,7 +697,7 @@ namespace jit {
     void cmp_xreg_xreg(Register src, Register dest);
     void cmp_mem_xreg(int32_t offset, Register src, Register dest);
     void cmp_imm_xreg(RegInstr* instr, Register reg);
-    void cmov_reg(Register reg, jit::InstructionType oper);
+    void cmov_reg(Register reg, JitInstructionType oper);
 
     // inc/dec instructions
     void dec_reg(Register dest);
@@ -731,13 +734,25 @@ namespace jit {
     void call_reg(Register reg);
 
     // generates a conditional jump
-    bool cond_jmp(jit::InstructionType type);
+    bool cond_jmp(JitInstructionType type);
+
   public:
-    JitCompiler() {
+    JitCompiler(vector<JitInstruction*> block_instrs) {
+      this->block_instrs = block_instrs;
       skip_jump = false;
     }
 
     ~JitCompiler() {
+    }
+
+    jit_fun_ptr Compile() {
+      Prolog();
+      ProcessInstructions();
+      if(!compile_success) {
+        return NULL;
+      }
+
+      return NULL;
     }
   };
 }

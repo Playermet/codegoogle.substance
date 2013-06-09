@@ -35,8 +35,10 @@
 #include "../../common.h"
 
 namespace jit {
+  typedef long (*jit_fun_ptr)(Value* frame);
+
   // vm instructions
-  typedef enum _InstructionType {
+  enum JitInstructionType {
     // loads operations
     LOAD_INT_LIT  = 0,
     LOAD_CHAR_LIT,
@@ -54,12 +56,6 @@ namespace jit {
     STOR_CLS_INST_INT_VAR, // only used by the VM
     STOR_FLOAT_VAR,
     STOR_FUNC_VAR,
-    // copy operations
-    COPY_INT_VAR,
-    COPY_LOCL_INT_VAR, // only used by the VM
-    COPY_CLS_INST_INT_VAR, // only used by the VM
-    COPY_FLOAT_VAR,
-    COPY_FUNC_VAR,
     // array operations
     LOAD_BYTE_ARY_ELM,
     LOAD_CHAR_ARY_ELM,
@@ -159,15 +155,21 @@ namespace jit {
     LIB_FUNC_DEF,
     // system directives
     END_STMTS,
-  } 
-  InstructionType;
+  };
+
+  // memory reference context, used for
+  // loading and storing variables
+  enum JitMemoryContext {
+    CLS = -3500,
+    INST,
+    LOCL
+  };
 
   /********************************
-   * StackInstr class
+   * JIT instruction class
    ********************************/
-  class StackInstr 
-  {
-    InstructionType type;
+  class JitInstruction {
+    JitInstructionType type;
     INT_T operand;
     INT_T operand2;
     INT_T operand3;
@@ -175,31 +177,31 @@ namespace jit {
     long native_offset;
   
    public:
-    StackInstr(InstructionType t) {
+    JitInstruction(JitInstructionType t) {
       type = t;
       operand = operand3 = native_offset = 0;
     }
 
-    StackInstr(InstructionType t, long o) {
+    JitInstruction(JitInstructionType t, long o) {
       type = t;
       operand = o;
       operand3 = native_offset = 0;
     }
 
-    StackInstr(InstructionType t, FLOAT_T fo) {
+    JitInstruction(JitInstructionType t, FLOAT_T fo) {
       type = t;
       float_operand = fo;
       operand = operand3 = native_offset = 0;
     }
 
-    StackInstr(InstructionType t, long o, long o2) {
+    JitInstruction(JitInstructionType t, long o, long o2) {
       type = t;
       operand = o;
       operand2 = o2;
       operand3 = native_offset = 0;
     }
 
-    StackInstr(InstructionType t, long o, long o2, long o3) {
+    JitInstruction(JitInstructionType t, long o, long o2, long o3) {
       type = t;
       operand = o;
       operand2 = o2;
@@ -207,14 +209,14 @@ namespace jit {
       native_offset = 0;
     }
 
-    ~StackInstr() {
+    ~JitInstruction() {
     }  
 
-    inline InstructionType GetType() const {
+    inline JitInstructionType GetType() const {
       return type;
     }
 
-    inline void SetType(InstructionType t) {
+    inline void SetType(JitInstructionType t) {
       type = t;
     }
 
