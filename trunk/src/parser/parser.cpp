@@ -157,7 +157,7 @@ StatementList* Parser::Parse()
  ****************************/
 StatementList* Parser::ParseBlock(bool new_scope, int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
 	if(new_scope) {
@@ -194,7 +194,7 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
  ****************************/
 Statement* Parser::ParseStatement(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
   Statement* statement;
@@ -254,7 +254,7 @@ Statement* Parser::ParseStatement(int depth)
  ****************************/
 Statement* Parser::ParseIfWhile(bool is_if, int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -291,7 +291,7 @@ Statement* Parser::ParseIfWhile(bool is_if, int depth)
  ****************************/
 Statement* Parser::ParseAssignment(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -343,7 +343,7 @@ Expression* Parser::ParseExpression(int depth)
  ****************************/
 Expression* Parser::ParseLogic(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
 #ifdef _DEBUG
@@ -393,7 +393,7 @@ Expression* Parser::ParseLogic(int depth)
  ****************************/
 Expression* Parser::ParseMathLogic(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -451,7 +451,7 @@ Expression* Parser::ParseMathLogic(int depth)
  ****************************/
 Expression* Parser::ParseTerm(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -512,7 +512,7 @@ Expression* Parser::ParseTerm(int depth)
  ****************************/
 Expression* Parser::ParseFactor(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -570,7 +570,7 @@ Expression* Parser::ParseFactor(int depth)
  ****************************/
 ExpressionList* Parser::ParseIndices(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
   ExpressionList* expressions = NULL;
@@ -605,7 +605,7 @@ ExpressionList* Parser::ParseIndices(int depth)
  ****************************/
 Expression* Parser::ParseSimpleExpression(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -705,7 +705,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
  ****************************/
 Reference* Parser::ParseReference(int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
@@ -735,7 +735,7 @@ Reference* Parser::ParseReference(int depth)
  ****************************/
 Reference* Parser::ParseReference(const wstring &identifier, int depth)
 {
-	const int line_num = GetLineNumber();
+	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG

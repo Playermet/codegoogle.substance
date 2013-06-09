@@ -82,10 +82,6 @@ class Runtime {
 		case FLOAT_VALUE:
 			wcout << L"float=" << value->value.float_value << endl;
 			break;
-
-		case CLS_VALUE:
-			wcout << L"class: reference=" << value->value.pointer_value << endl;
-			break;
 		}
 	}
 #endif

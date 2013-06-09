@@ -31,6 +31,7 @@
 
 #include "runtime.h"
 
+// delegates operation to the appropriate type class
 #define CALC(name, left, right) { \
   left = PopValue(); \
   right = PopValue(); \
@@ -55,10 +56,7 @@ void Runtime::Run()
 #endif
 	
   // runtime variables
-	Value* frame[8];
-  for(int i = 0; i < 8; i++) {
-    frame[i] = new Value;
-  }
+	Value* frame = new Value[8];
   Value *left, *right;
   
   // execute code
@@ -93,7 +91,7 @@ void Runtime::Run()
 			wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = GetPoolValue();
-      memcpy(left, frame[instruction->operand1], sizeof(Value));
+      memcpy(left, &frame[instruction->operand1], sizeof(Value));
 			PushValue(left);
       break;
       
@@ -102,7 +100,7 @@ void Runtime::Run()
 			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-      memcpy(frame[instruction->operand1], left, sizeof(Value));
+      memcpy(&frame[instruction->operand1], left, sizeof(Value));
       break;
 
 		case LBL:
@@ -226,6 +224,9 @@ void Runtime::Run()
     // update
     instruction = instructions[ip++];
   } 
+
+  delete[] frame;
+  frame = NULL;
 
 #ifdef _DEBUG
 	wcout << L"--------------------------" << endl;

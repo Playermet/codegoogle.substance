@@ -42,15 +42,15 @@ class Reference;
 class ExpressionList;
 
 /****************************
- * ParseNode base class
+ * Base class for all parse nodes
  ****************************/
 class ParseNode {
  protected:
 	wstring file_name;
-	int line_num;
+	unsigned int line_num;
 	
  public:
-	ParseNode(const wstring &file_name, const int line_num) {
+	ParseNode(const wstring &file_name, const unsigned int line_num) {
 		this->file_name = file_name;
 		this->line_num = line_num;
 	}
@@ -68,7 +68,7 @@ class ParseNode {
 };  
 
 /****************************
- * ExpressionType enum
+ * Expression types
  ****************************/
 enum ExpressionType {
   REF_EXPR = -100,
@@ -100,7 +100,7 @@ class Expression : public ParseNode {
   friend class TreeFactory;
 
  protected:    
-  Expression(const wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
+  Expression(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
   }
 		
   virtual ~Expression() {
@@ -118,7 +118,7 @@ class CharacterString : public Expression {
   int id;
   wstring char_string;
 
-   CharacterString(const wstring &file_name, const int line_num, const wstring &orig) 
+   CharacterString(const wstring &file_name, const unsigned int line_num, const wstring &orig) 
 		 : Expression(file_name, line_num) {
     int skip = 2;
     for(size_t i = 0; i < orig.size(); i++) {
@@ -205,7 +205,7 @@ class CalculatedExpression : public Expression {
   Expression* left;
   Expression* right;
 
-  CalculatedExpression(const wstring &file_name, const int line_num, ExpressionType t) 
+  CalculatedExpression(const wstring &file_name, const unsigned int line_num, ExpressionType t) 
 		: Expression(file_name, line_num) {
     left = right = NULL;
     type = t;
@@ -243,7 +243,7 @@ class BooleanLiteral : public Expression {
   friend class TreeFactory;
   bool value;
 
-  BooleanLiteral(const wstring &file_name, const int line_num, bool v) : Expression(file_name, line_num) {
+  BooleanLiteral(const wstring &file_name, const unsigned int line_num, bool v) : Expression(file_name, line_num) {
     value = v;
   }
 
@@ -283,9 +283,9 @@ class NilLiteral : public Expression {
  ****************************/
 class CharacterLiteral : public Expression {
   friend class TreeFactory;
-  wchar_t value;
+  CHAR_T value;
 
-  CharacterLiteral(const wstring &file_name, const int line_num, wchar_t v) 
+  CharacterLiteral(const wstring &file_name, const unsigned int line_num, CHAR_T v) 
 		: Expression(file_name, line_num) {
     value = v;
   }
@@ -294,7 +294,7 @@ class CharacterLiteral : public Expression {
   }
 
  public:
-  wchar_t GetValue() {
+  CHAR_T GetValue() {
     return value;
   }
 
@@ -308,9 +308,9 @@ class CharacterLiteral : public Expression {
  ****************************/
 class IntegerLiteral : public Expression {
   friend class TreeFactory;
-  long value;
+  INT_T value;
 
-  IntegerLiteral(const wstring &file_name, const int line_num, long v) 
+  IntegerLiteral(const wstring &file_name, const unsigned int line_num, INT_T v) 
 		: Expression(file_name, line_num) {
     value = v;
   }
@@ -319,7 +319,7 @@ class IntegerLiteral : public Expression {
   }
 
  public:
-  long GetValue() {
+  INT_T GetValue() {
     return value;
   }
 
@@ -333,9 +333,9 @@ class IntegerLiteral : public Expression {
  ****************************/
 class FloatLiteral : public Expression {
   friend class TreeFactory;
-  double value;
+  FLOAT_T value;
 
-  FloatLiteral(const wstring &file_name, const int line_num, double v) 
+  FloatLiteral(const wstring &file_name, const unsigned int line_num, FLOAT_T v) 
 		: Expression(file_name, line_num) {
     value = v;
   }
@@ -344,7 +344,7 @@ class FloatLiteral : public Expression {
   }
 
  public:
-  double GetValue() {
+  FLOAT_T GetValue() {
     return value;
   }
 
@@ -366,7 +366,7 @@ class Reference : public Expression {
   int array_size;
   int array_dim;
 
-	Reference(const wstring &file_name, const int line_num, int v) 
+	Reference(const wstring &file_name, const unsigned int line_num, int v) 
 	 : Expression(file_name, line_num) {
     name = L"@self";
 		id = v;
@@ -375,7 +375,7 @@ class Reference : public Expression {
     indices = NULL;
   }
 	
-  Reference(const wstring &file_name, const int line_num, const wstring &n, int v) 
+  Reference(const wstring &file_name, const unsigned int line_num, const wstring &n, int v) 
 		: Expression(file_name, line_num) {
     name = n;
 		id = v;
@@ -454,7 +454,7 @@ class Statement : public ParseNode {
   friend class TreeFactory;
 
  public:    
-  Statement(const wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
+  Statement(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
   }
 
   ~Statement() {
@@ -470,7 +470,7 @@ class StatementList : public ParseNode {
   friend class TreeFactory;
   vector<Statement*> statements;
   
-  StatementList(const wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
+  StatementList(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
   }
   
   ~StatementList() {
@@ -494,7 +494,7 @@ class Dump : public Statement {
   Reference* reference;
   
  public:
-   Dump(const wstring &file_name, const int line_num, Reference* reference) 
+   Dump(const wstring &file_name, const unsigned int line_num, Reference* reference) 
 		 : Statement(file_name, line_num) {
     this->reference = reference;
   }
@@ -518,7 +518,7 @@ class IfWhile : public Statement {
 	bool is_if;
 	
  public:
-   IfWhile(const wstring &file_name, const int line_num, Expression* logical_expression, 
+   IfWhile(const wstring &file_name, const unsigned int line_num, Expression* logical_expression, 
 					 StatementList* block, bool is_if)  : Statement(file_name, line_num) {
 		this->logical_expression = logical_expression;
 	  this->block = block;
@@ -551,7 +551,7 @@ class Assignment : public Statement {
   Expression* expression;
   
  public:
-   Assignment(const wstring &file_name, const int line_num, Reference* reference, Expression* expression) 
+   Assignment(const wstring &file_name, const unsigned int line_num, Reference* reference, Expression* expression) 
 		 : Statement(file_name, line_num) {
     this->reference = reference;
     this->expression = expression;
@@ -580,7 +580,7 @@ class ExpressionList : public ParseNode {
   friend class TreeFactory;
   vector<Expression*> expressions;
 	
-  ExpressionList(const wstring &file_name, const int line_num) : ParseNode(file_name, line_num) {
+  ExpressionList(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
   }
 	
   ~ExpressionList() {
@@ -671,89 +671,89 @@ class TreeFactory {
     instance = NULL;
   }
 
-  ExpressionList* MakeExpressionList(const wstring &file_name, const int line_num) {
+  ExpressionList* MakeExpressionList(const wstring &file_name, const unsigned int line_num) {
     ExpressionList* tmp = new ExpressionList(file_name, line_num);
     expression_lists.push_back(tmp);
     return tmp;
   }
 
-  StatementList* MakeStatementList(const wstring &file_name, const int line_num) {
+  StatementList* MakeStatementList(const wstring &file_name, const unsigned int line_num) {
     StatementList* tmp = new StatementList(file_name, line_num);
     statement_lists.push_back(tmp);
     return tmp;
   }
   
-  Assignment* MakeAssignmentStatement(const wstring &file_name, const int line_num, 
+  Assignment* MakeAssignmentStatement(const wstring &file_name, const unsigned int line_num, 
 																			Reference* reference, Expression* expression) {
     Assignment* tmp = new Assignment(file_name, line_num, reference, expression);
     statements.push_back(tmp);
     return tmp;
   }
 
-	IfWhile* MakeIfWhileStatement(const wstring &file_name, const int line_num, 
+	IfWhile* MakeIfWhileStatement(const wstring &file_name, const unsigned int line_num, 
 																Expression* logical_expression, StatementList* block, bool is_if) {
 		IfWhile* tmp = new IfWhile(file_name, line_num, logical_expression, block, is_if);
 		statements.push_back(tmp);
 		return tmp;
 	}
   
-  Dump* MakeDumpStatement(const wstring &file_name, const int line_num, Reference* reference) {
+  Dump* MakeDumpStatement(const wstring &file_name, const unsigned int line_num, Reference* reference) {
     Dump* tmp = new Dump(file_name, line_num, reference);
     statements.push_back(tmp);
     return tmp;
   }
   
-  CalculatedExpression* MakeCalculatedExpression(const wstring &file_name, const int line_num, 
+  CalculatedExpression* MakeCalculatedExpression(const wstring &file_name, const unsigned int line_num, 
 																								 ExpressionType type) {
     CalculatedExpression* tmp = new CalculatedExpression(file_name, line_num, type);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  IntegerLiteral* MakeIntegerLiteral(const wstring &file_name, const int line_num, long value) {
+  IntegerLiteral* MakeIntegerLiteral(const wstring &file_name, const unsigned int line_num, INT_T value) {
     IntegerLiteral* tmp = new IntegerLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  FloatLiteral* MakeFloatLiteral(const wstring &file_name, const int line_num, double value) {
+  FloatLiteral* MakeFloatLiteral(const wstring &file_name, const unsigned int line_num, FLOAT_T value) {
     FloatLiteral* tmp = new FloatLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  CharacterLiteral* MakeCharacterLiteral(const wstring &file_name, const int line_num, wchar_t value) {
+  CharacterLiteral* MakeCharacterLiteral(const wstring &file_name, const unsigned int line_num, CHAR_T value) {
     CharacterLiteral* tmp = new CharacterLiteral(file_name, line_num, value);
     expressions.push_back(tmp);
     return tmp;
   }
 	
-  CharacterString* MakeCharacterString(const wstring &file_name, const int line_num, 
+  CharacterString* MakeCharacterString(const wstring &file_name, const unsigned int line_num, 
 																			 const wstring &char_string) {
 		CharacterString* tmp = new CharacterString(file_name, line_num, char_string);
 		expressions.push_back(tmp);
 		return tmp;
 	}
 	
-  NilLiteral* MakeNilLiteral(const wstring &file_name, const int line_num) {
+  NilLiteral* MakeNilLiteral(const wstring &file_name, const unsigned int line_num) {
     NilLiteral* tmp = new NilLiteral(file_name, line_num);
     expressions.push_back(tmp);
     return tmp;
   }
 
-  BooleanLiteral* MakeBooleanLiteral(const wstring &file_name, const int line_num, bool boolean) {
+  BooleanLiteral* MakeBooleanLiteral(const wstring &file_name, const unsigned int line_num, bool boolean) {
     BooleanLiteral* tmp = new BooleanLiteral(file_name, line_num, boolean);
     expressions.push_back(tmp);
     return tmp;
   }
 	
-	Reference* MakeReference(const wstring &file_name, const int line_num, int id) {
+	Reference* MakeReference(const wstring &file_name, const unsigned int line_num, int id) {
     Reference* tmp = new Reference(file_name, line_num, id);
     references.push_back(tmp);
     return tmp;
 	}
 	
-  Reference* MakeReference(const wstring &file_name, const int line_num, 
+  Reference* MakeReference(const wstring &file_name, const unsigned int line_num, 
 													 const wstring &name, int id) {
     Reference* tmp = new Reference(file_name, line_num, name, id);
     references.push_back(tmp);
