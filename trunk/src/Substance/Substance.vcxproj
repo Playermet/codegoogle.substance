@@ -15,7 +15,7 @@
     <ClCompile Include="..\parser\parser.cpp" />
     <ClCompile Include="..\parser\scanner.cpp" />
     <ClCompile Include="..\parser\tree.cpp" />
-    <ClCompile Include="..\runtime\classes\class.cpp" />
+    <ClCompile Include="..\runtime\classes.cpp" />
     <ClCompile Include="..\runtime\runtime.cpp" />
     <ClCompile Include="..\substance.cpp" />
   </ItemGroup>
@@ -25,7 +25,7 @@
     <ClInclude Include="..\parser\parser.h" />
     <ClInclude Include="..\parser\scanner.h" />
     <ClInclude Include="..\parser\tree.h" />
-    <ClInclude Include="..\runtime\classes\class.h" />
+    <ClInclude Include="..\runtime\classes.h" />
     <ClInclude Include="..\runtime\runtime.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -44,6 +44,8 @@ class Emitter {
   static vector<Instruction*> instruction_factory;
 	long label_id;
   
+  void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
+                          unordered_map<long, size_t> &jump_table);
   void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
 								 unordered_map<long, size_t> &jump_table);
 	void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 

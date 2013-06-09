@@ -33,7 +33,7 @@
     <ClCompile Include="..\runtime\runtime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\runtime\classes\class.cpp">
+    <ClCompile Include="..\runtime\classes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="..\runtime\runtime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\runtime\classes\class.h">
+    <ClInclude Include="..\runtime\classes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
