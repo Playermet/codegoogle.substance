@@ -36,6 +36,9 @@
     <ClCompile Include="..\runtime\classes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\runtime\jit\ia32\jit_ia32_compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\parser\emitter.h">
@@ -57,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\runtime\classes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\runtime\jit\ia32\jit_ia32_compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\runtime\jit\jit_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

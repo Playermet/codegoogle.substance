@@ -102,13 +102,13 @@ class Token {
  private:
   enum ScannerTokenType token_type;
   wstring ident;
-	int line_num;
+	unsigned int line_num;
   wstring file_name;
 	
-  int int_lit;
-  double double_lit;
-  wchar_t char_lit;
-  char byte_lit;
+  INT_T int_lit;
+  FLOAT_T double_lit;
+  CHAR_T char_lit;
+  BYTE_T byte_lit;
 	
  public:
   inline void Copy(Token* token) {
@@ -129,27 +129,27 @@ class Token {
     file_name = f;
   }
 
-  inline const int GetLineNumber() {
+  inline const unsigned int GetLineNumber() {
     return line_num;
   }
 
-	inline void SetLineNbr(int l) {
+	inline void SetLineNbr(unsigned int l) {
     line_num = l;
   }
   
-  inline void  SetIntLit(int i) {
+  inline void  SetIntLit(INT_T i) {
     int_lit = i;
   }
 
-  inline void SetFloatLit(double d) {
+  inline void SetFloatLit(FLOAT_T d) {
     double_lit = d;
   }
 
-  inline void SetByteLit(char b) {
+  inline void SetByteLit(BYTE_T b) {
     byte_lit = b;
   }
 
-  inline void SetCharLit(wchar_t c) {
+  inline void SetCharLit(CHAR_T c) {
     char_lit = c;
   }
 
@@ -157,19 +157,19 @@ class Token {
     ident = i;
   }
 
-  inline const int GetIntLit() {
+  inline const INT_T GetIntLit() {
     return int_lit;
   }
 
-  inline const double GetFloatLit() {
+  inline const FLOAT_T GetFloatLit() {
     return double_lit;
   }
 
-  inline const char GetByteLit() {
+  inline const BYTE_T GetByteLit() {
     return byte_lit;
   }
 
-  inline const wchar_t GetCharLit() {
+  inline const CHAR_T GetCharLit() {
     return char_lit;
   }
 
@@ -195,7 +195,7 @@ class Scanner {
 	// input file name
   wstring file_name;
 	// line number
-  int line_num;
+  unsigned int line_num;
   // input buffer
   wchar_t* buffer;
   // buffer size

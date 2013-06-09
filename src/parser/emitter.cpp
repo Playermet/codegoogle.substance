@@ -44,23 +44,23 @@ ExecutableProgram* Emitter::Emit()
   
 	vector<Instruction*> block_instructions;
 	unordered_map<long, size_t> jump_table;
+  set<size_t> leaders;
 	
-	EmitFunctionMethod(parsed_program, block_instructions, jump_table);
+	EmitFunctionMethod(parsed_program, block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));
 
-	return new ExecutableProgram(block_instructions, jump_table);
+	return new ExecutableProgram(block_instructions, jump_table, leaders);
 }
 
 /****************************
  * TODO: doc
  ****************************/
 void Emitter::EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
-                                 unordered_map<long, size_t> &jump_table)
+                                 unordered_map<long, size_t> &jump_table, set<size_t> &leaders)
 {
   EmitBlock(parsed_program, block_instructions, jump_table);
 
   // create CFG
-  set<size_t> leaders;
   leaders.insert(0);
   for(size_t i = 0; i < block_instructions.size(); ++i) {
     if(block_instructions[i]->type == LBL) {
@@ -75,7 +75,7 @@ void Emitter::EmitFunctionMethod(StatementList* block_statements, vector<Instruc
   wcout << L"Leaders" << endl;
   set<size_t>::iterator iter = leaders.begin(); 
   for(;iter != leaders.end(); ++iter) {
-    wcout << L"\t" << *iter << endl;
+    wcout << L"  " << *iter << endl;
   }
 #endif
 }
@@ -225,7 +225,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     wcout << block_instructions.size() << L": " << L"load literal: type=float, value=" 
           << static_cast<FloatLiteral*>(expression)->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (double)static_cast<FloatLiteral*>(expression)->GetValue()));
+    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (FLOAT_T)static_cast<FloatLiteral*>(expression)->GetValue()));
     break;
 
   case BOOLEAN_LIT_EXPR:

@@ -66,6 +66,11 @@ using namespace std;
 class RuntimeClass;
 struct _Value;
 
+#define INT_T long
+#define FLOAT_T double
+#define CHAR_T wchar_t
+#define BYTE_T char
+
 /****************************
  * Runtime instructions
  ****************************/
@@ -99,9 +104,9 @@ enum InstructionType {
 
 typedef struct _Instruction {
   InstructionType type;
-  int operand1;
-  int operand2;
-  double operand3;
+  INT_T operand1;
+  INT_T operand2;
+  FLOAT_T operand3;
 } Instruction;
 
 /****************************
@@ -112,16 +117,17 @@ enum RuntimeType {
   INT_VALUE,
   FLOAT_VALUE,
   INT_ARY_VALUE,
-  FLOAT_ARY_VALUE,
-  CLS_VALUE
+  FLOAT_ARY_VALUE
 };
 
 /****************************
  * Runtime values
  ****************************/
 typedef union _BaseValue {
-  int int_value;
-  double float_value;
+  BYTE_T byte_value;
+  CHAR_T char_value;
+  INT_T int_value;
+  FLOAT_T float_value;
   void* pointer_value;
 } BaseValue;
 
@@ -139,13 +145,14 @@ typedef struct _Value {
  ****************************/
 class ExecutableProgram {
 	vector<Instruction*> block_instructions; 
-	unordered_map<long, size_t> jump_table;	
+	unordered_map<long, size_t> jump_table;
+  set<size_t> leaders;
 	
  public:
-	ExecutableProgram(vector<Instruction*> block_instructions, 
-										unordered_map<long, size_t> jump_table) {
+	ExecutableProgram(vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders) {
 		this->block_instructions = block_instructions;
 		this->jump_table = jump_table;
+    this->leaders = leaders;
 	}
 	
 	~ExecutableProgram() {
