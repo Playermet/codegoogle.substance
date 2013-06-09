@@ -31,6 +31,8 @@
 
 #include "emitter.h"
 
+using namespace compiler;
+
 vector<Instruction*> Emitter::instruction_factory;
 
 /****************************

@@ -38,186 +38,188 @@
 #define SECOND_INDEX 1
 #define THIRD_INDEX 2
 
-/****************************
- * Local symbol table
- ****************************/
-class InnerTable {
-	unordered_map<wstring, int> table;
+namespace compiler {
+  /****************************
+   * Local symbol table
+   ****************************/
+  class InnerTable {
+	  unordered_map<wstring, int> table;
 	
- public:
-	InnerTable() {
-	}
+   public:
+	  InnerTable() {
+	  }
 	
-	~InnerTable() {		
-	}
+	  ~InnerTable() {		
+	  }
 	
-	void AddEntry(const wstring &name, int id) {
-		table.insert(pair<wstring, int>(name, id));
-	}
+	  void AddEntry(const wstring &name, int id) {
+		  table.insert(pair<wstring, int>(name, id));
+	  }
 
-	int GetEntry(const wstring &name) {
-		unordered_map<wstring, int>::iterator result = table.find(name);
-		if(result != table.end()) {
-			return result->second;
-		}
+	  int GetEntry(const wstring &name) {
+		  unordered_map<wstring, int>::iterator result = table.find(name);
+		  if(result != table.end()) {
+			  return result->second;
+		  }
 		
-		return -1;
-	}
+		  return -1;
+	  }
 	
-	bool HasEntry(const wstring &name) {
-		return GetEntry(name)  > -1;
-	}
-};
+	  bool HasEntry(const wstring &name) {
+		  return GetEntry(name)  > -1;
+	  }
+  };
 
-/****************************
- * Hierarchical symbol table
- ****************************/
-class SymbolTable {
-	deque<InnerTable*> table_hierarchy;
-	vector<InnerTable*> all_tables;
-	int entry_id;
+  /****************************
+   * Hierarchical symbol table
+   ****************************/
+  class SymbolTable {
+	  deque<InnerTable*> table_hierarchy;
+	  vector<InnerTable*> all_tables;
+	  int entry_id;
 	
- public:
-	SymbolTable() {
-		entry_id = 0;
-	}
+   public:
+	  SymbolTable() {
+		  entry_id = 0;
+	  }
 	
-	~SymbolTable() {
-		while(!all_tables.empty()) {
-      InnerTable* tmp = all_tables.front();
-      all_tables.erase(all_tables.begin());
-      // delete
-      delete tmp;
-      tmp = NULL;
-    }
-	}
+	  ~SymbolTable() {
+		  while(!all_tables.empty()) {
+        InnerTable* tmp = all_tables.front();
+        all_tables.erase(all_tables.begin());
+        // delete
+        delete tmp;
+        tmp = NULL;
+      }
+	  }
 	
-	void NewScope() {
-		InnerTable* table = new InnerTable;
-		table_hierarchy.push_front(table);
-		all_tables.push_back(table);
-	}
+	  void NewScope() {
+		  InnerTable* table = new InnerTable;
+		  table_hierarchy.push_front(table);
+		  all_tables.push_back(table);
+	  }
 	
-	bool PreviousScope() {
-		if(!table_hierarchy.empty()) {
-			table_hierarchy.pop_front();
-			return true;
-		}
+	  bool PreviousScope() {
+		  if(!table_hierarchy.empty()) {
+			  table_hierarchy.pop_front();
+			  return true;
+		  }
 
-		return false;
-	}
+		  return false;
+	  }
 	
-	bool AddEntry(const wstring &name) {
-		if(!table_hierarchy.empty()) {
-			table_hierarchy.front()->AddEntry(name, entry_id++);
-			return true;
-		}
+	  bool AddEntry(const wstring &name) {
+		  if(!table_hierarchy.empty()) {
+			  table_hierarchy.front()->AddEntry(name, entry_id++);
+			  return true;
+		  }
 
-		return false;
-	}
+		  return false;
+	  }
 	
-	int GetEntry(const wstring &name) {
-		for(size_t i = 0; i < table_hierarchy.size(); ++i) {
-			int value = table_hierarchy[i]->GetEntry(name);
-			if(value > -1) {
-				return value;
-			}
-		}
+	  int GetEntry(const wstring &name) {
+		  for(size_t i = 0; i < table_hierarchy.size(); ++i) {
+			  int value = table_hierarchy[i]->GetEntry(name);
+			  if(value > -1) {
+				  return value;
+			  }
+		  }
 		
-		return -1;
-	}
+		  return -1;
+	  }
 	
-	bool HasEntry(const wstring &name) {
-		return GetEntry(name) > -1;
-	}
+	  bool HasEntry(const wstring &name) {
+		  return GetEntry(name) > -1;
+	  }
 	
-	int GetEntryCount() {
-		return entry_id;
-	}
-};	
+	  int GetEntryCount() {
+		  return entry_id;
+	  }
+  };	
 
-/****************************
- * Parsers source files.
- ****************************/
-class Parser {
-	wstring input;
-  Scanner* scanner;
-	SymbolTable symbol_table;
-	map<ScannerTokenType, wstring> error_msgs;
-  map<int, wstring> errors;
+  /****************************
+   * Parsers source files.
+   ****************************/
+  class Parser {
+	  wstring input;
+    Scanner* scanner;
+	  SymbolTable symbol_table;
+	  map<ScannerTokenType, wstring> error_msgs;
+    map<int, wstring> errors;
 	
-  inline void NextToken() {
-    scanner->NextToken();
-  }
-
-  inline bool Match(enum ScannerTokenType type, int index = 0) {
-    return scanner->GetToken(index)->GetType() == type;
-  }
-
-	inline int GetLineNumber() {
-    return scanner->GetToken()->GetLineNumber();
-  }
-
-  inline const wstring GetFileName() {
-    return scanner->GetToken()->GetFileName();
-  }
-	
-  inline enum ScannerTokenType GetToken(int index = 0) {
-    return scanner->GetToken(index)->GetType();
-  }
-
-  void Show(const wstring &msg, int depth) {
-    for(int i = 0; i < depth; i++) {
-      wcout << L"  ";
+    inline void NextToken() {
+      scanner->NextToken();
     }
-    wcout << msg << endl;
-  }
-  
-  inline wstring ToString(int v) {
-    wostringstream str;
-    str << v;
-    return str.str();
-  }
+
+    inline bool Match(enum ScannerTokenType type, int index = 0) {
+      return scanner->GetToken(index)->GetType() == type;
+    }
+
+	  inline int GetLineNumber() {
+      return scanner->GetToken()->GetLineNumber();
+    }
+
+    inline const wstring GetFileName() {
+      return scanner->GetToken()->GetFileName();
+    }
 	
-  // error processing
-  void LoadErrorCodes();
-  void ProcessError(const ScannerTokenType type);
-  void ProcessError(const wstring &msg);
-  void ProcessError(const wstring &msg, ParseNode* node);
-  void ProcessError(const wstring &msg, const ScannerTokenType sync);
-  bool CheckErrors();
+    inline enum ScannerTokenType GetToken(int index = 0) {
+      return scanner->GetToken(index)->GetType();
+    }
+
+    void Show(const wstring &msg, int depth) {
+      for(int i = 0; i < depth; i++) {
+        wcout << L"  ";
+      }
+      wcout << msg << endl;
+    }
+  
+    inline wstring ToString(int v) {
+      wostringstream str;
+      str << v;
+      return str.str();
+    }
 	
-  // parsing operations
-  StatementList* ParseBlock(bool new_scope, int depth);
-	Statement* ParseStatement(int depth);
-	Statement* ParseIfWhile(bool is_if, int depth);
-  Statement* ParseAssignment(int depth);
-	ExpressionList* ParseIndices(int depth);
-  Expression* ParseExpression(int depth);
-  Expression* ParseLogic(int depth);
-  Expression* ParseMathLogic(int depth);
-  Expression* ParseTerm(int depth);
-  Expression* ParseFactor(int depth);
-  Expression* ParseSimpleExpression(int depth);
-  Reference* ParseReference(int depth);
-  Reference* ParseReference(const wstring &ident, int depth);
-  void ParseReference(Reference* reference, int depth);
+    // error processing
+    void LoadErrorCodes();
+    void ProcessError(const ScannerTokenType type);
+    void ProcessError(const wstring &msg);
+    void ProcessError(const wstring &msg, ParseNode* node);
+    void ProcessError(const wstring &msg, const ScannerTokenType sync);
+    bool CheckErrors();
+	
+    // parsing operations
+    StatementList* ParseBlock(bool new_scope, int depth);
+	  Statement* ParseStatement(int depth);
+	  Statement* ParseIfWhile(bool is_if, int depth);
+    Statement* ParseAssignment(int depth);
+	  ExpressionList* ParseIndices(int depth);
+    Expression* ParseExpression(int depth);
+    Expression* ParseLogic(int depth);
+    Expression* ParseMathLogic(int depth);
+    Expression* ParseTerm(int depth);
+    Expression* ParseFactor(int depth);
+    Expression* ParseSimpleExpression(int depth);
+    Reference* ParseReference(int depth);
+    Reference* ParseReference(const wstring &ident, int depth);
+    void ParseReference(Reference* reference, int depth);
   
- public:
-  Parser(const wstring &input) {
-		this->input = input;
-    LoadErrorCodes();
-		scanner = new Scanner(input);
-  }
+   public:
+    Parser(const wstring &input) {
+		  this->input = input;
+      LoadErrorCodes();
+		  scanner = new Scanner(input);
+    }
   
-  ~Parser() {
-		if(scanner) {
-			delete scanner;
-			scanner = NULL;
-		}
-  }
+    ~Parser() {
+		  if(scanner) {
+			  delete scanner;
+			  scanner = NULL;
+		  }
+    }
   
-  StatementList* Parse();
-};
+    StatementList* Parse();
+  };
+}
 
 #endif

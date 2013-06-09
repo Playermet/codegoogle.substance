@@ -31,6 +31,8 @@
 
 #include "scanner.h"
 
+using namespace compiler;
+
 #define EOB L'\0'
 
 /****************************

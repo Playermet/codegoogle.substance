@@ -31,6 +31,8 @@
 
 #include "tree.h"
 
+using namespace compiler;
+
 /****************************
  * TreeFactory class
  ****************************/

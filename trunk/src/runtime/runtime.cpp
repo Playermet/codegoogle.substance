@@ -31,6 +31,8 @@
 
 #include "runtime.h"
 
+using namespace runtime;
+
 // delegates operation to the appropriate type class
 #define CALC(name, left, right) { \
   left = PopValue(); \

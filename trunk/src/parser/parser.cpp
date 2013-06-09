@@ -31,6 +31,8 @@
 
 #include "parser.h"
 
+using namespace compiler;
+
 /****************************
  * Loads parsing error codes.
  ****************************/
