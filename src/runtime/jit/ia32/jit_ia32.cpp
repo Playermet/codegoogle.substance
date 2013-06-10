@@ -59,8 +59,8 @@ void JitCompiler::Epilog(int32_t imm) {
 }
 
 void JitCompiler::ProcessInstructions() {
-  for(size_t i = 0; compile_success && i < block_instrs.size(); ++i) {
-    JitInstruction* instr = block_instrs[i];
+  for(instr_index = 0; compile_success && instr_index < block_instrs.size(); instr_index++) {
+    JitInstruction* instr = block_instrs[instr_index];
     switch(instr->GetType()) {
       // load literal
     case LOAD_CHAR_LIT:
@@ -345,9 +345,16 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
       ProcessAddStaticMemory(holder->GetRegister());
       }
       */
-      move_reg_mem(holder->GetRegister(), instr->GetOperand3(), dest);
+
+      RegisterHolder* holder2 = GetRegister();
+      move_mem_reg(FRAME, EBP, holder2->GetRegister());
+      if(instr->GetOperand3()) {
+        add_imm_reg(instr->GetOperand3(), holder2->GetRegister());
+      }
+      move_reg_mem(holder->GetRegister(), VALUE_OFFSET, holder2->GetRegister());
+      ReleaseRegister(holder2);
     }
-    ReleaseRegister(holder);
+    ReleaseRegister(holder); 
   }
     break;
     
@@ -527,7 +534,16 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
     switch(right->GetType()) {
     case IMM_INT: {
       RegisterHolder* holder = GetRegister();
-      move_mem_reg(left->GetOperand(), EBP, holder->GetRegister());
+
+      // TODO: WIP
+      move_mem_reg(FRAME, EBP, holder->GetRegister());
+      if(left->GetOperand()) {
+        add_imm_reg(left->GetOperand() + sizeof(int32_t), holder->GetRegister());
+      }
+      move_mem_reg(VALUE_OFFSET, holder->GetRegister(), holder->GetRegister());
+//      add_imm_reg(holder->GetRegister(), 
+//      move_mem_reg(left->GetOperand(), holder->GetRegister(), holder->GetRegister());  
+//      move_mem_reg(left->GetOperand(), EBP, holder->GetRegister());
       math_imm_reg(right->GetOperand(), holder->GetRegister(),
 		   instruction->GetType());
       working_stack.push_front(new RegInstr(holder));
@@ -1005,8 +1021,9 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
   if(instr_index >= method->GetInstructionCount()) {
     return false;
   }
-  
-  JitInstruction* next_instr = method->GetInstruction(instr_index);
+  */
+
+  JitInstruction* next_instr = block_instrs[instr_index];
   if(next_instr->GetType() == JMP && next_instr->GetOperand2() > -1) {
     // if(false) {
 #ifdef _DEBUG
@@ -1124,7 +1141,6 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
     
     return true;
   }
-  */
 
   return false;
 }

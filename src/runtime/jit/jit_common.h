@@ -35,7 +35,7 @@
 #include "../../common.h"
 
 namespace jit {
-  typedef long (*jit_fun_ptr)(Value* frame);
+  typedef long (*jit_fun_ptr)(Value* frame, void* inst_mem, void* cls_mem);
 
   // vm instructions
   enum JitInstructionType {

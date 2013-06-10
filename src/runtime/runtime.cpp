@@ -167,9 +167,10 @@ void Runtime::Run()
 				wcout << L"JMP: unconditional" << endl;
 #endif
 				if(is_recording) {
-          // compile into native code
+          // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs);
-          compiler.Compile();
+          jit::jit_fun_ptr jit_fun = compiler.Compile();
+          (*jit_fun)(frame, NULL, NULL);
           // clean up
           is_recording = false;
           jit_instrs.clear();
