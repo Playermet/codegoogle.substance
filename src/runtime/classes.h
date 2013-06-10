@@ -33,10 +33,11 @@
 #define __CLASS_H__
 
 #include "../common.h"
+#include "jit/jit_common.h"
 
 using namespace std;
 
-typedef void(*Operation)(Value* left, Value* right, Value* result);
+typedef void(*Operation)(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 
 /****************************
  * Base class for built-in types
@@ -84,9 +85,9 @@ class IntegerClass : public RuntimeClass {
     return instance;
   }
 
-  static void Add(Value* left, Value* right, Value* result);
-  static void Multiply(Value* left, Value* right, Value* result);
-  static void Less(Value* left, Value* right, Value* result);
+  static void Add(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Multiply(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Less(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 };
 
 /****************************
@@ -107,9 +108,9 @@ class FloatClass : public RuntimeClass {
     return instance;
   }
 
-  static void Add(Value* left, Value* right, Value* result);
-  static void Multiply(Value* left, Value* right, Value* result);
-  static void Less(Value* left, Value* right, Value* result);
+  static void Add(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Multiply(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Less(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 };
 
 #endif

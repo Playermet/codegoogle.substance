@@ -30,22 +30,26 @@
  ***************************************************************************/
 
 #include "runtime.h"
+#include "jit/jit_common.h"
+#include "jit/ia32/jit_ia32.h"
 
 using namespace runtime;
 
+#define HIT_THRESHOLD 3
+
 // delegates operation to the appropriate type class
-#define CALC(name, left, right) { \
-  left = PopValue(); \
-  right = PopValue(); \
-  if(left->klass) { \
-    Operation oper = left->klass->GetOperation(name); \
-    (*oper)(left, right, left); \
-    PushValue(left); \
-  } \
-  else { \
-    wcerr << L">>> invalid operation <<<" << endl; \
-    exit(1); \
-  } \
+#define CALC(name, left, right, jit_instrs, is_recording) {   \
+  left = PopValue();                                          \
+  right = PopValue();                                         \
+  if(left->klass) {                                           \
+    Operation oper = left->klass->GetOperation(name);         \
+    (*oper)(left, right, left, jit_instrs, is_recording);     \
+    PushValue(left);                                          \
+  }                                                           \
+  else {                                                      \
+    wcerr << L">>> invalid operation <<<" << endl;            \
+    exit(1);                                                  \
+  }                                                           \
 }
 
 /****************************
@@ -61,6 +65,11 @@ void Runtime::Run()
 	Value* frame = new Value[8];
   Value *left, *right;
   
+  // find 'hotspots' for JIT compiling
+  bool is_loop = false;
+  bool is_recording = false;
+  vector<jit::JitInstruction*> jit_instrs;
+
   // execute code
 	size_t ip = 0;  
   Instruction* instruction = instructions[ip++];
@@ -72,9 +81,13 @@ void Runtime::Run()
       left->klass = IntegerClass::Instance();
       left->value.int_value = instruction->operand1;
 #ifdef _DEBUG
-			wcout << L"LOAD_INT_LIT" << endl;
+			wcout << L"LOAD_INT_LIT: value=" << left->value.int_value << endl;
 #endif
       PushValue(left);
+      // record JIT instructions
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_LIT, left->value.int_value));
+      }
       break;
       
     case LOAD_FLOAT_LIT:
@@ -95,6 +108,21 @@ void Runtime::Run()
       left = GetPoolValue();
       memcpy(left, &frame[instruction->operand1], sizeof(Value));
 			PushValue(left);
+      // record JIT instructions
+      if(is_recording) {
+        switch(right->type) {
+        case INT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1));
+          break;
+
+        case FLOAT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_VAR, instruction->operand1));
+          break;
+
+        default:
+          break;
+        }
+      }
       break;
       
     case STOR_VAR:
@@ -103,12 +131,32 @@ void Runtime::Run()
 #endif
       left = PopValue();
       memcpy(&frame[instruction->operand1], left, sizeof(Value));
+      // record JIT instructions
+      if(is_recording) {
+        switch(right->type) {
+        case INT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1));
+          break;
+
+        case FLOAT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_VAR, instruction->operand1));
+          break;
+
+        default:
+          break;
+        }
+      }
       break;
 
 		case LBL:
 #ifdef _DEBUG
-			wcout << L"LBL" << endl;
+			wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" << instruction->operand2 << endl;
 #endif
+      instruction->operand2++;
+      if(instruction->operand2 > HIT_THRESHOLD) {
+        is_recording = true;
+      }
+      is_loop = false;
 			break;
 			
 		case JMP:
@@ -118,7 +166,22 @@ void Runtime::Run()
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional" << endl;
 #endif
-				ip = jump_table[instruction->operand2];
+				if(is_recording) {
+          // compile into native code
+          jit::JitCompiler compiler(jit_instrs);
+          compiler.Compile();
+          // clean up
+          is_recording = false;
+          jit_instrs.clear();
+          // take jump
+          ip = jump_table[instruction->operand2];
+        }
+        else {
+          // look for loop and take jump
+          size_t next_ip = jump_table[instruction->operand2];
+          is_loop = next_ip < ip;
+				  ip = next_ip;
+        }
 				break;
 				
 				// jump true
@@ -149,6 +212,10 @@ void Runtime::Run()
 				if(!left->value.int_value) {
 					ip = jump_table[instruction->operand2];
 				}
+        // record JIT instructions
+        if(is_recording) {
+          jit_instrs.push_back(new jit::JitInstruction(jit::GUARD, (long)jump_table[instruction->operand2]));
+        }
 				break;
 			}
 			break;
@@ -172,7 +239,7 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"LES" << endl;
 #endif
-      CALC(L"<", left, right);
+      CALC(L"<", left, right, jit_instrs, is_recording);
       break;
       
     case GTR_EQL:
@@ -185,7 +252,7 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"ADD" << endl;
 #endif
-      CALC(L"+", left, right);
+      CALC(L"+", left, right, jit_instrs, is_recording);
       break;
 
     case SUB:
@@ -195,7 +262,7 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"MUL" << endl;
 #endif
-      CALC(L"*", left, right);
+      CALC(L"*", left, right, jit_instrs, is_recording);
       break;
 
     case DIV:

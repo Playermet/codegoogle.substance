@@ -48,7 +48,7 @@ namespace runtime {
     stack<Value*> execution_stack;
     stack<Value*> value_pool;
     vector<Instruction*> instructions;
-	  unordered_map<long, size_t> jump_table;
+	  unordered_map<INT_T, size_t> jump_table;
   
     inline Value* GetPoolValue() {
       if(value_pool.empty()) {
