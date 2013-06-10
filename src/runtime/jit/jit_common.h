@@ -44,18 +44,12 @@ namespace jit {
     LOAD_CHAR_LIT,
     LOAD_FLOAT_LIT,
     LOAD_INT_VAR,
-    LOAD_LOCL_INT_VAR, // only used by the VM
-    LOAD_CLS_INST_INT_VAR, // only used by the VM
     LOAD_FLOAT_VAR,
-    LOAD_FUNC_VAR,
     LOAD_CLS_MEM,
     LOAD_INST_MEM,
     // stores operations
     STOR_INT_VAR,
-    STOR_LOCL_INT_VAR, // only used by the VM
-    STOR_CLS_INST_INT_VAR, // only used by the VM
     STOR_FLOAT_VAR,
-    STOR_FUNC_VAR,
     // array operations
     LOAD_BYTE_ARY_ELM,
     LOAD_CHAR_ARY_ELM,
@@ -112,8 +106,6 @@ namespace jit {
     I2F,
     F2I,
     // control
-    MTHD_CALL,
-    DYN_MTHD_CALL,
     JMP,
     LBL,
     RTRN,
@@ -123,36 +115,12 @@ namespace jit {
     NEW_INT_ARY,
     NEW_FLOAT_ARY,
     NEW_OBJ_INST,
-    CPY_BYTE_ARY,
-    CPY_CHAR_ARY,
-    CPY_INT_ARY,
-    CPY_FLOAT_ARY,
-    // casting & type check
-    OBJ_INST_CAST,
-    OBJ_TYPE_OF,
     // external OS traps
     TRAP,
-    TRAP_RTRN,
-    // shared libraries
-    DLL_LOAD,
-    DLL_UNLOAD,
-    DLL_FUNC_CALL,
     // stack ops
     SWAP_INT,
     POP_INT,
     POP_FLOAT,
-    // thread directives
-    ASYNC_MTHD_CALL,
-    THREAD_JOIN,
-    THREAD_SLEEP,
-    THREAD_MUTEX,
-    CRITICAL_START,
-    CRITICAL_END,
-    // library directives
-    LIB_NEW_OBJ_INST,
-    LIB_MTHD_CALL,
-    LIB_OBJ_INST_CAST,
-    LIB_FUNC_DEF,
     // system directives
     GUARD,
     END_STMTS
