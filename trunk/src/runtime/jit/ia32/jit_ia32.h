@@ -39,6 +39,11 @@
 #endif
 
 // offsets for Intel (IA-32) addresses
+#define FRAME 8
+#define INSTANCE_MEM 12
+#define CLASS_MEM 16
+
+/*
 #define CLS_ID 8
 #define MTHD_ID 12
 #define CLASS_MEM 16
@@ -47,6 +52,7 @@
 #define STACK_POS 28
 #define CALL_STACK 32
 #define CALL_STACK_POS 36
+*/
   // float temps
 #define TMP_XMM_0 -8
 #define TMP_XMM_1 -16
@@ -61,6 +67,8 @@
 
 #define MAX_DBLS 64
 #define OUR_PAGE_SIZE 4096
+
+#define VALUE_OFFSET sizeof(int32_t) * 2
 
 // register type
 namespace jit {
@@ -233,7 +241,7 @@ namespace jit {
     int32_t code_index;   
     double* floats;     
     int32_t floats_index;
-    int32_t instr_index;
+    size_t instr_index;
     int32_t code_buf_max;
     bool compile_success;
     bool skip_jump;
@@ -502,6 +510,31 @@ namespace jit {
       code = code | reg_id;
     }
 
+    // Caculates the indices for
+    // memory references.
+    void ProcessIndices() {
+      // allocate space for local variables
+      local_space = -TMP_REG_5;
+
+      // update frame offsets
+      for(size_t i = 0; i < block_instrs.size(); i++) {
+        JitInstruction* instr = block_instrs[i];
+        switch(instr->GetType()) {
+          case LOAD_INT_VAR:
+          case STOR_INT_VAR:
+          case LOAD_FLOAT_VAR:
+          case STOR_FLOAT_VAR:
+          case LOAD_FUNC_VAR:
+          case STOR_FUNC_VAR:
+            instr->SetOperand3(instr->GetOperand() * sizeof(Value));
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
     void Prolog();
     void Epilog(int32_t imm);
     void ProcessInstructions();
@@ -609,12 +642,6 @@ namespace jit {
   #endif
       aval_xregs.push_back(h);
       used_xregs.remove(h);
-    }
-
-    RegisterHolder* GetStackPosRegister() {
-      RegisterHolder* op_stack_holder = GetRegister();
-      move_mem_reg(OP_STACK, EBP, op_stack_holder->GetRegister());
-      return op_stack_holder;
     }
 
     // move instructions
@@ -782,14 +809,15 @@ namespace jit {
       wcout << L"Compiling code for IA-32 architecture..." << endl;
 #endif
       // TODO: map referenced variables to stack references; impact memory manager
-      local_space = sizeof(int32_t);
+      ProcessIndices();
       Prolog();
       ProcessInstructions();
       if(!compile_success) {
         return NULL;
       }
+      Epilog(0);
 
-      return NULL;
+      return (jit_fun_ptr)code;
     }
   };
 }
