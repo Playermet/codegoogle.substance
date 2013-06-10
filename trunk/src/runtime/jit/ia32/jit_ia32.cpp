@@ -101,8 +101,7 @@ void JitCompiler::ProcessInstructions() {
       break;
       
       // load variable
-    case LOAD_LOCL_INT_VAR:
-    case LOAD_CLS_INST_INT_VAR:
+    case LOAD_INT_VAR:
     case LOAD_FLOAT_VAR:
     case LOAD_FUNC_VAR:
 #ifdef _DEBUG
@@ -113,8 +112,7 @@ void JitCompiler::ProcessInstructions() {
       break;
     
       // store value
-    case STOR_LOCL_INT_VAR:
-    case STOR_CLS_INST_INT_VAR:
+    case STOR_INT_VAR:
     case STOR_FLOAT_VAR:
     case STOR_FUNC_VAR:
 #ifdef _DEBUG

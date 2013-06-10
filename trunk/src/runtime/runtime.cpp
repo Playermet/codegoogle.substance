@@ -112,11 +112,11 @@ void Runtime::Run()
       if(is_recording) {
         switch(right->type) {
         case INT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
           break;
 
         case FLOAT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_VAR, instruction->operand1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_VAR, instruction->operand1, jit::LOCL));
           break;
 
         default:
@@ -135,11 +135,11 @@ void Runtime::Run()
       if(is_recording) {
         switch(right->type) {
         case INT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1, jit::LOCL));
           break;
 
         case FLOAT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_VAR, instruction->operand1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_VAR, instruction->operand1, jit::LOCL));
           break;
 
         default:
