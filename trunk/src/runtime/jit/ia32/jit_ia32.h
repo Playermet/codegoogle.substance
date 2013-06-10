@@ -173,8 +173,6 @@ namespace jit {
 
       case LOAD_INT_VAR:
       case STOR_INT_VAR:
-      case LOAD_FUNC_VAR:
-      case STOR_FUNC_VAR:
         type = MEM_INT;
         operand = si->GetOperand3();
         break;
@@ -524,8 +522,6 @@ namespace jit {
           case STOR_INT_VAR:
           case LOAD_FLOAT_VAR:
           case STOR_FLOAT_VAR:
-          case LOAD_FUNC_VAR:
-          case STOR_FUNC_VAR:
             instr->SetOperand3(instr->GetOperand() * sizeof(Value));
             break;
 
