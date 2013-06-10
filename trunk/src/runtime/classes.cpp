@@ -14,12 +14,16 @@ IntegerClass::IntegerClass() {
 IntegerClass::~IntegerClass() {
 }
 
-void IntegerClass::Add(Value* left, Value* right, Value* result) {
+void IntegerClass::Add(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = INT_VALUE;
     result->klass = right->klass;
     result->value.int_value = left->value.int_value + right->value.int_value;
+    // record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new jit::JitInstruction(jit::ADD_INT));
+    }
     break;
 
   case FLOAT_VALUE:
@@ -35,7 +39,7 @@ void IntegerClass::Add(Value* left, Value* right, Value* result) {
   }
 }
 
-void IntegerClass::Multiply(Value* left, Value* right, Value* result) {
+void IntegerClass::Multiply(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = INT_VALUE;
@@ -56,11 +60,14 @@ void IntegerClass::Multiply(Value* left, Value* right, Value* result) {
   }
 }
 
-void IntegerClass::Less(Value* left, Value* right, Value* result) {
+void IntegerClass::Less(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = BOOL_VALUE;
     result->value.int_value = left->value.int_value < right->value.int_value;
+    if(is_recording) {
+      jit_instrs.push_back(new jit::JitInstruction(jit::LES_INT));
+    }    
     break;
 
   case FLOAT_VALUE:
@@ -89,7 +96,7 @@ FloatClass::FloatClass() {
 FloatClass::~FloatClass() {
 }
 
-void FloatClass::Add(Value* left, Value* right, Value* result) {
+void FloatClass::Add(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = FLOAT_VALUE;
@@ -108,7 +115,7 @@ void FloatClass::Add(Value* left, Value* right, Value* result) {
   }
 }
 
-void FloatClass::Multiply(Value* left, Value* right, Value* result) {
+void FloatClass::Multiply(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = FLOAT_VALUE;
@@ -127,7 +134,7 @@ void FloatClass::Multiply(Value* left, Value* right, Value* result) {
   }
 }
 
-void FloatClass::Less(Value* left, Value* right, Value* result) {
+void FloatClass::Less(Value* left, Value* right, Value* result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording) {
   switch(right->type) {
   case INT_VALUE:
     result->type = BOOL_VALUE;
