@@ -1,9 +1,10 @@
-# ARGS=-g -D_DEBUG  -Wunused -Wall -Wno-unused-function
-ARGS=-O3 -Wall -Wno-unused-function -Wno-unused-function
+ARGS=-g -D_DEBUG  -Wunused -Wall -Wno-unused-function
+# ARGS=-O3 -Wall -Wno-unused-function -Wno-unused-function
 
 CC=g++
 AR=ar
-SRC=classes.o runtime.o
+VPATH=jit/ia32
+SRC=classes.o runtime.o jit_ia32.o
 LIB=../runtime.a
 
 $(LIB): $(SRC) $(OBJ_LIBS)
