@@ -163,10 +163,8 @@ namespace jit {
         operand = INSTANCE_MEM;
         break;
 
-      case LOAD_LOCL_INT_VAR:
-      case LOAD_CLS_INST_INT_VAR:
-      case STOR_LOCL_INT_VAR:
-      case STOR_CLS_INST_INT_VAR:
+      case LOAD_INT_VAR:
+      case STOR_INT_VAR:
       case LOAD_FUNC_VAR:
       case STOR_FUNC_VAR:
         type = MEM_INT;
@@ -746,6 +744,45 @@ namespace jit {
     }
 
     jit_fun_ptr Compile() {
+      code_buf_max = OUR_PAGE_SIZE;
+#ifdef _WIN32
+      code = (unsigned char*)malloc(code_buf_max);
+      floats = new double[MAX_DBLS];
+#else
+      if(posix_memalign((void**)&code, OUR_PAGE_SIZE, code_buf_max)) {
+        wcerr << L"Unable to allocate JIT memory!" << endl;
+        exit(1);
+      }
+
+      if(posix_memalign((void**)&floats, OUR_PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
+        wcerr << L"Unable to allocate JIT memory!" << endl;
+        exit(1);
+      }
+#endif
+
+      floats_index = instr_index = code_index = instr_count = 0;
+      // general use registers
+      aval_regs.push_back(new RegisterHolder(EDX));
+      aval_regs.push_back(new RegisterHolder(ECX));
+      aval_regs.push_back(new RegisterHolder(EBX));
+      aval_regs.push_back(new RegisterHolder(EAX));
+      // aux general use registers
+      aux_regs.push(new RegisterHolder(EDI));
+      aux_regs.push(new RegisterHolder(ESI));
+      // floating point registers
+      aval_xregs.push_back(new RegisterHolder(XMM7));
+      aval_xregs.push_back(new RegisterHolder(XMM6));
+      aval_xregs.push_back(new RegisterHolder(XMM5));
+      aval_xregs.push_back(new RegisterHolder(XMM4)); 
+      aval_xregs.push_back(new RegisterHolder(XMM3));
+      aval_xregs.push_back(new RegisterHolder(XMM2)); 
+      aval_xregs.push_back(new RegisterHolder(XMM1));
+      aval_xregs.push_back(new RegisterHolder(XMM0));   
+#ifdef _DEBUG
+      wcout << L"Compiling code for IA-32 architecture..." << endl;
+#endif
+      // TODO: map referenced variables to stack references; impact memory manager
+      local_space = sizeof(int32_t);
       Prolog();
       ProcessInstructions();
       if(!compile_success) {
