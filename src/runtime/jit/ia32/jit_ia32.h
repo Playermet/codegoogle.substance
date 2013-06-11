@@ -36,6 +36,8 @@
 #include "../jit_common.h"
 #ifdef _WIN32
 #include <stdint.h>
+#else
+#include <sys/mman.h>
 #endif
 
 // offsets for Intel (IA-32) addresses
@@ -68,7 +70,7 @@
 #define MAX_DBLS 64
 #define OUR_PAGE_SIZE 4096
 
-#define VALUE_OFFSET sizeof(int32_t) * 2
+#define VALUE_OFFSET sizeof(int32_t)
 
 // register type
 namespace jit {
@@ -765,9 +767,13 @@ namespace jit {
 
     ~JitCompiler() {
     }
-
-    jit_fun_ptr Compile() {
+		
+		/****************************
+		 * TODO: doc
+		 ****************************/
+		jit_fun_ptr Compile() {
       code_buf_max = OUR_PAGE_SIZE;
+			compile_success = true;
 #ifdef _WIN32
       code = (unsigned char*)malloc(code_buf_max);
       floats = new double[MAX_DBLS];
@@ -813,7 +819,13 @@ namespace jit {
       }
       Epilog(0);
 
-      return (jit_fun_ptr)code;
+#ifndef _WIN32
+			if(mprotect(code, code_index, PROT_EXEC)) {
+				perror("Couldn't mprotect");
+				exit(1);
+			}
+#endif
+			return (jit_fun_ptr)code;
     }
   };
 }
