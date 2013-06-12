@@ -32,7 +32,7 @@
 #ifndef __JIT_IA32_H__
 #define __JIT_IA32_H__
 
-#include "../../../common.h"
+#include "../../common.h"
 #include "../jit_common.h"
 #ifdef _WIN32
 #include <stdint.h>

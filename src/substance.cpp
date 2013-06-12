@@ -29,9 +29,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#include "parser/parser.h"
-#include "parser/emitter.h"
-#include "runtime/runtime.h"
+#include "parser.h"
+#include "emitter.h"
+#include "runtime.h"
 
 int main(int argc, const char* argv[]) {
 	if(argc == 2) {

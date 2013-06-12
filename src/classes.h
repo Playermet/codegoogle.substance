@@ -32,7 +32,7 @@
 #ifndef __CLASS_H__
 #define __CLASS_H__
 
-#include "../common.h"
+#include "common.h"
 #include "jit/jit_common.h"
 
 using namespace std;

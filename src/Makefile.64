@@ -1,28 +1,23 @@
-ARGS=-O3 -pthread -Wall -Wno-unused-function
-# ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+# ARGS=-O3 -pthread -Wall -Wno-unused-function
+ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
 
 CC=g++
-SRC=substance.o
-OBJ_LIBS= parser.a runtime.a
-PARSER_PATH=parser
-RUNTIME_PATH=runtime
-EXE=subsc
+SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 
+OBJ_LIBS=jit.a
+JIT_PATH=jit/amd64
+EXE=subc
 
 $(EXE): $(SRC) $(OBJ_LIBS)
 	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 #	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 
-parser.a:
-	cd $(PARSER_PATH); make	
-	
-runtime.a:
-	cd $(RUNTIME_PATH); make	
+jit.a:
+	cd $(JIT_PATH); make	
 	
 %.o: %.cpp
 	$(CC) -m64 $(ARGS) -c $< 
 
 clean:
-	cd $(PARSER_PATH); make clean
-	cd $(RUNTIME_PATH); make clean
-	rm -f $(EXE).exe $(EXE) *.exe *.o *~
+	cd $(JIT_PATH); make clean
+	rm -f $(EXE).exe $(EXE) *.exe *.a *.o *~
 
