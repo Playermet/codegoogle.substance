@@ -32,7 +32,7 @@
 #include "jit_common.h"
 #include <string>
 
-using namespace Jit;
+using namespace jit;
 
 long SubExpression::temp_id = 0;
 

@@ -39,6 +39,9 @@
     <ClCompile Include="..\runtime\jit\ia32\jit_ia32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\runtime\jit\jit_common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\parser\emitter.h">

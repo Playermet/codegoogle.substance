@@ -17,6 +17,7 @@
     <ClCompile Include="..\parser\tree.cpp" />
     <ClCompile Include="..\runtime\classes.cpp" />
     <ClCompile Include="..\runtime\jit\ia32\jit_ia32.cpp" />
+    <ClCompile Include="..\runtime\jit\jit_common.cpp" />
     <ClCompile Include="..\runtime\runtime.cpp" />
     <ClCompile Include="..\substance.cpp" />
   </ItemGroup>

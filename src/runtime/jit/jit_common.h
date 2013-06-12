@@ -31,12 +31,11 @@
 #ifndef __JIT_COMMON_H__
 #define __JIT_COMMON_H__
 
+#ifndef _WIN32
 #include <sys/mman.h>
 #include <errno.h>
-#include "../os/posix/memory.h"
-#include "../os/posix/posix.h"
-#include "../common.h"
-#include "../interpreter.h"
+#endif
+#include "../../common.h"
 
 using namespace std;
 
@@ -287,7 +286,7 @@ namespace jit {
    ********************************/
   class SubExpression {
     string key;
-    StackInstr* instr;
+    JitInstruction* instr;
     SubExpression* left;
     SubExpression* operation;
     SubExpression* right;
@@ -304,7 +303,7 @@ namespace jit {
     }
     
   public:
-    SubExpression(StackInstr* i, bool t) {
+    SubExpression(JitInstruction* i, bool t) {
       instr = i;
       left = this;
       operation = NULL;
@@ -313,7 +312,7 @@ namespace jit {
       float_index = -1;
     }
 
-    SubExpression(StackInstr* i, long f) {
+    SubExpression(JitInstruction* i, long f) {
       instr = i;
       left = this;
       operation = NULL;
@@ -334,11 +333,11 @@ namespace jit {
     ~SubExpression() {
     }
 
-    inline StackInstr* GetInstruction() {
+    inline JitInstruction* GetInstruction() {
       return instr;
     }
 
-    inline void SetInstruction(StackInstr* i) {
+    inline void SetInstruction(JitInstruction* i) {
       instr = i;
     }
     
@@ -776,7 +775,7 @@ namespace jit {
     JitIR* jit_ir;
     vector<Expression*> expressions;
     multimap<const string, Expression*> value_numbers;
-    vector<StackInstr*> new_instrs;
+    vector<JitInstruction*> new_instrs;
     vector<BasicBlock*> successors;
     vector<BasicBlock*> predecessors;
     
@@ -796,7 +795,7 @@ namespace jit {
       }
       
       while(!new_instrs.empty()) {
-	StackInstr* tmp = new_instrs.front();
+	JitInstruction* tmp = new_instrs.front();
 	new_instrs.erase(new_instrs.begin());
 	// delete
 	delete tmp;
@@ -871,7 +870,7 @@ namespace jit {
     stack<SubExpression*> working_stack;
     BasicBlock* cur_block;
     vector<SubExpression*> expressions;
-    vector<StackInstr*> new_instrs;
+    vector<JitInstruction*> new_instrs;
     map<long, BasicBlock*> labels;
     long block_id;
     long temp_id;
@@ -914,7 +913,7 @@ namespace jit {
       }
       
       while(!new_instrs.empty()) {
-	StackInstr* tmp = new_instrs.front();
+	JitInstruction* tmp = new_instrs.front();
 	new_instrs.erase(new_instrs.begin());
 	// delete
 	delete tmp;
@@ -922,13 +921,13 @@ namespace jit {
       }
     }
 
-    SubExpression* MakeSubExpression(StackInstr* i, long f) {
+    SubExpression* MakeSubExpression(JitInstruction* i, long f) {
       SubExpression* expression = new SubExpression(i, f);
       expressions.push_back(expression);
       return expression;
     }
     
-    SubExpression* MakeSubExpression(StackInstr* i, bool is_temp = false) {
+    SubExpression* MakeSubExpression(JitInstruction* i, bool is_temp = false) {
       SubExpression* expression = new SubExpression(i, is_temp);
       expressions.push_back(expression);
       return expression;
