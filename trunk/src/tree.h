@@ -32,7 +32,7 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
-#include "../common.h"
+#include "common.h"
 
 using namespace std;
 

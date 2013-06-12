@@ -32,7 +32,7 @@
 #ifndef __EMITTER_H__
 #define __EMITTER_H__
 
-#include "../common.h"
+#include "common.h"
 #include "tree.h"
 
 /****************************
