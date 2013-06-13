@@ -45,23 +45,31 @@ namespace runtime {
    * Execution engine
    ****************************/
   class Runtime {
-    stack<Value*> execution_stack;
-    stack<Value*> value_pool;
+		// execution stack and stack pointer
+    Value* execution_stack;
+		size_t execution_stack_pos;
+		// program instructions and jump table
     vector<Instruction*> instructions;
 	  unordered_map<INT_T, size_t> jump_table;
-  
-    inline Value* GetPoolValue() {
-      if(value_pool.empty()) {
-        wcerr << L">>> execution value pool empty <<<" << endl;
-        exit(1);
-      }
-    
-      Value* value = value_pool.top();
-      value_pool.pop();
 
-      return value;
-    }
-
+		void PushValue(Value* value) {
+			if(execution_stack_pos >= EXECUTION_STACK_SIZE) {
+				wcerr << ">>> stack bounds exceeded <<<" << endl;
+				exit(1);
+			}
+			
+			execution_stack[execution_stack_pos++];
+		}
+		
+		Value* PopValue() {
+			if(execution_stack_pos - 1 < 0) {
+				wcerr << ">>> stack bounds exceeded <<<" << endl;
+				exit(1);
+			}
+			
+			return PopValue();
+		}
+		
   #ifdef _DEBUG
 	  void DumpValue(Value* value, bool is_push) {
 		  if(is_push) {
@@ -86,52 +94,19 @@ namespace runtime {
 		  }
 	  }
   #endif
-	
-    inline void ReleasePoolValue(Value* value) {
-      value_pool.push(value);
-    }
-
-    inline void PushValue(Value* value) {
-  #ifdef _DEBUG
-		  DumpValue(value, true);
-  #endif
-      execution_stack.push(value);
-    }
-  
-    Value* PopValue() {
-      if(execution_stack.empty()) {
-        wcerr << L">>> execution stack bounds exceeded <<<" << endl;
-        exit(1);
-      }
 		
-      Value* value = execution_stack.top();		
-  #ifdef _DEBUG
-		  DumpValue(value, false);
-  #endif
-      execution_stack.pop();
-      return value;
-	  }
-  	
     // member operations
     void Add();
 	
    public:
 	  Runtime(ExecutableProgram *p) {
       this->instructions = p->GetInstructions();
-		  this->jump_table = p->GetJumpTable();
-      for(size_t i = 0; i < EXECUTION_STACK_SIZE; ++i) {
-        value_pool.push(new Value);
-      }
+		  this->jump_table = p->GetJumpTable();			
+			execution_stack = new Value[EXECUTION_STACK_SIZE];
+			execution_stack_pos = 0;
     }
   
     ~Runtime() {
-      while(!value_pool.empty()) {
-        Value* tmp = value_pool.top();
-        value_pool.pop();
-        // delete
-        delete tmp;
-        tmp = NULL;
-      }
     }
   
     void Run();

@@ -76,7 +76,7 @@ void Runtime::Run()
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
     case LOAD_INT_LIT:
-      left = GetPoolValue();
+      left = new Value; // GetPoolValue();
       left->type = INT_VALUE;
       left->klass = IntegerClass::Instance();
       left->value.int_value = instruction->operand1;
@@ -91,7 +91,7 @@ void Runtime::Run()
       break;
       
     case LOAD_FLOAT_LIT:
-      left = GetPoolValue();
+      left = new Value; // GetPoolValue();
       left->type = FLOAT_VALUE;
       left->klass = FloatClass::Instance();
       left->value.float_value = instruction->operand3;
@@ -165,7 +165,8 @@ void Runtime::Run()
 			case 0:
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional" << endl;
-#endif
+#endif/*
+				/
 				if(is_recording) {
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs);
@@ -183,6 +184,8 @@ void Runtime::Run()
           is_loop = next_ip < ip;
 				  ip = next_ip;
         }
+			*/
+				ip = jump_table[instruction->operand2];
 				break;
 				
 				// jump true
@@ -300,7 +303,6 @@ void Runtime::Run()
 
 #ifdef _DEBUG
 	wcout << L"--------------------------" << endl;
-	wcout << L"ending stack pos=" << execution_stack.size() << endl;
-	wcout << L"pool size=" << value_pool.size() << endl;
+	wcout << L"ending stack pos=" << execution_stack_pos << endl;
 #endif
 }
