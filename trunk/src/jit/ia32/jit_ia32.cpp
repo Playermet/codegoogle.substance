@@ -181,6 +181,10 @@ void JitCompiler::ProcessInstructions() {
       working_stack.push_front(new RegInstr(holder));
     }
       break;
+			
+			// TODO:
+		default:
+			break;
     }
   }
 

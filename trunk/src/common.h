@@ -64,7 +64,6 @@ namespace std {
 using namespace std;
 
 class RuntimeClass;
-struct _Value;
 
 #define INT_T long
 #define FLOAT_T double
@@ -134,11 +133,27 @@ typedef union _BaseValue {
 /****************************
  * 'Abstract' value type
  ****************************/
-typedef struct _Value {
+class Value { 
+ public:
   RuntimeType type;
   BaseValue value;
   RuntimeClass* klass;
-} Value;
+
+	Value() {
+	}
+
+	Value(const Value &rhs) {
+		memcpy(this, &rhs, sizeof(Value));
+	}
+	
+	Value& operator=(const Value &rhs) {
+		if(this != &rhs) {
+			memcpy(this, &rhs, sizeof(Value));
+		}
+
+		return *this;
+	}
+};
 
 /****************************
  * Holder for runtime program
