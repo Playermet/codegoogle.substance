@@ -37,8 +37,6 @@ using namespace runtime;
 
 #define HIT_THRESHOLD 3
 
-
-
 // delegates operation to the appropriate type class
 #define CALC(name, left, right, jit_instrs, is_recording) {   \
   left = PopValue();                                          \
