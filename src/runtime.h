@@ -51,23 +51,29 @@ namespace runtime {
 		// program instructions and jump table
     vector<Instruction*> instructions;
 	  unordered_map<INT_T, size_t> jump_table;
+		// loop iteration counts
+		stack<INT_T> loop_iterations;
 
-		void PushValue(Value* value) {
+		Value TopValue() {
+			return execution_stack[execution_stack_pos];
+		}
+
+		void PushValue(Value &value) {
 			if(execution_stack_pos >= EXECUTION_STACK_SIZE) {
 				wcerr << ">>> stack bounds exceeded <<<" << endl;
 				exit(1);
 			}
 			
-			execution_stack[execution_stack_pos++];
+			execution_stack[execution_stack_pos++] = value;
 		}
 		
-		Value* PopValue() {
+		Value &PopValue() {
 			if(execution_stack_pos - 1 < 0) {
 				wcerr << ">>> stack bounds exceeded <<<" << endl;
 				exit(1);
 			}
 			
-			return PopValue();
+			return execution_stack[--execution_stack_pos];
 		}
 		
   #ifdef _DEBUG
@@ -91,6 +97,10 @@ namespace runtime {
 		  case FLOAT_VALUE:
 			  wcout << L"float=" << value->value.float_value << endl;
 			  break;
+
+				// TODO:
+			default:
+				break;
 		  }
 	  }
   #endif

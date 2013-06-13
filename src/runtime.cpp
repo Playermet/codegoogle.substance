@@ -37,13 +37,15 @@ using namespace runtime;
 
 #define HIT_THRESHOLD 3
 
+
+
 // delegates operation to the appropriate type class
 #define CALC(name, left, right, jit_instrs, is_recording) {   \
   left = PopValue();                                          \
   right = PopValue();                                         \
-  if(left->klass) {                                           \
-    Operation oper = left->klass->GetOperation(name);         \
-    (*oper)(left, right, left, jit_instrs, is_recording);     \
+  if(left.klass) {																						\
+    Operation oper = left.klass->GetOperation(name);					\
+    (*oper)(left, right, left, jit_instrs, is_recording);			\
     PushValue(left);                                          \
   }                                                           \
   else {                                                      \
@@ -63,10 +65,9 @@ void Runtime::Run()
 	
   // runtime variables
 	Value* frame = new Value[8];
-  Value *left, *right;
+  Value left, right;
   
   // find 'hotspots' for JIT compiling
-  bool is_loop = false;
   bool is_recording = false;
   vector<jit::JitInstruction*> jit_instrs;
 
@@ -76,25 +77,23 @@ void Runtime::Run()
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
     case LOAD_INT_LIT:
-      left = new Value; // GetPoolValue();
-      left->type = INT_VALUE;
-      left->klass = IntegerClass::Instance();
-      left->value.int_value = instruction->operand1;
+      left.type = INT_VALUE;
+      left.klass = IntegerClass::Instance();
+      left.value.int_value = instruction->operand1;
 #ifdef _DEBUG
-			wcout << L"LOAD_INT_LIT: value=" << left->value.int_value << endl;
+			wcout << L"LOAD_INT_LIT: value=" << left.value.int_value << endl;
 #endif
       PushValue(left);
       // record JIT instructions
       if(is_recording) {
-        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_LIT, left->value.int_value));
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_LIT, left.value.int_value));
       }
       break;
       
     case LOAD_FLOAT_LIT:
-      left = new Value; // GetPoolValue();
-      left->type = FLOAT_VALUE;
-      left->klass = FloatClass::Instance();
-      left->value.float_value = instruction->operand3;
+      left.type = FLOAT_VALUE;
+      left.klass = FloatClass::Instance();
+      left.value.float_value = instruction->operand3;
 #ifdef _DEBUG
 			wcout << L"LOAD_FLOAT_LIT: " << endl;
 #endif
@@ -105,12 +104,11 @@ void Runtime::Run()
 #ifdef _DEBUG
 			wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
-      left = GetPoolValue();
-      memcpy(left, &frame[instruction->operand1], sizeof(Value));
+      left = frame[instruction->operand1];
 			PushValue(left);
       // record JIT instructions
       if(is_recording) {
-        switch(right->type) {
+        switch(right.type) {
         case INT_VALUE:
           jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
           break;
@@ -130,10 +128,10 @@ void Runtime::Run()
 			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-      memcpy(&frame[instruction->operand1], left, sizeof(Value));
+      frame[instruction->operand1] = left;
       // record JIT instructions
       if(is_recording) {
-        switch(right->type) {
+        switch(right.type) {
         case INT_VALUE:
           jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1, jit::LOCL));
           break;
@@ -149,14 +147,17 @@ void Runtime::Run()
       break;
 
 		case LBL:
+			if(!loop_iterations.empty() && loop_iterations.top() ==  instruction->operand1) {
+				instruction->operand2++;
+				if(instruction->operand2 > HIT_THRESHOLD) {
+					is_recording = true;
+				}
+				loop_iterations.pop();
+			} 
 #ifdef _DEBUG
-			wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" << instruction->operand2 << endl;
+			wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" 
+						<< instruction->operand2 << L", loop_pos=" << loop_iterations.size() <<  endl;
 #endif
-      instruction->operand2++;
-      if(instruction->operand2 > HIT_THRESHOLD) {
-        is_recording = true;
-      }
-      is_loop = false;
 			break;
 			
 		case JMP:
@@ -164,41 +165,39 @@ void Runtime::Run()
 				// unconditional jump
 			case 0:
 #ifdef _DEBUG
-				wcout << L"JMP: unconditional" << endl;
-#endif/*
-				/
+				wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
+#endif
 				if(is_recording) {
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs);
           jit::jit_fun_ptr jit_fun = compiler.Compile();
-          (*jit_fun)(frame, NULL, NULL);
+					// return code of next instruction
+          ip = (*jit_fun)(frame, NULL, NULL);
           // clean up
-          is_recording = false;
           jit_instrs.clear();
-          // take jump
-          ip = jump_table[instruction->operand2];
         }
         else {
           // look for loop and take jump
-          size_t next_ip = jump_table[instruction->operand2];
-          is_loop = next_ip < ip;
+          const size_t next_ip = jump_table[instruction->operand2];
+					if(next_ip < ip) {
+						loop_iterations.push(instruction->operand2);
+					}
 				  ip = next_ip;
         }
-			*/
 				ip = jump_table[instruction->operand2];
 				break;
 				
 				// jump true
 			case 1:
 #ifdef _DEBUG
-				wcout << L"JMP: true" << endl;
+				wcout << L"JMP: true, to=" << instruction->operand2 << endl;
 #endif
 				left = PopValue();
-				if(left->type != BOOL_VALUE) {
+				if(left.type != BOOL_VALUE) {
 					cerr << L">>> Expected a boolean value <<<" << endl;
 					exit(1);
 				}
-				if(left->value.int_value) {
+				if(left.value.int_value) {
 					ip = jump_table[instruction->operand2];
 				}
 				break;
@@ -206,14 +205,14 @@ void Runtime::Run()
 				// jump false
 			case -1:
 #ifdef _DEBUG
-				wcout << L"JMP: false" << endl;
+				wcout << L"JMP: false, to=" << instruction->operand2 << endl;
 #endif
 				left = PopValue();
-				if(left->type != BOOL_VALUE) {
+				if(left.type != BOOL_VALUE) {
 					cerr << L">>> Expected a boolean value <<<" << endl;
 					exit(1);
 				}
-				if(!left->value.int_value) {
+				if(!left.value.int_value) {
 					ip = jump_table[instruction->operand2];
 				}
         // record JIT instructions
@@ -283,21 +282,25 @@ void Runtime::Run()
 			wcout << L"DUMP" << endl;
 #endif
       left = PopValue();
-      switch(left->type) {
+      switch(left.type) {
       case INT_VALUE:
-        wcout << L"type=integer, value=" << left->value.int_value << endl;
+        wcout << L"type=integer, value=" << left.value.int_value << endl;
         break;
     
       case FLOAT_VALUE:
-        wcout << L"type=float, value=" << left->value.float_value << endl;
+        wcout << L"type=float, value=" << left.value.float_value << endl;
         break;
-      }
-      break;
-    }
+				
+				// TODO:
+			default:
+				break;
+			}
+			break;
+		}
     // update
     instruction = instructions[ip++];
   } 
-
+	
   delete[] frame;
   frame = NULL;
 
