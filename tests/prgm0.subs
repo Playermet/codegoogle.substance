@@ -1,13 +1,15 @@
 {
 	a = 1;
-	while(a < 7) {
+	while(a < 13) {
 		a = a + 1;
 	};
+#~
 	z = 0;
 	while(z < 10) {
 		a = a + 1;
 		z = z + 2;
 	};
+~#
 	b = 1.2;
 	c = a * b + 5;
 	dump c;

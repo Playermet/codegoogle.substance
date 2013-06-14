@@ -36,6 +36,9 @@
 #include "../jit_common.h"
 #ifdef _WIN32
 #include <stdint.h>
+#else
+#include <sys/mman.h>
+#include <errno.h>
 #endif
 
 // offsets for Intel (IA-32) addresses
@@ -68,7 +71,7 @@
 #define MAX_DBLS 64
 #define OUR_PAGE_SIZE 4096
 
-#define VALUE_OFFSET sizeof(int32_t) * 2
+#define VALUE_OFFSET sizeof(int32_t)
 
 // register type
 namespace jit {
@@ -823,6 +826,9 @@ namespace jit {
 				int32_t src_offset = iter->first;
 				int32_t dest_index = jump_table[instr->GetOperand()] + 1;
 				int32_t dest_offset = block_instrs[dest_index]->GetOffset();
+				if(dest_offset == 0) {
+					dest_offset = block_instrs[block_instrs.size() - 1]->GetOffset();
+				}
 				int32_t offset = dest_offset - src_offset - 4;
 				memcpy(&code[src_offset], &offset, 4); 
 #ifdef _DEBUG
@@ -833,6 +839,13 @@ namespace jit {
 #ifdef _DEBUG
 			wcout << L"JIT code: actual=" << code_index << L", buffer=" 
 						<< code_buf_max << L" byte(s)" << endl;
+#endif
+
+#ifndef _WIN32
+			if(mprotect(code, code_index, PROT_EXEC)) {
+				perror("Couldn't mprotect");
+				exit(errno);
+			}
 #endif
 			
       return (jit_fun_ptr)code;

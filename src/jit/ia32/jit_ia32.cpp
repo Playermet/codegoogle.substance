@@ -59,8 +59,10 @@ void JitCompiler::Epilog(int32_t imm) {
 }
 
 void JitCompiler::ProcessInstructions() {
-  for(instr_index = 0; compile_success && instr_index < block_instrs.size(); instr_index++) {
+  for(instr_index = 0; instr_index < block_instrs.size(); instr_index++) {
     JitInstruction* instr = block_instrs[instr_index];
+		instr->SetOffset(code_index);
+		
     switch(instr->GetType()) {
       // load literal
     case LOAD_CHAR_LIT:
