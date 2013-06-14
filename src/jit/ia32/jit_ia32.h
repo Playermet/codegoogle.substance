@@ -810,7 +810,7 @@ namespace jit {
       aval_xregs.push_back(new RegisterHolder(XMM1));
       aval_xregs.push_back(new RegisterHolder(XMM0));   
 #ifdef _DEBUG
-      wcout << L"Compiling code for IA-32 architecture..." << endl;
+      wcout << L"---- Compiling block for IA-32 target ----" << endl;
 #endif
       // TODO: map referenced variables to stack references; impact memory manager
       ProcessIndices();
@@ -839,7 +839,7 @@ namespace jit {
 #endif
 			}
 #ifdef _DEBUG
-			wcout << L"JIT code: actual=" << code_index << L", buffer=" 
+			wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" 
 						<< code_buf_max << L" byte(s)" << endl;
 #endif
 
@@ -849,6 +849,7 @@ namespace jit {
 				exit(errno);
 			}
 #endif
+			wcout << L"--------------------------" << endl;
 			
       return (jit_fun_ptr)code;
     }
