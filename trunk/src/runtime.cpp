@@ -161,13 +161,13 @@ void Runtime::Run()
 		case JMP:
 			switch(instruction->operand1) {
 				// unconditional jump
-			case 0:
+			case -1:
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
 #endif
 				if(is_recording && jump_dest == instruction->operand2) {
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-																											 instruction->operand2));
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2,
+																											 instruction->operand1));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table);
           jit::jit_fun_ptr jit_fun = compiler.Compile();					
@@ -204,13 +204,13 @@ void Runtime::Run()
 				}
 				// record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-																											 instruction->operand2));
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2,
+																											 instruction->operand1));
         }
 				break;
 				
 				// jump false
-			case -1:
+			case 0:
 #ifdef _DEBUG
 				wcout << L"JMP: false, to=" << instruction->operand2 << endl;
 #endif
@@ -224,8 +224,8 @@ void Runtime::Run()
 				}
         // record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-																											 instruction->operand2));
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2,
+																											 instruction->operand1));
         }
 				break;
 			}
