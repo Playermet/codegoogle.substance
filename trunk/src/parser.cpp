@@ -141,7 +141,7 @@ bool Parser::CheckErrors()
 StatementList* Parser::Parse()
 {
 #ifdef _DEBUG
-  wcout << L"\n---------- Scanning/Parsing ---------" << endl;
+  wcout << L"\n========== Scanning/Parsing =========" << endl;
 #endif
   NextToken();
   

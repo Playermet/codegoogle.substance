@@ -58,7 +58,7 @@ using namespace runtime;
 void Runtime::Run()
 {
 #ifdef _DEBUG
-  wcout << L"---------- Executing Code ---------" << endl;
+  wcout << L"========== Executing Code =========" << endl;
 #endif
 	
   // runtime variables
@@ -317,7 +317,7 @@ void Runtime::Run()
   frame = NULL;
 
 #ifdef _DEBUG
-	wcout << L"--------------------------" << endl;
+	wcout << L"==========================" << endl;
 	wcout << L"ending stack pos=" << execution_stack_pos << endl;
 #endif
 }
