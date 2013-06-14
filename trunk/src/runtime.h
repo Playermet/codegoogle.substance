@@ -53,6 +53,12 @@ namespace runtime {
 	  unordered_map<INT_T, size_t> jump_table;
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
+		// JIT recording
+		bool is_recording;
+		bool is_jump;
+		INT_T jump_dest;
+		vector<jit::JitInstruction*> jit_instrs;
+
 
 		Value TopValue() {
 			return execution_stack[execution_stack_pos];
@@ -114,6 +120,7 @@ namespace runtime {
 		  this->jump_table = p->GetJumpTable();			
 			execution_stack = new Value[EXECUTION_STACK_SIZE];
 			execution_stack_pos = 0;
+			is_recording = is_jump = false;
     }
   
     ~Runtime() {
