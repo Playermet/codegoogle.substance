@@ -182,6 +182,10 @@ void JitCompiler::ProcessInstructions() {
     }
       break;
 			
+		case JMP:
+      ProcessJump(instr);
+      break;
+			
 			// TODO:
 		default:
 			break;
@@ -747,6 +751,76 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
   right = NULL;
 }
 
+void JitCompiler::ProcessJump(JitInstruction* instr) {
+  if(!skip_jump) {
+#ifdef _DEBUG
+    wcout << L"JMP: id=" << instr->GetOperand() << L", regs=" << aval_regs.size() 
+	 << L"," << aux_regs.size() << endl;
+#endif
+    if(instr->GetOperand2() < 0) {
+      AddMachineCode(0xe9);
+    }
+    else {
+      RegInstr* left = working_stack.front();
+      working_stack.pop_front(); 
+
+      switch(left->GetType()) {
+      case IMM_INT:{
+        RegisterHolder* holder = GetRegister();
+        move_imm_reg(left->GetOperand(), holder->GetRegister());
+        cmp_imm_reg(instr->GetOperand2(), holder->GetRegister());
+        ReleaseRegister(holder);
+      }
+        break;
+        
+      case REG_INT:
+        cmp_imm_reg(instr->GetOperand2(), left->GetRegister()->GetRegister());
+        ReleaseRegister(left->GetRegister());
+        break;
+
+      case MEM_INT: {
+        RegisterHolder* holder = GetRegister();
+        move_mem_reg(left->GetOperand(), EBP, holder->GetRegister());
+        cmp_imm_reg(instr->GetOperand2(), holder->GetRegister());
+        ReleaseRegister(holder);
+      }
+        break;
+
+      default:
+        wcerr << L">>> Should never occur (compiler bug?) type=" << left->GetType() << L" <<<" << endl;
+        exit(1);
+        break;
+      }
+
+      // 1 byte compare with register
+      AddMachineCode(0x0f);
+      AddMachineCode(0x84);
+      
+      // clean up
+      delete left;
+      left = NULL;
+    }
+    // store update index
+    native_jump_table.insert(pair<int32_t, JitInstruction*>(code_index, instr));
+    // temp offset, updated in next pass
+    AddImm(0);
+  }
+  else {
+    RegInstr* left = working_stack.front();
+    working_stack.pop_front(); 
+    skip_jump = false;
+
+    // release register
+    if(left->GetType() == REG_INT) {
+      ReleaseRegister(left->GetRegister());
+    }
+
+    // clean up
+    delete left;
+    left = NULL;
+  }
+}
+
 void JitCompiler::move_reg_reg(Register src, Register dest) {
   if(src != dest) {
 #ifdef _DEBUG
@@ -1089,7 +1163,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
       }  
     }    
     // store update index
-    jump_table.insert(pair<int32_t, JitInstruction*>(code_index, next_instr));
+    native_jump_table.insert(pair<int32_t, JitInstruction*>(code_index, next_instr));
     // temp offset
     AddImm(0);
     skip_jump = true;

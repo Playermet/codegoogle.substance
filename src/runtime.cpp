@@ -65,10 +65,6 @@ void Runtime::Run()
 	Value* frame = new Value[8];
   Value left, right;
   
-  // find 'hotspots' for JIT compiling
-  bool is_recording = false;
-  vector<jit::JitInstruction*> jit_instrs;
-
   // execute code
 	size_t ip = 0;  
   Instruction* instruction = instructions[ip++];
@@ -144,14 +140,18 @@ void Runtime::Run()
       }
       break;
 
-		case LBL:
-			if(!loop_iterations.empty() && loop_iterations.top() ==  instruction->operand1) {
+		case LBL:			
+			// check hit threshold
+			if(is_jump && jump_dest ==  instruction->operand1) {
 				instruction->operand2++;
 				if(instruction->operand2 > HIT_THRESHOLD) {
 					is_recording = true;
 				}
-				loop_iterations.pop();
-			} 
+			}
+			// record JIT instructions
+			if(is_recording) {
+				jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
+			}	
 #ifdef _DEBUG
 			wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" 
 						<< instruction->operand2 << L", loop_pos=" << loop_iterations.size() <<  endl;
@@ -165,20 +165,24 @@ void Runtime::Run()
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
 #endif
-				if(is_recording) {
+				if(is_recording && jump_dest == instruction->operand2) {
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																											 instruction->operand2));
           // compile into native code and execute
-          jit::JitCompiler compiler(jit_instrs);
-          jit::jit_fun_ptr jit_fun = compiler.Compile();
+          jit::JitCompiler compiler(jit_instrs, jump_table);
+          jit::jit_fun_ptr jit_fun = compiler.Compile();					
 					// return code of next instruction
-          ip = (*jit_fun)(frame, NULL, NULL);
-          // clean up
-          jit_instrs.clear();
+          ip = (*jit_fun)(frame, NULL, NULL);          
+					// rest
+          is_recording = is_jump = false;
+					jit_instrs.clear();
         }
         else {
           // look for loop and take jump
           const size_t next_ip = jump_table[instruction->operand2];
-					if(next_ip < ip) {
-						loop_iterations.push(instruction->operand2);
+					if(!is_recording && next_ip < ip) {
+						is_jump = true;
+						jump_dest = instruction->operand2;
 					}
 				  ip = next_ip;
         }
@@ -198,6 +202,11 @@ void Runtime::Run()
 				if(left.value.int_value) {
 					ip = jump_table[instruction->operand2];
 				}
+				// record JIT instructions
+        if(is_recording) {
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																											 instruction->operand2));
+        }
 				break;
 				
 				// jump false
@@ -215,7 +224,8 @@ void Runtime::Run()
 				}
         // record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::GUARD, (long)jump_table[instruction->operand2]));
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																											 instruction->operand2));
         }
 				break;
 			}

@@ -149,7 +149,7 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
 	// 'while'; jump
 	if(!if_while->IsIf()) {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump" << endl;
+    wcout << block_instructions.size() << L": " << L"jump: id=" << top_label << endl;
 #endif
 		block_instructions.push_back(MakeInstruction(JMP, 0, (int)top_label));
 	}

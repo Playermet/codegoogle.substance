@@ -226,13 +226,14 @@ namespace jit {
   ********************************/
   class JitCompiler {
     vector<JitInstruction*> block_instrs;
+		unordered_map<INT_T, size_t> jump_table;
     deque<RegInstr*> working_stack;
     vector<RegisterHolder*> aval_regs;
     list<RegisterHolder*> used_regs;
     stack<RegisterHolder*> aux_regs;
     vector<RegisterHolder*> aval_xregs;
     list<RegisterHolder*> used_xregs;
-    unordered_map<int32_t, JitInstruction*> jump_table;
+    unordered_map<int32_t, JitInstruction*> native_jump_table;
     int32_t local_space;
     int32_t instr_count;
     unsigned char* code;
@@ -538,6 +539,7 @@ namespace jit {
     void ProcessStore(JitInstruction* instruction);
     void ProcessIntCalculation(JitInstruction* instruction);
     void ProcessFloatCalculation(JitInstruction* instruction);
+		void ProcessJump(JitInstruction* instr);
     RegInstr* ProcessIntFold(long left_imm, long right_imm, JitInstructionType type);
 
     /***********************************
@@ -758,8 +760,9 @@ namespace jit {
     bool cond_jmp(JitInstructionType type);
 
   public:
-    JitCompiler(vector<JitInstruction*> block_instrs) {
+    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table) {
       this->block_instrs = block_instrs;
+			this->jump_table = jump_table;
       skip_jump = false;
     }
 
@@ -813,6 +816,25 @@ namespace jit {
       }
       Epilog(0);
 
+			// show content
+			unordered_map<int32_t, JitInstruction*>::iterator iter;
+			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
+				JitInstruction* instr = iter->second;
+				int32_t src_offset = iter->first;
+				int32_t dest_index = jump_table[instr->GetOperand()] + 1;
+				int32_t dest_offset = block_instrs[dest_index]->GetOffset();
+				int32_t offset = dest_offset - src_offset - 4;
+				memcpy(&code[src_offset], &offset, 4); 
+#ifdef _DEBUG
+				wcout << L"jump update: src=" << src_offset 
+							<< L"; dest=" << dest_offset << endl;
+#endif
+			}
+#ifdef _DEBUG
+			wcout << L"JIT code: actual=" << code_index << L", buffer=" 
+						<< code_buf_max << L" byte(s)" << endl;
+#endif
+			
       return (jit_fun_ptr)code;
     }
   };
