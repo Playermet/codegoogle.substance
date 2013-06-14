@@ -146,6 +146,7 @@ void Runtime::Run()
 				instruction->operand2++;
 				if(instruction->operand2 > HIT_THRESHOLD) {
 					is_recording = true;
+					label_start = ip;
 				}
 			}
 			// record JIT instructions
@@ -172,7 +173,7 @@ void Runtime::Run()
 																											 instruction->operand1));
 					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
-          jit::JitCompiler compiler(jit_instrs, jump_table);
+          jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           jit::jit_fun_ptr jit_fun = compiler.Compile();					
 					// return code of next instruction
 					(*jit_fun)(frame, NULL, NULL); 

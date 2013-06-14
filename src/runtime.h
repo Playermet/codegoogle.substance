@@ -57,6 +57,7 @@ namespace runtime {
 		bool is_recording;
 		bool is_jump;
 		INT_T jump_dest;
+		INT_T label_start;
 		vector<jit::JitInstruction*> jit_instrs;
 
 

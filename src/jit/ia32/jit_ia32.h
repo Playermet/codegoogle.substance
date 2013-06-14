@@ -247,6 +247,7 @@ namespace jit {
     int32_t code_buf_max;
     bool compile_success;
     bool skip_jump;
+		INT_T label_start;
 
     // Add byte code to buffer
     inline void AddMachineCode(unsigned char b) {
@@ -763,9 +764,10 @@ namespace jit {
     bool cond_jmp(JitInstructionType type);
 
   public:
-    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table) {
+    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T label_start) {
       this->block_instrs = block_instrs;
 			this->jump_table = jump_table;
+			this->label_start = label_start;
       skip_jump = false;
     }
 
@@ -824,7 +826,7 @@ namespace jit {
 			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
 				JitInstruction* instr = iter->second;
 				int32_t src_offset = iter->first;
-				int32_t dest_index = jump_table[instr->GetOperand()] + 1;
+				int32_t dest_index = jump_table[instr->GetOperand()] - label_start + 3;
 				int32_t dest_offset = block_instrs[dest_index]->GetOffset();
 				if(dest_offset == 0) {
 					dest_offset = block_instrs[block_instrs.size() - 1]->GetOffset();
