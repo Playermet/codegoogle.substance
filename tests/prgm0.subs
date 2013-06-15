@@ -1,8 +1,11 @@
 {
 	a = 1;
+	y = 13;
 	while(a < 13) {
 		a = a + 1;
+		y = a + a;
 	};
+	dump y;
 	z = 0;
 	while(z < 10) {
 		a = a + 1;

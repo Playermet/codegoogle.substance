@@ -503,6 +503,7 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
       RegisterHolder* holder = GetRegister();
       move_mem_reg(FRAME, EBP, holder->GetRegister());
       add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+      //...
       move_mem_reg(0, holder->GetRegister(), holder->GetRegister());
       math_imm_reg(right->GetOperand(), holder->GetRegister(), instruction->GetType());
       working_stack.push_front(new RegInstr(holder));
@@ -521,7 +522,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
 
     case MEM_INT: {
       RegisterHolder* holder = GetRegister();
-      move_mem_reg(left->GetOperand(), EBP, holder->GetRegister());
+      move_mem_reg(FRAME, EBP, holder->GetRegister());      
+      add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+      move_mem_reg(0, holder->GetRegister(), holder->GetRegister());      
       math_mem_reg(right->GetOperand(), holder->GetRegister(), instruction->GetType());
       working_stack.push_front(new RegInstr(holder));
     }
@@ -1311,53 +1314,58 @@ void JitCompiler::math_reg_reg(Register src, Register dest, jit::JitInstructionT
 }
 
 void JitCompiler::math_mem_reg(int32_t offset, Register reg, jit::JitInstructionType type) {
+  RegisterHolder* holder = GetRegister();
+  move_mem_reg(FRAME, EBP, holder->GetRegister());
+  // add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+
+  offset += VALUE_OFFSET;
   switch(type) {
   case SHL_INT:
-    shl_mem_reg(offset, EBP, reg);
+    shl_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case SHR_INT:
-    shr_mem_reg(offset, EBP, reg);
+    shr_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case AND_INT:
-    and_mem_reg(offset, EBP, reg);
+    and_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case OR_INT:
-    or_mem_reg(offset, EBP, reg);
+    or_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case ADD_INT:
-    add_mem_reg(offset, EBP, reg);
+    add_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case SUB_INT:
-    sub_mem_reg(offset, EBP, reg);
+    sub_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case MUL_INT:
-    mul_mem_reg(offset, EBP, reg);
+    mul_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case DIV_INT:
-    div_mem_reg(offset, EBP, reg, false);
+    div_mem_reg(offset, holder->GetRegister(), reg, false);
     break;
     
   case MOD_INT:
-    div_mem_reg(offset, EBP, reg, true);
+    div_mem_reg(offset, holder->GetRegister(), reg, true);
     break;
 
   case BIT_AND_INT:
-    and_mem_reg(offset, EBP, reg);
+    and_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case BIT_OR_INT:
-    or_mem_reg(offset, EBP, reg);
+    or_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case BIT_XOR_INT:
-    xor_mem_reg(offset, EBP, reg);
+    xor_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case LES_INT:
@@ -1366,7 +1374,7 @@ void JitCompiler::math_mem_reg(int32_t offset, Register reg, jit::JitInstruction
   case EQL_INT:
   case NEQL_INT:  
   case GTR_EQL_INT:
-    cmp_mem_reg(offset, EBP, reg);
+    cmp_mem_reg(offset, holder->GetRegister(), reg);
     if(!cond_jmp(type)) {
       cmov_reg(reg, type);
     }
