@@ -1,7 +1,6 @@
 #include "jit_ia32.h"
 
 using namespace jit;
-using namespace std;
 
 // setup of stackframe
 void JitCompiler::Prolog() {
