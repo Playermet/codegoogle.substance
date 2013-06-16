@@ -89,9 +89,13 @@ void Runtime::Run()
       left.klass = FloatClass::Instance();
       left.value.float_value = instruction->operand3;
 #ifdef _DEBUG
-			wcout << L"LOAD_FLOAT_LIT: " << endl;
+			wcout << L"LOAD_FLOAT_LIT: value=" << left.value.float_value << endl;
 #endif
       PushValue(left);
+			// record JIT instructions
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_LIT, left.value.float_value));
+      }
       break;
       
     case LOAD_VAR:
