@@ -74,7 +74,7 @@ void IntegerClass::Less(Value &left, Value &right, Value &result, vector<JitInst
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
-    result.value.float_value = left.value.int_value < right.value.float_value;
+    result.value.int_value = left.value.int_value < right.value.float_value;
     break;
 
   default:
@@ -108,6 +108,10 @@ void FloatClass::Add(Value &left, Value &right, Value &result, vector<JitInstruc
   case FLOAT_VALUE:
     result.type = FLOAT_VALUE;
     result.value.float_value = left.value.float_value + right.value.float_value;
+		// record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(ADD_FLOAT));
+    }
     break;
 
   default:
@@ -140,14 +144,18 @@ void FloatClass::Less(Value &left, Value &right, Value &result, vector<JitInstru
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
-    result.value.float_value = left.value.float_value < right.value.int_value;
+    result.value.int_value = left.value.float_value < right.value.int_value;		
     break;
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
-    result.value.float_value = left.value.float_value < right.value.float_value;
+    result.value.int_value = left.value.float_value < right.value.float_value;
+		// record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(LES_FLOAT));
+    }
     break;
-
+		
   default:
     wcerr << L">>> invalid mathematical operation <<<" << endl;
     exit(1);
