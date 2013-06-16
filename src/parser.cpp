@@ -175,7 +175,13 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
   NextToken();
 
   while(!Match(TOKEN_CLOSED_BRACE) && !Match(TOKEN_END_OF_STREAM)) {
-    block->AddStatement(ParseStatement(0));
+		Statement* statement = ParseStatement(0);
+		if(statement) {
+			block->AddStatement(statement);
+		}
+		else {
+			return NULL;
+		}
   }
   
   if(!Match(TOKEN_CLOSED_BRACE)) {
