@@ -226,15 +226,20 @@ void Runtime::Run()
 				if(left.type != BOOL_VALUE) {
 					wcerr << L">>> Expected a boolean value <<<" << endl;
 					exit(1);
-				}
+				}				
+        // record JIT instructions
+        if(is_recording) {
+					if(!left.value.int_value) {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 0, ip));
+					}
+					else {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 1, ip));
+					}
+        }
+				// update ip
 				if(!left.value.int_value) {
 					ip = jump_table[instruction->operand2];
 				}
-        // record JIT instructions
-        if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2,
-																											 instruction->operand1));
-        }
 				break;
 			}
 			break;
