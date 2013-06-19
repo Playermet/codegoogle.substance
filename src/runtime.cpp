@@ -224,7 +224,7 @@ void Runtime::Run()
 #endif
 				left = PopValue();
 				if(left.type != BOOL_VALUE) {
-					cerr << L">>> Expected a boolean value <<<" << endl;
+					wcerr << L">>> Expected a boolean value <<<" << endl;
 					exit(1);
 				}
 				if(!left.value.int_value) {
@@ -252,6 +252,10 @@ void Runtime::Run()
       break;
 
     case GTR:
+#ifdef _DEBUG
+			wcout << L"GTR" << endl;
+#endif
+      CALC(L">", left, right, jit_instrs, is_recording);
       break;
 
     case LES:
@@ -263,7 +267,7 @@ void Runtime::Run()
       
     case GTR_EQL:
       break;
-
+			
     case LES_EQL:
       break;
 			

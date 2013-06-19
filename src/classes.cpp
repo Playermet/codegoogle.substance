@@ -11,6 +11,7 @@ IntegerClass::IntegerClass() {
   AddOperation(L"+", Add);
   AddOperation(L"*", Multiply);
   AddOperation(L"<", Less);
+	AddOperation(L">", Greater);
 }
 
 IntegerClass::~IntegerClass() {
@@ -84,6 +85,28 @@ void IntegerClass::Less(Value &left, Value &right, Value &result, vector<JitInst
   }
 }
 
+void IntegerClass::Greater(Value &left, Value &right, Value &result, vector<JitInstruction*> &jit_instrs, bool is_recording) {
+  switch(right.type) {
+  case INT_VALUE:
+    result.type = BOOL_VALUE;
+    result.value.int_value = left.value.int_value > right.value.int_value;
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(GTR_INT));
+    }    
+    break;
+
+  case FLOAT_VALUE:
+    result.type = BOOL_VALUE;
+    result.value.int_value = left.value.int_value > right.value.float_value;
+    break;
+
+  default:
+    wcerr << L">>> invalid logical operation <<<" << endl;
+    exit(1);
+    break;
+  }
+}
+
 /****************************
  * Float class
  ****************************/
@@ -93,6 +116,7 @@ FloatClass::FloatClass() {
   AddOperation(L"+", Add);
   AddOperation(L"*", Multiply);
   AddOperation(L"<", Less);
+	AddOperation(L">", Greater);
 }
 
 FloatClass::~FloatClass() {
@@ -153,6 +177,29 @@ void FloatClass::Less(Value &left, Value &right, Value &result, vector<JitInstru
 		// record JIT instructions
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(LES_FLOAT));
+    }
+    break;
+		
+  default:
+    wcerr << L">>> invalid mathematical operation <<<" << endl;
+    exit(1);
+    break;
+  }
+}
+
+void FloatClass::Greater(Value &left, Value &right, Value &result, vector<JitInstruction*> &jit_instrs, bool is_recording) {
+  switch(right.type) {
+  case INT_VALUE:
+    result.type = BOOL_VALUE;
+    result.value.int_value = left.value.float_value > right.value.int_value;		
+    break;
+
+  case FLOAT_VALUE:
+    result.type = BOOL_VALUE;
+    result.value.int_value = left.value.float_value > right.value.float_value;
+		// record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(GTR_FLOAT));
     }
     break;
 		
