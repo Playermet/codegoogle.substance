@@ -120,6 +120,20 @@ void JitCompiler::ProcessInstructions() {
 #endif
       ProcessStore(instr);
       break;
+			
+		case F2I:
+#ifdef _DEBUG
+      wcout << L"F2I: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
+#endif
+      ProcessFloatToInt(instr);
+      break;
+			
+    case I2F:
+#ifdef _DEBUG
+      wcout << L"I2F: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
+#endif
+      ProcessIntToFloat(instr);
+      break;
       
       // mathematical
     case AND_INT:
@@ -186,6 +200,9 @@ void JitCompiler::ProcessInstructions() {
 		case JMP:
       ProcessJump(instr);
       break;
+
+		case LBL:
+			break;
 			
 			// TODO:
 		default:
@@ -352,6 +369,67 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
   if(addr_holder) {
     ReleaseRegister(addr_holder);
   }
+
+  delete left;
+  left = NULL;
+}
+
+void JitCompiler::ProcessFloatToInt(JitInstruction* instr) {
+  RegInstr* left = working_stack.front();
+  working_stack.pop_front();
+  
+  RegisterHolder* holder = GetRegister();
+  switch(left->GetType()) {
+  case IMM_FLOAT:
+    cvt_imm_reg(left, holder->GetRegister());
+    break;
+    
+  case MEM_FLOAT:
+  case MEM_INT:
+    cvt_mem_reg(left->GetOperand(), 
+		EBP, holder->GetRegister());
+    break;
+
+  case REG_FLOAT:
+    cvt_xreg_reg(left->GetRegister()->GetRegister(), 
+		 holder->GetRegister());
+    ReleaseXmmRegister(left->GetRegister());
+    break;
+
+  default:
+    break;
+  }
+  working_stack.push_front(new RegInstr(holder));
+
+  delete left;
+  left = NULL;
+}
+
+void JitCompiler::ProcessIntToFloat(JitInstruction* instr) {
+  RegInstr* left = working_stack.front();
+  working_stack.pop_front();
+  
+  RegisterHolder* holder = GetXmmRegister();
+  switch(left->GetType()) {
+  case IMM_INT:
+    cvt_imm_xreg(left, holder->GetRegister());
+    break;
+    
+  case MEM_INT:
+    cvt_mem_xreg(left->GetOperand(), 
+		 EBP, holder->GetRegister());
+    break;
+
+  case REG_INT:
+    cvt_reg_xreg(left->GetRegister()->GetRegister(), 
+		 holder->GetRegister());
+    ReleaseRegister(left->GetRegister());
+    break;
+
+  default:
+    break;
+  }
+  working_stack.push_front(new RegInstr(holder));
 
   delete left;
   left = NULL;
@@ -798,6 +876,11 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 #endif
     if(instr->GetOperand2() < 0) {
       AddMachineCode(0xe9);
+
+			// store update index
+			native_jump_table.insert(pair<int32_t, JitInstruction*>(code_index, instr));
+			// temp offset, updated in next pass
+			AddImm(0);
     }
     else {
       RegInstr* left = working_stack.front();
@@ -832,7 +915,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
         exit(1);
         break;
       }
-
+			
       // 1 byte compare with register
       AddMachineCode(0x0f);
       AddMachineCode(0x84);
@@ -840,11 +923,14 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
       // clean up
       delete left;
       left = NULL;
-    }
-    // store update index
-    native_jump_table.insert(pair<int32_t, JitInstruction*>(code_index, instr));
-    // temp offset, updated in next pass
-    AddImm(0);
+
+			// store update index
+			native_jump_table.insert(pair<int32_t, JitInstruction*>(code_index, instr));
+			// temp offset, updated in next pass
+			AddImm(0);
+
+			Epilog(instr->GetOperand());
+    }    
   }
   else {
     RegInstr* left = working_stack.front();

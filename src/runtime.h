@@ -70,6 +70,27 @@ namespace runtime {
 				wcerr << ">>> stack bounds exceeded <<<" << endl;
 				exit(1);
 			}
+
+#ifdef _DEBUG
+			wcout << L"  push: type=";
+			switch(value.type) {
+			case BOOL_VALUE:
+				wcout << L"boolean; value=" << (value.value.int_value ? L"true" : L"false") << endl;
+				break;
+				
+			case INT_VALUE:
+				wcout << L"integer; value=" << value.value.int_value << endl;
+			  break;
+				
+			case FLOAT_VALUE:
+				wcout << L"float; value=" << value.value.float_value << endl;
+				break;
+				
+				// TODO:
+			default:
+				break;
+			}
+#endif
 			
 			execution_stack[execution_stack_pos++] = value;
 		}
@@ -80,6 +101,28 @@ namespace runtime {
 				exit(1);
 			}
 			
+#ifdef _DEBUG
+			Value &value = execution_stack[execution_stack_pos  - 1];
+			wcout << L"  pop: type=";
+			switch(value.type) {
+			case BOOL_VALUE:
+				wcout << L"boolean; value=" << (value.value.int_value ? L"true" : L"false") << endl;
+				break;
+				
+			case INT_VALUE:
+				wcout << L"integer; value=" << value.value.int_value << endl;
+			  break;
+				
+			case FLOAT_VALUE:
+				wcout << L"float; value=" << value.value.float_value << endl;
+				break;
+				
+				// TODO:
+			default:
+				break;
+			}
+#endif
+
 			return execution_stack[--execution_stack_pos];
 		}
 		

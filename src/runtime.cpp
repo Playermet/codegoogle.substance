@@ -173,15 +173,16 @@ void Runtime::Run()
 				if(is_recording && jump_dest == instruction->operand2) {
 					const INT_T next_label = instructions[ip]->operand1;
 					// add ending code for JIT compiler
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2, 
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 
+																											 jump_table[instruction->operand2], 
 																											 instruction->operand1));
 					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           jit::jit_fun_ptr jit_fun = compiler.Compile();					
 					// return code of next instruction
-					(*jit_fun)(frame, NULL, NULL); 
-					ip = jump_table[next_label];
+					ip = (*jit_fun)(frame, NULL, NULL); 
+					// ip = jump_table[next_label];
 					// rest
           is_recording = is_jump = false;
 					jit_instrs.clear();
@@ -230,10 +231,10 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
 					if(!left.value.int_value) {
-						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 0, ip));
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, ip, 0));
 					}
 					else {
-						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 1, ip));
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, ip, 1));
 					}
         }
 				// update ip

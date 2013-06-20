@@ -76,6 +76,10 @@ void IntegerClass::Less(Value &left, Value &right, Value &result, vector<JitInst
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
     result.value.int_value = left.value.int_value < right.value.float_value;
+		if(is_recording) {
+			jit_instrs.push_back(new JitInstruction(I2F));
+      jit_instrs.push_back(new JitInstruction(LES_FLOAT));
+    } 
     break;
 
   default:
