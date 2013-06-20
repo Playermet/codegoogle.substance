@@ -105,8 +105,14 @@ void JitCompiler::ProcessInstructions() {
     case LOAD_INT_VAR:
     case LOAD_FLOAT_VAR:
 #ifdef _DEBUG
-      std::wcout << L"LOAD_INT_VAR/LOAD_FLOAT_VAR: id=" << instr->GetOperand() << L"; regs=" 
-	   << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+			if(instr->GetType() == LOAD_INT_VAR) {
+				std::wcout << L"LOAD_INT_VAR: ";
+			}
+			else {
+				std::wcout << L"LOAD_FLOAT_VAR: ";
+			}			
+      std::wcout << L"id=" << instr->GetOperand() << L"; regs="  << aval_regs.size() 
+								 << L"," << aux_regs.size() << std::endl;
 #endif
       ProcessLoad(instr);
       break;
@@ -115,8 +121,14 @@ void JitCompiler::ProcessInstructions() {
     case STOR_INT_VAR:
     case STOR_FLOAT_VAR:
 #ifdef _DEBUG
-      std::wcout << L"STOR_INT_VAR/STOR_FLOAT_VAR: id=" << instr->GetOperand() 
-	   << L"; regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+			if(instr->GetType() == STOR_INT_VAR) {
+				std::wcout << L"STOR_INT_VAR: ";
+			}
+			else {
+				std::wcout << L"STOR_FLOAT_VAR: ";
+			}
+      std::wcout << L"id=" << instr->GetOperand() << L"; regs=" 
+								 << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       ProcessStore(instr);
       break;
@@ -156,8 +168,67 @@ void JitCompiler::ProcessInstructions() {
     case SHL_INT:
     case SHR_INT:
 #ifdef _DEBUG
-      std::wcout << L"INT ADD/SUB/MUL/DIV/MOD/BIT_AND/BIT_OR/BIT_XOR/LES/GTR/EQL/NEQL/SHL_INT/SHR_INT:: regs=" 
-	   << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+			switch(instr->GetType()) {
+			case AND_INT:
+				std::wcout << L"AND_INT: ";
+				break;
+			case OR_INT:
+				std::wcout << L"OR_INT: ";
+				break;
+			case ADD_INT:
+				std::wcout << L"ADD_INT: ";
+				break;
+			case SUB_INT:
+				std::wcout << L"SUB_INT: ";
+				break;
+			case MUL_INT:
+				std::wcout << L"MUL_INT: ";
+				break;
+			case DIV_INT:
+				std::wcout << L"DIV_INT: ";
+				break;
+			case MOD_INT:
+				std::wcout << L"MOD_INT: ";
+				break;
+			case BIT_AND_INT:
+				std::wcout << L"BIT_AND_INT: ";
+				break;
+			case BIT_OR_INT:
+				std::wcout << L"BIT_OR_INT: ";
+				break;
+			case BIT_XOR_INT:
+				std::wcout << L"BIT_XOR_INT: ";
+				break;
+				// comparison
+			case LES_INT:
+				std::wcout << L"LES_INT: ";
+				break;
+			case GTR_INT:
+				std::wcout << L"GTR_INT: ";
+				break;
+			case LES_EQL_INT:
+				std::wcout << L"LES_EQL_INT: ";
+				break;
+			case GTR_EQL_INT:
+				std::wcout << L"GTR_EQL_INT: ";
+				break;
+			case EQL_INT:
+				std::wcout << L"EQL_INT: ";
+				break;
+			case NEQL_INT:
+				std::wcout << L"NEQL_INT: ";
+				break;
+			case SHL_INT:
+				std::wcout << L"SHL_INT: ";
+				break;
+			case SHR_INT:
+				std::wcout << L"SHR_INT: ";
+				break;
+
+			default:
+				break;
+			}
+      std::wcout << L"regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       ProcessIntCalculation(instr);
       break;
@@ -167,11 +238,27 @@ void JitCompiler::ProcessInstructions() {
     case MUL_FLOAT:
     case DIV_FLOAT:
 #ifdef _DEBUG
-      std::wcout << L"FLOAT ADD/SUB/MUL/DIV/: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+			switch(instr->GetType()) {
+			case ADD_FLOAT:
+				std::wcout << L"ADD_FLOAT: ";
+				break;
+			case SUB_FLOAT:
+				std::wcout << L"SUB_FLOAT: ";
+				break;
+			case MUL_FLOAT:
+				std::wcout << L"MUL_FLOAT: ";
+				break;
+			case DIV_FLOAT:
+				std::wcout << L"DIV_FLOAT: ";
+				break;
+			default:
+				break;
+			}
+      std::wcout << L"regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       ProcessFloatCalculation(instr);
       break;
-
+			
     case LES_FLOAT:
     case GTR_FLOAT:
     case LES_EQL_FLOAT:
@@ -179,8 +266,30 @@ void JitCompiler::ProcessInstructions() {
     case EQL_FLOAT:
     case NEQL_FLOAT: {
 #ifdef _DEBUG
-      std::wcout << L"FLOAT LES/GTR/EQL/NEQL: regs=" << aval_regs.size() << L"," 
-	   << aux_regs.size() << std::endl;
+			switch(instr->GetType()) {
+			case LES_FLOAT:
+				std::wcout << L"LES_FLOAT: ";
+				break;
+			case GTR_FLOAT:
+				std::wcout << L"GTR_FLOAT: ";
+				break;
+			case LES_EQL_FLOAT:
+				std::wcout << L"LES_EQL_FLOAT: ";
+				break;
+			case GTR_EQL_FLOAT:
+				std::wcout << L"GTR_EQL_FLOAT: ";
+				break;
+			case EQL_FLOAT:
+				std::wcout << L"EQL_FLOAT: ";
+				break;
+			case NEQL_FLOAT:
+				std::wcout << L"NEQL_FLOAT: ";
+				break;
+			default:
+				break;
+			}
+			
+      std::wcout << L"regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       ProcessFloatCalculation(instr);
 
@@ -188,8 +297,8 @@ void JitCompiler::ProcessInstructions() {
       working_stack.pop_front(); // pop invalid xmm register
       ReleaseXmmRegister(left->GetRegister());
 
-      delete left; 
-      left = NULL;
+			delete left; 
+			left = NULL;
       
       RegisterHolder* holder = GetRegister();
       cmov_reg(holder->GetRegister(), instr->GetType());
@@ -202,6 +311,10 @@ void JitCompiler::ProcessInstructions() {
       break;
 
 		case LBL:
+#ifdef _DEBUG
+			wcout << L"LBL: id=" << instr->GetOperand() << endl;
+#endif
+			jump_labels[instr->GetOperand()] = instr;
 			break;
 			
 			// TODO:
@@ -872,7 +985,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
   if(!skip_jump) {
 #ifdef _DEBUG
     wcout << L"JMP: id=" << instr->GetOperand() << L", regs=" << aval_regs.size() 
-	 << L"," << aux_regs.size() << endl;
+					<< L"," << aux_regs.size() << endl;
 #endif
     if(instr->GetOperand2() < 0) {
       AddMachineCode(0xe9);
@@ -929,7 +1042,10 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			// temp offset, updated in next pass
 			AddImm(0);
 
-			Epilog(instr->GetOperand());
+			// add guard code if not jumping to the end-of-lopp
+			if(instr->GetOperand() != block_instrs.back()->GetOperand()) {
+				Epilog(instr->GetOperand());
+			}
     }    
   }
   else {

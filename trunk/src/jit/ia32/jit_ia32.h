@@ -236,6 +236,7 @@ namespace jit {
     stack<RegisterHolder*> aux_regs;
     vector<RegisterHolder*> aval_xregs;
     list<RegisterHolder*> used_xregs;
+		unordered_map<int32_t, JitInstruction*> jump_labels;
     unordered_map<int32_t, JitInstruction*> native_jump_table;
     int32_t local_space;
     int32_t instr_count;
@@ -821,19 +822,20 @@ namespace jit {
       if(!compile_success) {
         return NULL;
       }
-      // Epilog(-1);
+			Epilog(block_instrs.back()->GetOperand());
 
 			// show content
 			unordered_map<int32_t, JitInstruction*>::iterator iter;
 			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
 				JitInstruction* instr = iter->second;
 				int32_t src_offset = iter->first;
-				int32_t dest_index = instr->GetOperand() - 1; // jump_table[instr->GetOperand()] - label_start + 3;
-				int32_t dest_offset = block_instrs[dest_index]->GetOffset();
+				// int32_t dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
+				// int32_t dest_offset = block_instrs[dest_index]->GetOffset();
+				int32_t dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
 				int32_t offset = dest_offset - src_offset - 4;
 				memcpy(&code[src_offset], &offset, 4); 
 #ifdef _DEBUG
-				wcout << L"jump update: src=" << src_offset 
+				wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset 
 							<< L"; dest=" << dest_offset << endl;
 #endif
 			}

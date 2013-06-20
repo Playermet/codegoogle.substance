@@ -35,7 +35,7 @@
 
 using namespace runtime;
 
-#define HIT_THRESHOLD 3
+#define HIT_THRESHOLD 13
 
 // delegates operation to the appropriate type class
 #define CALC(name, left, right, jit_instrs, is_recording) {   \
@@ -106,7 +106,7 @@ void Runtime::Run()
 			PushValue(left);
       // record JIT instructions
       if(is_recording) {
-        switch(right.type) {
+        switch(left.type) {
         case INT_VALUE:
           jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
           break;
@@ -126,22 +126,30 @@ void Runtime::Run()
 			wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-      frame[instruction->operand1] = left;
       // record JIT instructions
       if(is_recording) {
-        switch(right.type) {
-        case INT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1, jit::LOCL));
-          break;
+				// ensure the type hasn't changed
+				if(frame[instruction->operand1].type == left.type) {
+					switch(right.type) {
+					case INT_VALUE:
+						jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1, jit::LOCL));
+						break;
 
-        case FLOAT_VALUE:
-          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_VAR, instruction->operand1, jit::LOCL));
-          break;
+					case FLOAT_VALUE:
+						jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_VAR, instruction->operand1, jit::LOCL));
+						break;
 
-        default:
-          break;
-        }
+					default:
+						break;
+					}
+				}
+				// reset
+				else {
+          is_recording = is_jump = false;
+					jit_instrs.clear();					
+				}
       }
+      frame[instruction->operand1] = left;
       break;
 
 		case LBL:			
@@ -174,16 +182,16 @@ void Runtime::Run()
 					const INT_T next_label = instructions[ip]->operand1;
 					// add ending code for JIT compiler
 					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 
-																											 jump_table[instruction->operand2], 
+																											 instruction->operand2, 
 																											 instruction->operand1));
 					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           jit::jit_fun_ptr jit_fun = compiler.Compile();					
 					// return code of next instruction
-					ip = (*jit_fun)(frame, NULL, NULL); 
-					// ip = jump_table[next_label];
-					// rest
+					long x = (*jit_fun)(frame, NULL, NULL); 
+					ip = jump_table[x];
+					// reset
           is_recording = is_jump = false;
 					jit_instrs.clear();
         }
@@ -230,12 +238,8 @@ void Runtime::Run()
 				}				
         // record JIT instructions
         if(is_recording) {
-					if(!left.value.int_value) {
-						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, ip, 0));
-					}
-					else {
-						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, ip, 1));
-					}
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2, 
+																											 instruction->operand1));
         }
 				// update ip
 				if(!left.value.int_value) {
