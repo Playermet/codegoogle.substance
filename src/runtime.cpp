@@ -35,7 +35,7 @@
 
 using namespace runtime;
 
-#define HIT_THRESHOLD 13
+#define HIT_THRESHOLD 3
 
 // delegates operation to the appropriate type class
 #define CALC(name, left, right, jit_instrs, is_recording) {   \
@@ -224,7 +224,7 @@ void Runtime::Run()
 				}
 				// record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2,
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, !left.value.int_value ? 1 : 0,
 																											 instruction->operand1));
         }
 				break;
@@ -241,7 +241,7 @@ void Runtime::Run()
 				}				
         // record JIT instructions
         if(is_recording) {
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2, 
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, left.value.int_value ? 1 : 0,
 																											 instruction->operand1));
         }
 				// update ip
