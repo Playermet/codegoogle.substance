@@ -146,7 +146,7 @@ void Runtime::Run()
 				// reset
 				else {
           is_recording = is_jump = false;
-					jit_instrs.clear();					
+					ClearJitInstructions();
 				}
       }
       frame[instruction->operand1] = left;
@@ -193,7 +193,7 @@ void Runtime::Run()
 					ip = jump_table[x];
 					// reset
           is_recording = is_jump = false;
-					jit_instrs.clear();
+					ClearJitInstructions();
         }
         else {
           // look for loop and take jump
