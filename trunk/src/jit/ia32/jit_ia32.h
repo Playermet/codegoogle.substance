@@ -541,6 +541,8 @@ namespace jit {
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
     void ProcessStore(JitInstruction* instruction);
+		void ProcessIntToFloat(JitInstruction* instr);
+		void ProcessFloatToInt(JitInstruction* instr);
     void ProcessIntCalculation(JitInstruction* instruction);
     void ProcessFloatCalculation(JitInstruction* instruction);
 		void ProcessJump(JitInstruction* instr);
@@ -819,18 +821,15 @@ namespace jit {
       if(!compile_success) {
         return NULL;
       }
-      Epilog(0);
+      // Epilog(-1);
 
 			// show content
 			unordered_map<int32_t, JitInstruction*>::iterator iter;
 			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
 				JitInstruction* instr = iter->second;
 				int32_t src_offset = iter->first;
-				int32_t dest_index = jump_table[instr->GetOperand()] - label_start + 3;
+				int32_t dest_index = instr->GetOperand() - 1; // jump_table[instr->GetOperand()] - label_start + 3;
 				int32_t dest_offset = block_instrs[dest_index]->GetOffset();
-				if(dest_offset == 0) {
-					dest_offset = block_instrs[block_instrs.size() - 1]->GetOffset();
-				}
 				int32_t offset = dest_offset - src_offset - 4;
 				memcpy(&code[src_offset], &offset, 4); 
 #ifdef _DEBUG
