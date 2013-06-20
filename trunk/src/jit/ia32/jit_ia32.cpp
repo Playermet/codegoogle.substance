@@ -259,6 +259,7 @@ void JitCompiler::ProcessInstructions() {
       ProcessFloatCalculation(instr);
       break;
 			
+		case LES_FLOAT:
     case GTR_FLOAT:
     case LES_EQL_FLOAT:
     case GTR_EQL_FLOAT:
@@ -1288,9 +1289,11 @@ void JitCompiler::move_xreg_xreg(Register src, Register dest) {
 }
 
 bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
+	/*
   if(instr_index >= block_instrs.size()) {
     return false;
   }
+	*/
 	
   JitInstruction* next_instr = block_instrs[instr_index];
   if(next_instr->GetType() == JMP && next_instr->GetOperand2() > -1) {
