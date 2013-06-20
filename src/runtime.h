@@ -59,8 +59,7 @@ namespace runtime {
 		INT_T jump_dest;
 		INT_T label_start;
 		vector<jit::JitInstruction*> jit_instrs;
-
-
+		
 		Value TopValue() {
 			return execution_stack[execution_stack_pos];
 		}
@@ -124,6 +123,15 @@ namespace runtime {
 #endif
 
 			return execution_stack[--execution_stack_pos];
+		}
+
+		void ClearJitInstructions() {
+			for(size_t i = 0; i < jit_instrs.size(); i++) {
+				jit::JitInstruction* instr = jit_instrs[i];
+				delete instr;
+				instr = NULL;
+			}
+			jit_instrs.clear();
 		}
 		
   #ifdef _DEBUG
