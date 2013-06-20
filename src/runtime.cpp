@@ -159,6 +159,9 @@ void Runtime::Run()
 				if(instruction->operand2 > HIT_THRESHOLD) {
 					is_recording = true;
 					label_start = ip;
+#ifdef _DEBUG
+					wcout << L"============ RECORDING ============" << endl;
+#endif
 				}
 			}
 			// record JIT instructions

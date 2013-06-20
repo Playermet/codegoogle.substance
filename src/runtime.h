@@ -132,6 +132,10 @@ namespace runtime {
 				instr = NULL;
 			}
 			jit_instrs.clear();
+			
+#ifdef _DEBUG
+			wcout << L"============ END RECORDING ============" << endl;
+#endif
 		}
 		
   #ifdef _DEBUG
