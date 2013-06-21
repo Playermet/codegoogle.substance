@@ -141,7 +141,7 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
 #ifdef _DEBUG
    wcout << block_instructions.size() << L": " << L"jump false: id=" << end_label << endl;
 #endif
-	block_instructions.push_back(MakeInstruction(JMP, 0, (int)end_label));
+	 block_instructions.push_back(MakeInstruction(JMP, end_label, (int)0));
 	
 	// emit block
 	EmitBlock(if_while->GetBlock(), block_instructions, jump_table);
@@ -151,7 +151,7 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"jump: id=" << top_label << endl;
 #endif
-		block_instructions.push_back(MakeInstruction(JMP, -1, (int)top_label));
+		block_instructions.push_back(MakeInstruction(JMP, top_label, (int)-1));
 	}
 	
 	// end label

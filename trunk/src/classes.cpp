@@ -131,6 +131,14 @@ void FloatClass::Add(Value &left, Value &right, Value &result, vector<JitInstruc
   case INT_VALUE:
     result.type = FLOAT_VALUE;
     result.value.float_value = left.value.float_value + right.value.int_value;
+		// record JIT instructions
+    if(is_recording) {
+			JitInstruction* temp = jit_instrs.back();
+			jit_instrs.pop_back();
+			jit_instrs.push_back(new JitInstruction(I2F));
+			jit_instrs.push_back(temp);
+      jit_instrs.push_back(new JitInstruction(ADD_FLOAT));
+    }
     break;
 
   case FLOAT_VALUE:
