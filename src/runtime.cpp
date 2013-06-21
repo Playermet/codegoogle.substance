@@ -64,6 +64,7 @@ void Runtime::Run()
   // runtime variables
 	Value* frame = new Value[8];
   Value left, right;
+	bool first_jmp = false;
   
   // execute code
 	size_t ip = 0;  
@@ -145,7 +146,7 @@ void Runtime::Run()
 				}
 				// reset
 				else {
-          is_recording = is_jump = false;
+          is_recording = first_jmp = is_jump = false;
 					ClearJitInstructions();
 				}
       }
@@ -157,7 +158,7 @@ void Runtime::Run()
 			if(is_jump && jump_dest ==  instruction->operand1) {
 				instruction->operand2++;
 				if(instruction->operand2 > HIT_THRESHOLD) {
-					is_recording = true;
+					is_recording = first_jmp = true;
 					label_start = ip;
 #ifdef _DEBUG
 					wcout << L"============ RECORDING ============" << endl;
@@ -201,7 +202,7 @@ void Runtime::Run()
 					ip = jump_table[x];
 					*/
 					// reset
-          is_recording = is_jump = false;
+          is_recording = first_jmp = is_jump = false;
 					ClearJitInstructions();
         }
         else {
@@ -230,8 +231,15 @@ void Runtime::Run()
 				}
 				// record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
-																											 !left.value.int_value ? 0 : 1));
+					if(first_jmp) {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
+																												 left.value.int_value ? 1 : 0));
+						first_jmp = false;
+					}
+					else {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
+																												 left.value.int_value ? 0 : 1));
+					}
         }
 				break;
 				
@@ -247,8 +255,15 @@ void Runtime::Run()
 				}				
         // record JIT instructions
         if(is_recording) {
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-																											 left.value.int_value ? 0 : 1));
+					if(first_jmp) {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																												 !left.value.int_value ? 1 : 0));
+						first_jmp = false;
+					}
+					else {
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																												 !left.value.int_value ? 0 : 1));
+					}
         }
 				// update ip
 				if(!left.value.int_value) {

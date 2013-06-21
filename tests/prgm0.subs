@@ -1,5 +1,4 @@
 {
-#~
 	a = 4.5;
 	g = 0;
 	while(a < 137.5) {
@@ -10,8 +9,8 @@
 	};
 	dump a;
 	dump g;
-~#
 
+#~
 	a = 1;
 	y = 13;
 	while(a < 13) {
@@ -28,7 +27,6 @@
 
 dump y;
 					dump z;
-#~
 	b = 1.2;
 	c = a * b + 5;
 	dump c;
