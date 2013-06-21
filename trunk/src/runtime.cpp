@@ -184,16 +184,23 @@ void Runtime::Run()
 				if(is_recording && jump_dest == instruction->operand2) {
 					const INT_T next_label = instructions[ip]->operand1;
 					// add ending code for JIT compiler
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, 
-																											 instruction->operand2, 
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2, 
 																											 instruction->operand1));
 					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
+					const INT_T guard_label = compiler.Execute(frame, NULL, NULL);
+					if(guard_label < 0) {
+						cerr << L">>> Error executing native code <<<" << endl;
+						exit(1);
+					}
+					ip = jump_table[guard_label];
+					/*
           jit::jit_fun_ptr jit_fun = compiler.Compile();					
 					// return code of next instruction
 					long x = (*jit_fun)(frame, NULL, NULL); 
 					ip = jump_table[x];
+					*/
 					// reset
           is_recording = is_jump = false;
 					ClearJitInstructions();
