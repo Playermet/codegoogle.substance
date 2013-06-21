@@ -175,17 +175,16 @@ void Runtime::Run()
 			break;
 			
 		case JMP:
-			switch(instruction->operand1) {
+			switch(instruction->operand2) {
 				// unconditional jump
 			case -1:
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
 #endif
-				if(is_recording && jump_dest == instruction->operand2) {
+				if(is_recording && jump_dest == instruction->operand1) {
 					const INT_T next_label = instructions[ip]->operand1;
 					// add ending code for JIT compiler
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand2, 
-																											 instruction->operand1));
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, -1));
 					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
@@ -207,10 +206,10 @@ void Runtime::Run()
         }
         else {
           // look for loop and take jump
-          const size_t next_ip = jump_table[instruction->operand2];
+          const size_t next_ip = jump_table[instruction->operand1];
 					if(!is_recording && next_ip < ip) {
 						is_jump = true;
-						jump_dest = instruction->operand2;
+						jump_dest = instruction->operand1;
 					}
 				  ip = next_ip;
         }
@@ -219,7 +218,7 @@ void Runtime::Run()
 				// jump true
 			case 1:
 #ifdef _DEBUG
-				wcout << L"JMP: true, to=" << instruction->operand2 << endl;
+				wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 #endif
 				left = PopValue();
 				if(left.type != BOOL_VALUE) {
@@ -227,19 +226,19 @@ void Runtime::Run()
 					exit(1);
 				}
 				if(left.value.int_value) {
-					ip = jump_table[instruction->operand2];
+					ip = jump_table[instruction->operand1];
 				}
 				// record JIT instructions
         if(is_recording) {
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, !left.value.int_value ? 1 : 0,
-																											 instruction->operand1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
+																											 !left.value.int_value ? 0 : 1));
         }
 				break;
 				
 				// jump false
 			case 0:
 #ifdef _DEBUG
-				wcout << L"JMP: false, to=" << instruction->operand2 << endl;
+				wcout << L"JMP: false, to=" << instruction->operand1 << endl;
 #endif
 				left = PopValue();
 				if(left.type != BOOL_VALUE) {
@@ -248,12 +247,12 @@ void Runtime::Run()
 				}				
         // record JIT instructions
         if(is_recording) {
-					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, left.value.int_value ? 1 : 0,
-																											 instruction->operand1));
+					jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
+																											 left.value.int_value ? 0 : 1));
         }
 				// update ip
 				if(!left.value.int_value) {
-					ip = jump_table[instruction->operand2];
+					ip = jump_table[instruction->operand1];
 				}
 				break;
 			}

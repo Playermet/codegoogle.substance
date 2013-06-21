@@ -300,14 +300,16 @@ void JitCompiler::ProcessInstructions() {
 			delete left; 
 			left = NULL;
       
-      RegisterHolder* holder = GetRegister();
-      cmov_reg(holder->GetRegister(), instr->GetType());
-      working_stack.push_front(new RegInstr(holder));
+			if(!skip_jump) {
+				RegisterHolder* holder = GetRegister();
+				cmov_reg(holder->GetRegister(), instr->GetType());
+				working_stack.push_front(new RegInstr(holder));
+			}
     }
       break;
 			
 		case JMP:
-      ProcessJump(instr);
+			ProcessJump(instr);
       break;
 
 		case LBL:
@@ -450,11 +452,9 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
   case MEM_FLOAT: {
 		RegisterHolder* tmp_holder = GetRegister();
 		move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-		add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
-		
+		add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());		
     RegisterHolder* holder = GetXmmRegister();
-		move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());
-		
+		move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());		
     if(instr->GetOperand2() == LOCL) {
       move_xreg_mem(holder->GetRegister(), 0, dest);
     }
@@ -801,14 +801,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
     case MEM_INT: {
 			RegisterHolder* tmp_holder = GetRegister();
 			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(right->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
-			
+			add_imm_reg(right->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
 			RegisterHolder* holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());
-			
+			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());			
       RegisterHolder* imm_holder = GetXmmRegister();
       move_imm_xreg(left, imm_holder->GetRegister());
-
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
         math_xreg_xreg(imm_holder->GetRegister(), holder->GetRegister(), type);
         ReleaseXmmRegister(imm_holder);
@@ -870,12 +867,9 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
 				RegisterHolder* tmp_holder = GetRegister();
 				move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-				add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
-				
+				add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());				
 				RegisterHolder* right_holder = GetXmmRegister();
 				move_mem_xreg(0, tmp_holder->GetRegister(), right_holder->GetRegister());
-
-
 				math_xreg_xreg(holder->GetRegister(), right_holder->GetRegister(), instruction->GetType());
 				ReleaseXmmRegister(holder);
 				working_stack.push_front(new RegInstr(right_holder));
@@ -901,11 +895,9 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
     case IMM_FLOAT: {
 			RegisterHolder* tmp_holder = GetRegister();
 			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
-			
+			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
 			RegisterHolder* holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());
-      
+			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());      
       RegisterHolder* imm_holder = GetXmmRegister();
       move_imm_xreg(right, imm_holder->GetRegister());
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
@@ -929,8 +921,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 				working_stack.push_front(new RegInstr(holder));
       }
       else {
+				RegisterHolder* tmp_holder = GetRegister();
+				move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
+				add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());				
 				RegisterHolder* right_holder = GetXmmRegister();
-				move_mem_xreg(left->GetOperand(), EBP, right_holder->GetRegister());
+				move_mem_xreg(0, tmp_holder->GetRegister(), right_holder->GetRegister());
 				math_xreg_xreg(holder->GetRegister(), right_holder->GetRegister(), instruction->GetType());
 				ReleaseXmmRegister(holder);
 				working_stack.push_front(new RegInstr(right_holder));
@@ -942,11 +937,9 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
     case MEM_INT: {
 			RegisterHolder* tmp_holder = GetRegister();
 			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
-			
+			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
 			RegisterHolder* left_holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), left_holder->GetRegister());
-			
+			move_mem_xreg(0, tmp_holder->GetRegister(), left_holder->GetRegister());			
       RegisterHolder* right_holder = GetXmmRegister();
       move_mem_xreg(right->GetOperand(), EBP, right_holder->GetRegister());
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
@@ -1048,7 +1041,13 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			}
     }    
   }
+	else {
+		skip_jump = false;
+	}
+	/*
   else {
+		wcout << working_stack.size() << endl;
+
     RegInstr* left = working_stack.front();
     working_stack.pop_front(); 
     skip_jump = false;
@@ -1062,6 +1061,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
     delete left;
     left = NULL;
   }
+	*/
 }
 
 void JitCompiler::move_reg_reg(Register src, Register dest) {
@@ -1295,9 +1295,8 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
   }
 	*/
 	
-  JitInstruction* next_instr = block_instrs[instr_index];
+  JitInstruction* next_instr = block_instrs[instr_index + 1];
   if(next_instr->GetType() == JMP && next_instr->GetOperand2() > -1) {
-    // if(false) {
 #ifdef _DEBUG
     std::wcout << L"JMP: id=" << next_instr->GetOperand() << L", regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
@@ -1323,6 +1322,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case EQL_INT:
+			case EQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [je]" << std::endl;
 #endif
@@ -1330,6 +1330,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case NEQL_INT:
+			case NEQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jne]" << std::endl;
 #endif
@@ -1350,6 +1351,22 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         AddMachineCode(0x8d);
         break;
 
+			case LES_FLOAT:
+				AddMachineCode(0x87);
+				break;
+				
+			case GTR_FLOAT:
+				AddMachineCode(0x87);
+				break;
+
+			case LES_EQL_FLOAT:
+				AddMachineCode(0x83);
+				break;
+				
+			case GTR_EQL_FLOAT:
+				AddMachineCode(0x83);
+				break;
+				
       default:
 				break;
       }  
@@ -1374,6 +1391,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case EQL_INT:
+			case EQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jne]" << std::endl;
 #endif
@@ -1381,6 +1399,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case NEQL_INT:
+			case NEQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [je]" << std::endl;
 #endif
@@ -1401,6 +1420,21 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         AddMachineCode(0x8c);
         break;
 
+			case LES_FLOAT:
+				AddMachineCode(0x86);
+				break;
+				
+			case GTR_FLOAT:
+				AddMachineCode(0x86);
+				break;
+
+			case LES_EQL_FLOAT:
+				AddMachineCode(0x82);
+				break;
+				
+			case GTR_EQL_FLOAT:
+				AddMachineCode(0x82);
+				
       default:
 				break;
       }  
@@ -1410,6 +1444,11 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
     // temp offset
     AddImm(0);
     skip_jump = true;
+
+		// add guard code if not jumping to the end-of-lopp
+		if(next_instr->GetOperand() != block_instrs.back()->GetOperand()) {
+			Epilog(next_instr->GetOperand());
+		}
     
     return true;
   }
@@ -1648,18 +1687,25 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, jit::JitInstructi
   case EQL_FLOAT:
   case NEQL_FLOAT:
   case GTR_EQL_FLOAT:
-    cmp_imm_xreg(instr, reg);
+		cmp_imm_xreg(instr, reg);
+		if(!cond_jmp(type)) {
+      cmov_reg(reg, type);
+    }
     break;
-
+		
   default:
     break;
   }
 }
 
 void JitCompiler::math_mem_xreg(int32_t offset, Register dest, jit::JitInstructionType type) {
+	RegisterHolder* tmp_holder = GetRegister();
+	move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
+	add_imm_reg(offset + VALUE_OFFSET, tmp_holder->GetRegister());
   RegisterHolder* holder = GetXmmRegister();
-  move_mem_xreg(offset, EBP, holder->GetRegister());
+  move_mem_xreg(offset, tmp_holder->GetRegister(), holder->GetRegister());
   math_xreg_xreg(holder->GetRegister(), dest, type);
+	ReleaseXmmRegister(tmp_holder);
   ReleaseXmmRegister(holder);
 }
 
@@ -1689,6 +1735,9 @@ void JitCompiler::math_xreg_xreg(Register src, Register dest, jit::JitInstructio
   case NEQL_FLOAT:
   case GTR_EQL_FLOAT:
     cmp_xreg_xreg(src, dest);
+		if(!cond_jmp(type)) {
+      cmov_reg(dest, type);
+    }
     break;
 
   default:
