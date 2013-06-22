@@ -542,8 +542,8 @@ namespace jit {
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
     void ProcessStore(JitInstruction* instruction);
-		void ProcessIntToFloat(JitInstruction* instr);
-		void ProcessFloatToInt(JitInstruction* instr);
+		void ProcessIntToFloat();
+		void ProcessFloatToInt();
     void ProcessIntCalculation(JitInstruction* instruction);
     void ProcessFloatCalculation(JitInstruction* instruction);
 		void ProcessJump(JitInstruction* instr);
@@ -686,7 +686,9 @@ namespace jit {
       aval_xregs.push_back(new RegisterHolder(XMM1));
       aval_xregs.push_back(new RegisterHolder(XMM0));   
 #ifdef _DEBUG
-      wcout << L"---- Compiling block for IA-32 target ----" << endl;
+			wcout << L"==========================================" << endl;
+      wcout << L"==== Compiling block for IA-32 target ====" << endl;
+			wcout << L"==========================================" << endl;
 #endif
       // TODO: map referenced variables to stack references; impact memory manager
       ProcessIndices();
@@ -858,12 +860,51 @@ namespace jit {
 				free(code);
 				code = NULL;
 			}
+
+			if(floats) {
+				delete[] floats;
+				floats = NULL;
+			}
+			
+			for(size_t i = 0; i < aval_regs.size(); i++) {
+				RegisterHolder* tmp = aval_regs[i];
+				delete tmp;
+				tmp = NULL;
+			}
+			aval_regs.clear();
+
+			for(list<RegisterHolder*>::iterator iter = used_regs.begin(); iter != used_regs.end(); ++iter) {
+				RegisterHolder* tmp = *iter;
+				delete tmp;
+				tmp = NULL;
+			}
+			
+			while(!aux_regs.empty()) {
+				RegisterHolder* tmp = aux_regs.top();
+				delete tmp;
+				tmp = NULL;
+				aux_regs.pop();
+			}
+
+			for(size_t i = 0; i < aval_xregs.size(); i++) {
+				RegisterHolder* tmp = aval_xregs[i];
+				delete tmp;
+				tmp = NULL;
+			}
+			aval_xregs.clear();
+			
+			for(list<RegisterHolder*>::iterator iter = used_xregs.begin(); iter != used_xregs.end(); ++iter) {
+				RegisterHolder* tmp = *iter;
+				delete tmp;
+				tmp = NULL;
+			}
     }
 		
 		// Compiles and executes machine code
 		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
 			jit_fun_ptr jit_fun = Compile();
 			if(jit_fun) {
+				wcout << L"(Executing machine code...)" << endl;
 				return (*jit_fun)(frame, NULL, NULL);
 			}
 

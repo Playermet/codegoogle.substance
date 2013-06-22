@@ -45,6 +45,7 @@ namespace runtime {
    * Execution engine
    ****************************/
   class Runtime {
+		ExecutableProgram* program;
 		// execution stack and stack pointer
     Value* execution_stack;
 		size_t execution_stack_pos;
@@ -172,6 +173,7 @@ namespace runtime {
 	
    public:
 	  Runtime(ExecutableProgram *p) {
+			program = p;
       this->instructions = p->GetInstructions();
 		  this->jump_table = p->GetJumpTable();			
 			execution_stack = new Value[EXECUTION_STACK_SIZE];
@@ -180,6 +182,11 @@ namespace runtime {
     }
   
     ~Runtime() {
+			delete[] execution_stack;
+			execution_stack = NULL;
+
+			delete program;
+			program = NULL;
     }
   
     void Run();

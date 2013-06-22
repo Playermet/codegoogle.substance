@@ -72,10 +72,17 @@ public:
  ****************************/
 class IntegerClass : public RuntimeClass {
   static IntegerClass* instance;
+	
+	IntegerClass() {
+		AddOperation(L"+", Add);
+		AddOperation(L"*", Multiply);
+		AddOperation(L"<", Less);
+		AddOperation(L">", Greater);
+	}
 
-  IntegerClass();
-  ~IntegerClass();
-
+	~IntegerClass() {
+	}
+	
  public:
   static IntegerClass* Instance() {
     if(!instance) {
@@ -85,10 +92,18 @@ class IntegerClass : public RuntimeClass {
     return instance;
   }
 
-  static void Add(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Less(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-	static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Add(Value &left, Value &right, Value &result, 
+									vector<jit::JitInstruction*> &jit_instrs, 
+									bool is_recording);
+  static void Multiply(Value &left, Value &right, Value &result, 
+											 vector<jit::JitInstruction*> &jit_instrs, 
+											 bool is_recording);
+  static void Less(Value &left, Value &right, Value &result, 
+									 vector<jit::JitInstruction*> &jit_instrs, 
+									 bool is_recording);
+	static void Greater(Value &left, Value &right, Value &result, 
+											vector<jit::JitInstruction*> &jit_instrs, 
+											bool is_recording);
 };
 
 /****************************
@@ -96,10 +111,17 @@ class IntegerClass : public RuntimeClass {
  ****************************/
 class FloatClass : public RuntimeClass {
   static FloatClass* instance;
-
-  FloatClass();
-  ~FloatClass();
-
+	
+	FloatClass() {
+		AddOperation(L"+", Add);
+		AddOperation(L"*", Multiply);
+		AddOperation(L"<", Less);
+		AddOperation(L">", Greater);
+	}
+	
+	~FloatClass() {
+	}
+	
  public:
   static FloatClass* Instance() {
     if(!instance) {
