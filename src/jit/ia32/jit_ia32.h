@@ -71,7 +71,11 @@
 #define MAX_DBLS 64
 #define OUR_PAGE_SIZE 4096
 
+#ifdef _WIN32
+#define VALUE_OFFSET sizeof(int32_t) * 2
+#else
 #define VALUE_OFFSET sizeof(int32_t)
+#endif
 
 // register type
 namespace jit {
@@ -904,7 +908,9 @@ namespace jit {
 		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
 			jit_fun_ptr jit_fun = Compile();
 			if(jit_fun) {
-				wcout << L"(Executing machine code...)" << endl;
+#ifdef _DEBUG
+        wcout << L"(Executing machine code...)" << endl;
+#endif
 				return (*jit_fun)(frame, NULL, NULL);
 			}
 
