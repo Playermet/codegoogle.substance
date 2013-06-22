@@ -100,7 +100,6 @@ namespace compiler {
    * Token class
    ****************************/
   class Token {
-   private:
     enum ScannerTokenType token_type;
     wstring ident;
 	  unsigned int line_num;

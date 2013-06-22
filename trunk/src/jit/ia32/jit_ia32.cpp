@@ -133,20 +133,6 @@ void JitCompiler::ProcessInstructions() {
       ProcessStore(instr);
       break;
 			
-		case F2I:
-#ifdef _DEBUG
-      wcout << L"F2I: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
-#endif
-      ProcessFloatToInt(instr);
-      break;
-			
-    case I2F:
-#ifdef _DEBUG
-      wcout << L"I2F: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
-#endif
-      ProcessIntToFloat(instr);
-      break;
-      
       // mathematical
     case AND_INT:
     case OR_INT:
@@ -450,18 +436,18 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
     break;
     
   case MEM_FLOAT: {
-		RegisterHolder* tmp_holder = GetRegister();
-		move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-		add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());		
+		RegisterHolder* base_holder = GetRegister();
+		move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+		add_imm_reg(left->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());		
     RegisterHolder* holder = GetXmmRegister();
-		move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());		
+		move_mem_xreg(0, base_holder->GetRegister(), holder->GetRegister());		
     if(instr->GetOperand2() == LOCL) {
       move_xreg_mem(holder->GetRegister(), 0, dest);
     }
     else {
       move_xreg_mem(holder->GetRegister(), instr->GetOperand3(), dest);
     }
-		ReleaseRegister(tmp_holder);
+		ReleaseRegister(base_holder);
     ReleaseXmmRegister(holder);
   }
     break;
@@ -487,7 +473,11 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
   left = NULL;
 }
 
-void JitCompiler::ProcessFloatToInt(JitInstruction* instr) {
+void JitCompiler::ProcessFloatToInt() {
+#ifdef _DEBUG
+	wcout << L"F2I: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
+#endif
+	
   RegInstr* left = working_stack.front();
   working_stack.pop_front();
   
@@ -518,7 +508,11 @@ void JitCompiler::ProcessFloatToInt(JitInstruction* instr) {
   left = NULL;
 }
 
-void JitCompiler::ProcessIntToFloat(JitInstruction* instr) {
+void JitCompiler::ProcessIntToFloat() {
+#ifdef _DEBUG
+	wcout << L"I2F: regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
+#endif
+	
   RegInstr* left = working_stack.front();
   working_stack.pop_front();
   
@@ -612,10 +606,36 @@ RegInstr* JitCompiler::ProcessIntFold(long left_imm, long right_imm, jit::JitIns
 void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
   RegInstr* left = working_stack.front();
   working_stack.pop_front();
+	// check to see if a cast is required
+	switch(left->GetType()) {
+	case IMM_INT:
+	case REG_INT:
+	case MEM_INT:
+		working_stack.push_front(left);
+		ProcessFloatToInt();
+		left = working_stack.front();
+		break;
 
+	default:
+		break; 
+	}
+	
   RegInstr* right = working_stack.front();
   working_stack.pop_front();
+	// check to see if a cast is required
+	switch(right->GetType()) {
+	case IMM_INT:
+	case REG_INT:
+	case MEM_INT:
+		working_stack.push_front(right);
+		ProcessFloatToInt();
+		right = working_stack.front();
+		break;
 
+	default:
+		break; 
+	}
+	
   switch(left->GetType()) {
     // intermidate
   case IMM_INT:
@@ -750,9 +770,35 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
 void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
   RegInstr* left = working_stack.front();
   working_stack.pop_front();
-  
+	// check to see if a cast is required
+	switch(left->GetType()) {
+	case IMM_INT:
+	case REG_INT:
+	case MEM_INT:
+		working_stack.push_front(left);
+		ProcessIntToFloat();
+		left = working_stack.front();
+		break;
+
+	default:
+		break; 
+	}
+	
   RegInstr* right = working_stack.front();
   working_stack.pop_front();
+	// check to see if a cast is required
+	switch(right->GetType()) {
+	case IMM_INT:
+	case REG_INT:
+	case MEM_INT:
+		working_stack.push_front(right);
+		ProcessIntToFloat();
+		right = working_stack.front();
+		break;
+
+	default:
+		break; 
+	}
 
   jit::JitInstructionType type = instruction->GetType();
   switch(left->GetType()) {
@@ -799,11 +845,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 			
     case MEM_FLOAT:
     case MEM_INT: {
-			RegisterHolder* tmp_holder = GetRegister();
-			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(right->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
+			RegisterHolder* base_holder = GetRegister();
+			move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+			add_imm_reg(right->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());			
 			RegisterHolder* holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());			
+			move_mem_xreg(0, base_holder->GetRegister(), holder->GetRegister());			
       RegisterHolder* imm_holder = GetXmmRegister();
       move_imm_xreg(left, imm_holder->GetRegister());
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
@@ -816,7 +862,7 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
         ReleaseXmmRegister(holder);
         working_stack.push_front(new RegInstr(imm_holder));
       }
-			ReleaseRegister(tmp_holder);
+			ReleaseRegister(base_holder);
     }
       break;
 
@@ -865,15 +911,15 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
     case MEM_INT: {
       RegisterHolder* holder = left->GetRegister();
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
-				RegisterHolder* tmp_holder = GetRegister();
-				move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-				add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());				
+				RegisterHolder* base_holder = GetRegister();
+				move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+				add_imm_reg(left->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());				
 				RegisterHolder* right_holder = GetXmmRegister();
-				move_mem_xreg(0, tmp_holder->GetRegister(), right_holder->GetRegister());
+				move_mem_xreg(0, base_holder->GetRegister(), right_holder->GetRegister());
 				math_xreg_xreg(holder->GetRegister(), right_holder->GetRegister(), instruction->GetType());
 				ReleaseXmmRegister(holder);
 				working_stack.push_front(new RegInstr(right_holder));
-				ReleaseRegister(tmp_holder);
+				ReleaseRegister(base_holder);
       }
       else {
 				// TODO: float
@@ -893,11 +939,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
   case MEM_FLOAT:
     switch(right->GetType()) {
     case IMM_FLOAT: {
-			RegisterHolder* tmp_holder = GetRegister();
-			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
+			RegisterHolder* base_holder = GetRegister();
+			move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+			add_imm_reg(left->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());			
 			RegisterHolder* holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());      
+			move_mem_xreg(0, base_holder->GetRegister(), holder->GetRegister());      
       RegisterHolder* imm_holder = GetXmmRegister();
       move_imm_xreg(right, imm_holder->GetRegister());
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
@@ -910,7 +956,7 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
         ReleaseXmmRegister(imm_holder);
         working_stack.push_front(new RegInstr(holder));
       }
-			ReleaseRegister(tmp_holder);
+			ReleaseRegister(base_holder);
     }
       break;
       
@@ -921,11 +967,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 				working_stack.push_front(new RegInstr(holder));
       }
       else {
-				RegisterHolder* tmp_holder = GetRegister();
-				move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-				add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());				
+				RegisterHolder* base_holder = GetRegister();
+				move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+				add_imm_reg(left->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());				
 				RegisterHolder* right_holder = GetXmmRegister();
-				move_mem_xreg(0, tmp_holder->GetRegister(), right_holder->GetRegister());
+				move_mem_xreg(0, base_holder->GetRegister(), right_holder->GetRegister());
 				math_xreg_xreg(holder->GetRegister(), right_holder->GetRegister(), instruction->GetType());
 				ReleaseXmmRegister(holder);
 				working_stack.push_front(new RegInstr(right_holder));
@@ -935,11 +981,11 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
       
     case MEM_FLOAT:
     case MEM_INT: {
-			RegisterHolder* tmp_holder = GetRegister();
-			move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-			add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());			
+			RegisterHolder* base_holder = GetRegister();
+			move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+			add_imm_reg(left->GetOperand() + VALUE_OFFSET, base_holder->GetRegister());			
 			RegisterHolder* left_holder = GetXmmRegister();
-			move_mem_xreg(0, tmp_holder->GetRegister(), left_holder->GetRegister());			
+			move_mem_xreg(0, base_holder->GetRegister(), left_holder->GetRegister());			
       RegisterHolder* right_holder = GetXmmRegister();
       move_mem_xreg(right->GetOperand(), EBP, right_holder->GetRegister());
       if(type == LES_FLOAT || type == LES_EQL_FLOAT) {
@@ -954,7 +1000,7 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 				ReleaseXmmRegister(right_holder);
 				working_stack.push_front(new RegInstr(left_holder));
       }
-			ReleaseRegister(tmp_holder);
+			ReleaseRegister(base_holder);
     }
       break;
 
@@ -1162,10 +1208,10 @@ void JitCompiler::move_mem_reg(int32_t offset, Register src, Register dest) {
 }
     
 void JitCompiler::move_imm_memx(RegInstr* instr, int32_t offset, Register dest) {
-  RegisterHolder* tmp_holder = GetXmmRegister();
-  move_imm_xreg(instr, tmp_holder->GetRegister());
-  move_xreg_mem(tmp_holder->GetRegister(), offset, dest);
-  ReleaseXmmRegister(tmp_holder);
+  RegisterHolder* base_holder = GetXmmRegister();
+  move_imm_xreg(instr, base_holder->GetRegister());
+  move_xreg_mem(base_holder->GetRegister(), offset, dest);
+  ReleaseRegister(base_holder);
 }
 
 void JitCompiler::move_imm_mem8(int32_t imm, int32_t offset, Register dest) {
@@ -1699,13 +1745,13 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, jit::JitInstructi
 }
 
 void JitCompiler::math_mem_xreg(int32_t offset, Register dest, jit::JitInstructionType type) {
-	RegisterHolder* tmp_holder = GetRegister();
-	move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
-	add_imm_reg(offset + VALUE_OFFSET, tmp_holder->GetRegister());
+	RegisterHolder* base_holder = GetRegister();
+	move_mem_reg(FRAME, EBP, base_holder->GetRegister());
+	add_imm_reg(offset + VALUE_OFFSET, base_holder->GetRegister());
   RegisterHolder* holder = GetXmmRegister();
-  move_mem_xreg(offset, tmp_holder->GetRegister(), holder->GetRegister());
+  move_mem_xreg(offset, base_holder->GetRegister(), holder->GetRegister());
   math_xreg_xreg(holder->GetRegister(), dest, type);
-	ReleaseXmmRegister(tmp_holder);
+	ReleaseRegister(base_holder);
   ReleaseXmmRegister(holder);
 }
 

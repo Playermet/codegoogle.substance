@@ -102,10 +102,7 @@ namespace jit {
     POW_FLOAT,
     SQRT_FLOAT,
     RAND_FLOAT,
-    // conversions
-    I2F,
-    F2I,
-    // control
+		// control
     JMP,
     LBL,
     RTRN,
