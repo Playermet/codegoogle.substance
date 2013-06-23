@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
 
-#include "jit_amd_lp64.h"
+#include "jit_amd_llp64.h"
 #include <string>
 
 using namespace jit;
