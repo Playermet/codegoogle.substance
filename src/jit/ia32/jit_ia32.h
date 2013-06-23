@@ -45,28 +45,10 @@
 #define FRAME 8
 #define INSTANCE_MEM 12
 #define CLASS_MEM 16
-
-/*
-#define CLS_ID 8
-#define MTHD_ID 12
-#define CLASS_MEM 16
-#define INSTANCE_MEM 20
-#define OP_STACK 24
-#define STACK_POS 28
-#define CALL_STACK 32
-#define CALL_STACK_POS 36
-*/
-  // float temps
-#define TMP_XMM_0 -8
-#define TMP_XMM_1 -16
-#define TMP_XMM_2 -24
-  // integer temps
-#define TMP_REG_0 -28
-#define TMP_REG_1 -32
-#define TMP_REG_2 -36
-#define TMP_REG_3 -40
-#define TMP_REG_4 -44
-#define TMP_REG_5 -48
+// integer temps
+#define TMP_REG_0 -8
+#define TMP_REG_1 -12
+#define TMP_REG_2 -16
 
 #define MAX_DBLS 64
 #define OUR_PAGE_SIZE 4096
@@ -522,7 +504,7 @@ namespace jit {
     // memory references.
     void ProcessIndices() {
       // allocate space for local variables
-      local_space = -TMP_REG_5;
+      local_space = -TMP_REG_2;
 
       // update frame offsets
       for(size_t i = 0; i < block_instrs.size(); i++) {
