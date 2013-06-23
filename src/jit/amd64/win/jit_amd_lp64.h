@@ -237,7 +237,7 @@ namespace jit {
     unsigned char* code;
     long code_index;   
     double* floats;     
-    long floats_index;
+    size_t floats_index;
     size_t instr_index;
     long code_buf_max;
     bool compile_success;

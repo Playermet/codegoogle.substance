@@ -1674,7 +1674,7 @@ void JitCompiler::math_reg_reg(Register src, Register dest, JitInstructionType t
 
 void JitCompiler::math_mem_reg(long offset, Register reg, JitInstructionType type) {
   RegisterHolder* holder = GetRegister();
-  move_mem_reg(FRAME, EBP, holder->GetRegister());  
+  move_mem_reg(FRAME, RBP, holder->GetRegister());  
   offset += VALUE_OFFSET;
   
   switch(type) {
