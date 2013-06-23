@@ -38,9 +38,8 @@
     <ClInclude Include="..\classes.h" />
     <ClInclude Include="..\common.h" />
     <ClInclude Include="..\emitter.h" />
-    <ClInclude Include="..\jit\amd64\win\jit_amd_lp64.h">
+    <ClInclude Include="..\jit\amd64\win\jit_amd_llp64.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\jit\ia32\jit_ia32.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -55,9 +54,8 @@
   <ItemGroup>
     <ClCompile Include="..\classes.cpp" />
     <ClCompile Include="..\emitter.cpp" />
-    <ClCompile Include="..\jit\amd64\win\jit_amd_lp64.cpp">
+    <ClCompile Include="..\jit\amd64\win\jit_amd_llp64.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\jit\ia32\jit_ia32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -167,7 +165,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;_X64;_NO_JIT;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_X64;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

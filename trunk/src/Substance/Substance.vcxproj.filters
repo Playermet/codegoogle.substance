@@ -39,10 +39,10 @@
     <ClInclude Include="..\jit\jit_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\jit\amd64\win\jit_amd_lp64.h">
+    <ClInclude Include="..\jit\ia32\jit_ia32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\jit\ia32\jit_ia32.h">
+    <ClInclude Include="..\jit\amd64\win\jit_amd_llp64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,10 +68,10 @@
     <ClCompile Include="..\tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\jit\amd64\win\jit_amd_lp64.cpp">
+    <ClCompile Include="..\jit\ia32\jit_ia32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\jit\ia32\jit_ia32.cpp">
+    <ClCompile Include="..\jit\amd64\win\jit_amd_llp64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
