@@ -549,9 +549,12 @@ void JitCompiler::ProcessFloatToInt() {
     break;
     
   case MEM_FLOAT:
-  case MEM_INT:
-    cvt_mem_reg(left->GetOperand(), 
-								RBP, holder->GetRegister());
+  case MEM_INT: {
+    RegisterHolder* holder = GetRegister();
+    move_mem_reg(FRAME, RBP, holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+    cvt_mem_reg(0, holder->GetRegister(), holder->GetRegister());
+  }
     break;
 
   case REG_FLOAT:
@@ -583,9 +586,12 @@ void JitCompiler::ProcessIntToFloat() {
     cvt_imm_xreg(left, holder->GetRegister());
     break;
     
-  case MEM_INT:
-    cvt_mem_xreg(left->GetOperand(), 
-								 RBP, holder->GetRegister());
+  case MEM_INT: {
+    RegisterHolder* holder = GetRegister();
+    move_mem_reg(FRAME, RBP, holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+    cvt_mem_xreg(0, holder->GetRegister(), holder->GetRegister());
+  }
     break;
 
   case REG_INT:
@@ -669,9 +675,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
   working_stack.pop_front();
 	// check to see if a cast is required
 	switch(left->GetType()) {
-	case IMM_INT:
-	case REG_INT:
-	case MEM_INT:
+	case IMM_FLOAT:
+	case REG_FLOAT:
+	case MEM_FLOAT:
 		working_stack.push_front(left);
 		ProcessFloatToInt();
 		left = working_stack.front();
@@ -685,9 +691,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
   working_stack.pop_front();
 	// check to see if a cast is required
 	switch(right->GetType()) {
-	case IMM_INT:
-	case REG_INT:
-	case MEM_INT:
+	case IMM_FLOAT:
+	case REG_FLOAT:
+	case MEM_FLOAT:
 		working_stack.push_front(right);
 		ProcessFloatToInt();
 		right = working_stack.front();
@@ -1429,9 +1435,25 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
 #endif
         AddMachineCode(0x8d);
         break;
+		
+	  case LES_FLOAT:
+		AddMachineCode(0x87);
+		break;
+		
+	  case GTR_FLOAT:
+		AddMachineCode(0x87);
+		break;
+
+	  case LES_EQL_FLOAT:
+		AddMachineCode(0x83);
+		break;
+		
+	  case GTR_EQL_FLOAT:
+		AddMachineCode(0x83);
+		break;
 
       default:
-				break;
+	    break;
       }  
     }
     //
@@ -1480,9 +1502,24 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
 #endif
         AddMachineCode(0x8c);
         break;
+		
+	  case LES_FLOAT:
+		AddMachineCode(0x86);
+		break;
+		
+	  case GTR_FLOAT:
+		AddMachineCode(0x86);
+		break;
+
+	  case LES_EQL_FLOAT:
+		AddMachineCode(0x82);
+		break;
+		
+	  case GTR_EQL_FLOAT:
+		AddMachineCode(0x82);
 
       default:
-				break;
+		break;
       }  
     }    
 		// store update index
@@ -1636,53 +1673,57 @@ void JitCompiler::math_reg_reg(Register src, Register dest, JitInstructionType t
 }
 
 void JitCompiler::math_mem_reg(long offset, Register reg, JitInstructionType type) {
+  RegisterHolder* holder = GetRegister();
+  move_mem_reg(FRAME, EBP, holder->GetRegister());  
+  offset += VALUE_OFFSET;
+  
   switch(type) {
   case SHL_INT:
-    shl_mem_reg(offset, RBP, reg);
+    shl_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case SHR_INT:
-    shr_mem_reg(offset, RBP, reg);
+    shr_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case AND_INT:
-    and_mem_reg(offset, RBP, reg);
+    and_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case OR_INT:
-    or_mem_reg(offset, RBP, reg);
+    or_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case ADD_INT:
-    add_mem_reg(offset, RBP, reg);
+    add_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case SUB_INT:
-    sub_mem_reg(offset, RBP, reg);
+    sub_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case MUL_INT:
-    mul_mem_reg(offset, RBP, reg);
+    mul_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case DIV_INT:
-    div_mem_reg(offset, RBP, reg, false);
+    div_mem_reg(offset, holder->GetRegister(), reg, false);
     break;
     
   case MOD_INT:
-    div_mem_reg(offset, RBP, reg, true);
+    div_mem_reg(offset, holder->GetRegister(), reg, true);
     break;
 
   case BIT_AND_INT:
-    and_mem_reg(offset, RBP, reg);
+    and_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case BIT_OR_INT:
-    or_mem_reg(offset, RBP, reg);
+    or_mem_reg(offset, holder->GetRegister(), reg);
     break;
 
   case BIT_XOR_INT:
-    xor_mem_reg(offset, RBP, reg);
+    xor_mem_reg(offset, holder->GetRegister(), reg);
     break;
     
   case LES_INT:
@@ -1691,7 +1732,7 @@ void JitCompiler::math_mem_reg(long offset, Register reg, JitInstructionType typ
   case EQL_INT:
   case NEQL_INT:  
   case GTR_EQL_INT:
-    cmp_mem_reg(offset, RBP, reg);
+    cmp_mem_reg(offset, holder->GetRegister(), reg);
     if(!cond_jmp(type)) {
       cmov_reg(reg, type);
     }
@@ -1700,6 +1741,7 @@ void JitCompiler::math_mem_reg(long offset, Register reg, JitInstructionType typ
   default:
     break;
   }
+  ReleaseRegister(holder);
 }
 
 void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, JitInstructionType type) {
@@ -1727,6 +1769,9 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, JitInstructionTyp
   case NEQL_FLOAT:
   case GTR_EQL_FLOAT:
     cmp_imm_xreg(instr, reg);
+    if(!cond_jmp(type)) {
+      cmov_reg(reg, type);
+    }
     break;
 
   default:
@@ -1766,6 +1811,9 @@ void JitCompiler::math_xreg_xreg(Register src, Register dest, JitInstructionType
   case NEQL_FLOAT:
   case GTR_EQL_FLOAT:
     cmp_xreg_xreg(src, dest);
+		if(!cond_jmp(type)) {
+      cmov_reg(dest, type);
+    }
     break;
 
   default:

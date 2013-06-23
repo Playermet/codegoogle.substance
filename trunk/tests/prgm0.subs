@@ -1,13 +1,35 @@
 {
-
-	a = 4.5;
-	g = 0;
-	while(a < 96.4) {
-		a = 3.33 + a;
-		if(a > 33.3) {
-			g = g + a + 10;
-		};
+	a = 0;
+	b = 0;
+	while(a < 12) {
+		b = 5 + a;
+		a = a + 1;
 	};
-	dump a;
-	dump g;
+	dump b;
+		
+	a = 0;
+	b = 0;
+	while(a < 12) {
+		b = a + 5;
+		a = a + 1;
+	};
+	dump b;
+	
+	a = 0;
+	b = 0;
+	while(a < 12) {
+		b = a + 5;
+		b = a * b;
+		a = a + 1;
+	};
+	dump b;
+	
+	a = 0;
+	b = 0;
+	while(a < 12) {
+		b = a + 5;
+		b = a * b * a;
+		a = a + 1;
+	};
+	dump b;
 }
