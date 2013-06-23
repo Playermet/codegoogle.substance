@@ -51,7 +51,7 @@
 #define TMP_REG_2 -16
 
 #define MAX_DBLS 64
-#define OUR_PAGE_SIZE 4096
+#define PAGE_SIZE 4096
 
 #ifdef _WIN32
 #define VALUE_OFFSET sizeof(int32_t) * 2
@@ -247,7 +247,7 @@ namespace jit {
         }
   #else
         unsigned char* tmp;	
-        if(posix_memalign((void**)&tmp, OUR_PAGE_SIZE, code_buf_max * 2)) {
+        if(posix_memalign((void**)&tmp, PAGE_SIZE, code_buf_max * 2)) {
           wcerr << L"Unable to reallocate JIT memory!" << std::endl;
           exit(1);
         }
@@ -637,17 +637,18 @@ namespace jit {
 
 		// Compiles byte code into machine code
 		jit_fun_ptr Compile() {
-      code_buf_max = OUR_PAGE_SIZE;
+      compile_success = false;
+      code_buf_max = PAGE_SIZE;
 #ifdef _WIN32
       code = (unsigned char*)malloc(code_buf_max);
       floats = new double[MAX_DBLS];
 #else
-      if(posix_memalign((void**)&code, OUR_PAGE_SIZE, code_buf_max)) {
+      if(posix_memalign((void**)&code, PAGE_SIZE, code_buf_max)) {
         wcerr << L"Unable to allocate JIT memory!" << endl;
         exit(1);
       }
 
-      if(posix_memalign((void**)&floats, OUR_PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
+      if(posix_memalign((void**)&floats, PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
         wcerr << L"Unable to allocate JIT memory!" << endl;
         exit(1);
       }
