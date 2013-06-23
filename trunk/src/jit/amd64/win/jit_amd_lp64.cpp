@@ -48,6 +48,8 @@ void JitCompiler::Prolog() {
   unsigned char buffer[4];
   ByteEncode32(buffer, local_space);
 
+  // RCX,  RDX,  R8,  R9
+
   unsigned char setup_code[] = {
     // setup stack frame
     0x48, 0x55,                                    // push %rbp

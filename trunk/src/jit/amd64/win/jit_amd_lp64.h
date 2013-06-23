@@ -850,21 +850,21 @@ namespace jit {
 			floats_index = instr_index = code_index = instr_count = 0;
 
 			// general use registers
-			//	aval_regs.push_back(new RegisterHolder(RDX));
+			// aval_regs.push_back(new RegisterHolder(RDX));
 			//	aval_regs.push_back(new RegisterHolder(RCX));
 			aval_regs.push_back(new RegisterHolder(RBX));
 			aval_regs.push_back(new RegisterHolder(RAX));
 			// aux general use registers
-			//        aux_regs.push(new RegisterHolder(RDI));
-			//        aux_regs.push(new RegisterHolder(RSI));
+			aux_regs.push(new RegisterHolder(RDI));
+			aux_regs.push(new RegisterHolder(RSI));
 			aux_regs.push(new RegisterHolder(R15));
 			aux_regs.push(new RegisterHolder(R14));
 			aux_regs.push(new RegisterHolder(R13));
-			// aux_regs.push(new RegisterHolder(R12));
+			aux_regs.push(new RegisterHolder(R12));
 			aux_regs.push(new RegisterHolder(R11));
 			aux_regs.push(new RegisterHolder(R10));
 			// aux_regs.push(new RegisterHolder(R9));
-			aux_regs.push(new RegisterHolder(R8));
+			// aux_regs.push(new RegisterHolder(R8));
 			// floating point registers
 			aval_xregs.push_back(new RegisterHolder(XMM15));
 			aval_xregs.push_back(new RegisterHolder(XMM14)); 
