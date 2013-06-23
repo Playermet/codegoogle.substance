@@ -1,10 +1,10 @@
-# ARGS=-O3 -pthread -Wall -Wno-unused-function
-ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+# ARGS=-O3 -D_X64 -pthread -Wall -Wno-unused-function
+ARGS=-g -D_DEBUG -D_X64 -Wall -Wall -Wno-unused-function
 
 CC=g++
 SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 
 OBJ_LIBS=jit.a
-JIT_PATH=jit/amd64
+JIT_PATH=jit/amd64/posix
 EXE=subc
 
 $(EXE): $(SRC) $(OBJ_LIBS)
