@@ -38,12 +38,12 @@
 
 using namespace std;
 
-  // offsets for Intel (AMD-64) addresses
+// offsets for Intel (AMD-64) addresses
 #define FRAME -8
 #define INSTANCE_MEM -16
 #define CLASS_MEM -24
 
-  // integer temps
+// integer temps
 #define TMP_REG_0 -32
 #define TMP_REG_1 -40
 #define TMP_REG_2 -48
@@ -53,7 +53,7 @@ using namespace std;
 #define PAGE_SIZE 4096
 #define VALUE_OFFSET sizeof(long)
 
-  // register type
+// register type
 namespace jit {
   typedef enum _RegType { 
     IMM_INT = -4000,
@@ -131,10 +131,10 @@ namespace jit {
   public:    
     RegInstr(RegisterHolder* h) {
       if(h->GetRegister() < XMM0) {
-	type = REG_INT;
+				type = REG_INT;
       }
       else {
-	type = REG_FLOAT;
+				type = REG_FLOAT;
       }
       holder = h;
       instr = NULL;
@@ -156,37 +156,37 @@ namespace jit {
       switch(si->GetType()) {
       case LOAD_CHAR_LIT:
       case LOAD_INT_LIT:
-	type = IMM_INT;
-	operand = si->GetOperand();
-	break;
+				type = IMM_INT;
+				operand = si->GetOperand();
+				break;
 
       case LOAD_CLS_MEM:
-	type = MEM_INT;
-	operand = CLASS_MEM;
-	break;
+				type = MEM_INT;
+				operand = CLASS_MEM;
+				break;
 	
       case LOAD_INST_MEM:
-	type = MEM_INT;
-	operand = INSTANCE_MEM;
-	break;
+				type = MEM_INT;
+				operand = INSTANCE_MEM;
+				break;
 
       case LOAD_INT_VAR:
       case STOR_INT_VAR:
-	type = MEM_INT;
-	operand = si->GetOperand3();
-	break;
+				type = MEM_INT;
+				operand = si->GetOperand3();
+				break;
 
       case LOAD_FLOAT_VAR:
       case STOR_FLOAT_VAR:
-	type = MEM_FLOAT;
-	operand = si->GetOperand3();
-	break;
+				type = MEM_FLOAT;
+				operand = si->GetOperand3();
+				break;
 
       default:
 #ifdef _DEBUG
-	assert(false);
+				assert(false);
 #endif
-	break;
+				break;
       }
       instr = si;
       holder = NULL;
@@ -251,19 +251,19 @@ namespace jit {
      ********************************/
     void AddMachineCode(unsigned char b) {
       if(code_index == code_buf_max) {
-	unsigned char* tmp;	
-	if(posix_memalign((void**)&tmp, PAGE_SIZE, code_buf_max * 2)) {
-	  wcerr << L"Unable to reallocate JIT memory!" << endl;
-	  exit(1);
-	}
-	memcpy(tmp, code, code_index);
-	free(code);
-	code = tmp;
-	code_buf_max *= 2;
-	if(mprotect(code, code_buf_max, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
-	  wcerr << L"Unable to mprotect" << endl;
-	  exit(1);
-	}
+				unsigned char* tmp;	
+				if(posix_memalign((void**)&tmp, PAGE_SIZE, code_buf_max * 2)) {
+					wcerr << L"Unable to reallocate JIT memory!" << endl;
+					exit(1);
+				}
+				memcpy(tmp, code, code_index);
+				free(code);
+				code = tmp;
+				code_buf_max *= 2;
+				if(mprotect(code, code_buf_max, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
+					wcerr << L"Unable to mprotect" << endl;
+					exit(1);
+				}
       }
       code[code_index++] = b;
     }
@@ -276,7 +276,7 @@ namespace jit {
       unsigned char buffer[sizeof(int)];
       ByteEncode32(buffer, imm);
       for(size_t i = 0; i < sizeof(int); i++) {
-	AddMachineCode(buffer[i]);
+				AddMachineCode(buffer[i]);
       }
     }
     
@@ -288,7 +288,7 @@ namespace jit {
       unsigned char buffer[sizeof(long)];
       ByteEncode64(buffer, imm);
       for(size_t i = 0; i < sizeof(long); i++) {
-	AddMachineCode(buffer[i]);
+				AddMachineCode(buffer[i]);
       }
     }
   
@@ -298,7 +298,7 @@ namespace jit {
      ********************************/
     inline unsigned char B(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-	return 0x49;
+				return 0x49;
       }
       
       return 0x48;
@@ -309,7 +309,7 @@ namespace jit {
      ********************************/
     inline unsigned char XB(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-	return 0x4b;
+				return 0x4b;
       }
       
       return 0x4a;
@@ -320,7 +320,7 @@ namespace jit {
      ********************************/
     inline unsigned char XB32(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-	return 0x66;
+				return 0x66;
       }
       
       return 0x67;
@@ -332,11 +332,11 @@ namespace jit {
     inline unsigned char RXB(Register r, Register b) {
       unsigned char value = 0x4a;
       if((r > RSP && r < XMM0) || r > XMM7) {
-	value += 0x4;
+				value += 0x4;
       }
       
       if((b > RSP && b < XMM0) || b > XMM7) {
-	value += 0x1;
+				value += 0x1;
       }
       
       return value;
@@ -348,11 +348,11 @@ namespace jit {
     inline unsigned char RXB32(Register r, Register b) {
       unsigned char value = 0x42;
       if((r > RSP && r < XMM0) || r > XMM7) {
-	value += 0x4;
+				value += 0x4;
       }
       
       if((b > RSP && b < XMM0) || b > XMM7) {
-	value += 0x1;
+				value += 0x1;
       }
       
       return value;
@@ -364,11 +364,11 @@ namespace jit {
     inline unsigned char ROB(Register r, Register b) {
       unsigned char value = 0x48;
       if((r > RSP && r < XMM0) || r > XMM7) {
-	value += 0x4;
+				value += 0x4;
       }
 
       if((b > RSP && b < XMM0) || b > XMM7) {
-	value += 0x1;
+				value += 0x1;
       }
       
       return value;
@@ -386,62 +386,62 @@ namespace jit {
       case XMM4:
       case R12:
       case XMM12:
-	byte = 0xa0;
-	break;
+				byte = 0xa0;
+				break;
 
       case RAX:
       case XMM0:
       case R8:
       case XMM8:
-	byte = 0x80;
-	break;
+				byte = 0x80;
+				break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-	byte = 0x98;
-	break;
+				byte = 0x98;
+				break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-	byte = 0x88;
-	break;
+				byte = 0x88;
+				break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-	byte = 0x90;
-	break;
+				byte = 0x90;
+				break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-	byte = 0xb8;
-	break;
+				byte = 0xb8;
+				break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-	byte = 0xb0;
-	break;
+				byte = 0xb0;
+				break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-	byte = 0xa8;
-	break;
+				byte = 0xa8;
+				break;
 
       default:
-	wcerr << L"internal error" << endl;
-	exit(1);
-	break;
+				wcerr << L"internal error" << endl;
+				exit(1);
+				break;
       }
       
       switch(eff_adr) {
@@ -449,66 +449,66 @@ namespace jit {
       case XMM0:
       case R8:
       case XMM8:
-	break;
+				break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-	byte += 3;
-	break;
+				byte += 3;
+				break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-	byte += 1;
-	break;
+				byte += 1;
+				break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-	byte += 2;
-	break;
+				byte += 2;
+				break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-	byte += 7;
-	break;
+				byte += 7;
+				break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-	byte += 6;
-	break;
+				byte += 6;
+				break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-	byte += 5;
-	break;
+				byte += 5;
+				break;
 
       case XMM4:
       case R12:
       case XMM12:
-	byte += 4;
-	break;
+				byte += 4;
+				break;
 	
-	// should never happen for esp
+				// should never happen for esp
       case RSP:
-	wcerr << L"invalid register reference" << endl;
-	exit(1);
-	break;
+				wcerr << L"invalid register reference" << endl;
+				exit(1);
+				break;
 
       default:
-	wcerr << L"internal error" << endl;
-	exit(1);
-	break;
+				wcerr << L"internal error" << endl;
+				exit(1);
+				break;
       }
       
       return byte;
@@ -520,100 +520,100 @@ namespace jit {
     wstring GetRegisterName(Register reg) {
       switch(reg) {
       case RAX:
-	return L"rax";
+				return L"rax";
 
       case RBX:
-	return L"rbx";
+				return L"rbx";
 
       case RCX:
-	return L"rcx";
+				return L"rcx";
 
       case RDX:
-	return L"rdx";
+				return L"rdx";
 
       case RDI:
-	return L"rdi";
+				return L"rdi";
 
       case RSI:
-	return L"rsi";
+				return L"rsi";
 
       case RBP:
-	return L"rbp";
+				return L"rbp";
 
       case RSP:
-	return L"rsp";
+				return L"rsp";
 
       case R8:
-	return L"r8";
+				return L"r8";
 
       case R9:
-	return L"r9";
+				return L"r9";
 	
       case R10:
-	return L"r10";
+				return L"r10";
 
       case R11:
-	return L"r11";
+				return L"r11";
 
       case R12:
-	return L"r12";
+				return L"r12";
 	
       case R13:
-	return L"r13";
+				return L"r13";
 	
       case R14:
-	return L"r14";
+				return L"r14";
 	
       case R15:
-	return L"r15";
+				return L"r15";
 
       case XMM0:
-	return L"xmm0";
+				return L"xmm0";
 
       case XMM1:
-	return L"xmm1";
+				return L"xmm1";
 
       case XMM2:
-	return L"xmm2";
+				return L"xmm2";
 
       case XMM3:
-	return L"xmm3";
+				return L"xmm3";
 
       case XMM4:
-	return L"xmm4";
+				return L"xmm4";
 
       case XMM5:
-	return L"xmm5";
+				return L"xmm5";
 
       case XMM6:
-	return L"xmm6";
+				return L"xmm6";
 	
       case XMM7:
-	return L"xmm7";
+				return L"xmm7";
 	
       case XMM8:
-	return L"xmm8";
+				return L"xmm8";
 
       case XMM9:
-	return L"xmm9";
+				return L"xmm9";
 
       case XMM10:
-	return L"xmm10";
+				return L"xmm10";
 
       case XMM11:
-	return L"xmm11";
+				return L"xmm11";
 
       case XMM12:
-	return L"xmm12";
+				return L"xmm12";
 
       case XMM13:
-	return L"xmm13";
+				return L"xmm13";
 
       case XMM14:
-	return L"xmm14";
+				return L"xmm14";
 	
       case XMM15:
-	return L"xmm15";
+				return L"xmm15";
       }
 
       return L"?";
@@ -650,71 +650,71 @@ namespace jit {
       case XMM0:
       case R8:
       case XMM8:
-	reg_id = 0x0;
-	break;
+				reg_id = 0x0;
+				break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-	reg_id = 0x3;     
-	break;
+				reg_id = 0x3;     
+				break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-	reg_id = 0x1;
-	break;
+				reg_id = 0x1;
+				break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-	reg_id = 0x2;
-	break;
+				reg_id = 0x2;
+				break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-	reg_id = 0x7;
-	break;
+				reg_id = 0x7;
+				break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-	reg_id = 0x6;
-	break;
+				reg_id = 0x6;
+				break;
 
       case RSP:
       case XMM4:
       case R12:
       case XMM12:
-	reg_id = 0x4;
-	break;
+				reg_id = 0x4;
+				break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-	reg_id = 0x5;
-	break;
+				reg_id = 0x5;
+				break;
 	
       default:
-	wcerr << L"internal error" << endl;
-	exit(1);
-	break;
+				wcerr << L"internal error" << endl;
+				exit(1);
+				break;
       }
 
       if(offset == 2) {
-	reg_id = reg_id << 3;
+				reg_id = reg_id << 3;
       }
       code = code | reg_id;
     }
 	
-	// Caculates the indices for
+		// Caculates the indices for
     // memory references.
     void ProcessIndices() {
 			local_space = -TMP_REG_2;
@@ -723,15 +723,15 @@ namespace jit {
       for(size_t i = 0; i < block_instrs.size(); i++) {
         JitInstruction* instr = block_instrs[i];
         switch(instr->GetType()) {
-          case LOAD_INT_VAR:
-          case STOR_INT_VAR:
-          case LOAD_FLOAT_VAR:
-          case STOR_FLOAT_VAR:
-            instr->SetOperand3(instr->GetOperand() * sizeof(Value));
-            break;
+				case LOAD_INT_VAR:
+				case STOR_INT_VAR:
+				case LOAD_FLOAT_VAR:
+				case STOR_FLOAT_VAR:
+					instr->SetOperand3(instr->GetOperand() * sizeof(Value));
+					break;
 
-          default:
-            break;
+				default:
+					break;
         }
       }
     }
@@ -753,19 +753,19 @@ namespace jit {
     RegisterHolder* GetRegister(bool use_aux = true) {
       RegisterHolder* holder;
       if(aval_regs.empty()) {
-	if(use_aux && !aux_regs.empty()) {
-	  holder = aux_regs.top();
-	  aux_regs.pop();
-	}
-	else {
-	  compile_success = false;
+				if(use_aux && !aux_regs.empty()) {
+					holder = aux_regs.top();
+					aux_regs.pop();
+				}
+				else {
+					compile_success = false;
 #ifdef _DEBUG
-	  wcout << L">>> No general registers avaiable! <<<" << endl;
+					wcout << L">>> No general registers avaiable! <<<" << endl;
 #endif
-	  aux_regs.push(new RegisterHolder(RAX));
-	  holder = aux_regs.top();
-	  aux_regs.pop();
-	}
+					aux_regs.push(new RegisterHolder(RAX));
+					holder = aux_regs.top();
+					aux_regs.pop();
+				}
       }
       else {
         holder = aval_regs.back();
@@ -774,7 +774,7 @@ namespace jit {
       }
 #ifdef _VERBOSE
       wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-	    << L" *" << endl;
+						<< L" *" << endl;
 #endif
 
       return holder;
@@ -784,22 +784,22 @@ namespace jit {
     void ReleaseRegister(RegisterHolder* h) {
 #ifdef _VERBOSE
       wcout << L"\t * releasing " << GetRegisterName(h->GetRegister())
-	    << L" *" << endl;
+						<< L" *" << endl;
 #endif
 
 #ifdef _DEBUG
       assert(h->GetRegister() < XMM0);
       for(size_t i  = 0; i < aval_regs.size(); i++) {
-	assert(h != aval_regs[i]);
+				assert(h != aval_regs[i]);
       }
 #endif
 
       if(h->GetRegister() == RDI || h->GetRegister() == RSI) {
-	aux_regs.push(h);
+				aux_regs.push(h);
       }
       else {
-	aval_regs.push_back(h);
-	used_regs.remove(h);
+				aval_regs.push_back(h);
+				used_regs.remove(h);
       }
     }
 
@@ -808,12 +808,12 @@ namespace jit {
     RegisterHolder* GetXmmRegister() {
       RegisterHolder* holder;
       if(aval_xregs.empty()) {
-	compile_success = false;
+				compile_success = false;
 #ifdef _DEBUG
-	wcout << L">>> No XMM registers avaiable! <<<" << endl;
+				wcout << L">>> No XMM registers avaiable! <<<" << endl;
 #endif
-	aval_xregs.push_back(new RegisterHolder(XMM0));
-	holder = aval_xregs.back();
+				aval_xregs.push_back(new RegisterHolder(XMM0));
+				holder = aval_xregs.back();
         aval_xregs.pop_back();
         used_xregs.push_back(holder);
       }
@@ -824,7 +824,7 @@ namespace jit {
       }
 #ifdef _VERBOSE
       wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-	    << L" *" << endl;
+						<< L" *" << endl;
 #endif
 
       return holder;
@@ -835,13 +835,13 @@ namespace jit {
 #ifdef _DEBUG
       assert(h->GetRegister() >= XMM0);
       for(size_t i = 0; i < aval_xregs.size(); i++) {
-	assert(h != aval_xregs[i]);
+				assert(h != aval_xregs[i]);
       }
 #endif
       
 #ifdef _VERBOSE
       wcout << L"\t * releasing: " << GetRegisterName(h->GetRegister())
-	    << L" * " << endl;
+						<< L" * " << endl;
 #endif
       aval_xregs.push_back(h);
       used_xregs.remove(h);
@@ -900,16 +900,8 @@ namespace jit {
 			ProcessIndices();
 			// setup
 			Prolog();
-
-			/* TODO:
-			// method information
-			move_reg_mem(RDI, CLS_ID, RBP);
-			move_reg_mem(RSI, MTHD_ID, RBP);
-			move_reg_mem(RDX, CLASS_MEM, RBP);
-			move_reg_mem(RCX, INSTANCE_MEM, RBP);
-			move_reg_mem(R8, OP_STACK, RBP);
-			move_reg_mem(R9, STACK_POS, RBP);
-			*/	
+			
+			move_reg_mem(RDI, FRAME, RBP);
 			
 			// tranlsate program
 			ProcessInstructions();
@@ -1115,18 +1107,18 @@ namespace jit {
 			}
     }
 		
-	// Compiles and executes machine code
-	long Execute(Value* frame, void* inst_mem, void* cls_mem) {
-		jit_fun_ptr jit_fun = Compile();
-		if(jit_fun) {
+		// Compiles and executes machine code
+		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
+			jit_fun_ptr jit_fun = Compile();
+			if(jit_fun) {
 #ifdef _DEBUG
-	wcout << L"(Executing machine code...)" << endl;
+				wcout << L"(Executing machine code...)" << endl;
 #endif
-			return (*jit_fun)(frame, NULL, NULL);
-		}
+				return (*jit_fun)(frame, NULL, NULL);
+			}
 
-		return -1;
-	}		
+			return -1;
+		}		
   };
 }
 
