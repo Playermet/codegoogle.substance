@@ -31,9 +31,15 @@
 
 #include "runtime.h"
 #include "jit/jit_common.h"
-#ifdef _X64
+
+// Windows x64
+#if defined(_WIN32) && defined(_X64)
+#include "jit/amd64/win/jit_amd_lp64.h"
+// Posix x64
+#elif _X64
 #include "jit/amd64/posix/jit_amd_lp64.h"
 #else
+// Win32 and Posix
 #include "jit/ia32/jit_ia32.h"
 #endif
 
