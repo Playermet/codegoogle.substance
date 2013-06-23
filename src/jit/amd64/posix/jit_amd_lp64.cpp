@@ -32,7 +32,7 @@
 #include "jit_amd_lp64.h"
 #include <string>
 
-using namespace Runtime;
+using namespace jit;
 
 void JitCompiler::Prolog() {
 #ifdef _DEBUG
@@ -1157,7 +1157,7 @@ void JitCompiler::move_reg_reg(Register src, Register dest) {
   if(src != dest) {
 #ifdef _DEBUG
     wcout << L"  " << (++instr_count) << L": [movq %" << GetRegisterName(src) 
-	  << L", %" << GetRegisterName(dest) << L"]" << endl;
+					<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
     // encode
     AddMachineCode(ROB(src, dest));
@@ -1173,8 +1173,8 @@ void JitCompiler::move_reg_reg(Register src, Register dest) {
 void JitCompiler::move_reg_mem8(Register src, long offset, Register dest) { 
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movb %" << GetRegisterName(src) 
-	<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
-	<< endl;
+				<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
+				<< endl;
 #endif
   // encode
   AddMachineCode(RXB(src, dest));
@@ -1187,8 +1187,8 @@ void JitCompiler::move_reg_mem8(Register src, long offset, Register dest) {
 void JitCompiler::move_reg_mem32(Register src, long offset, Register dest) { 
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movw %" << GetRegisterName(src) 
-       << L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
-       << endl;
+				<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
+				<< endl;
 #endif
   // encode
   AddMachineCode(RXB32(src, dest));
@@ -1201,8 +1201,8 @@ void JitCompiler::move_reg_mem32(Register src, long offset, Register dest) {
 void JitCompiler::move_reg_mem(Register src, long offset, Register dest) { 
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movl %" << GetRegisterName(src) 
-	<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
-	<< endl;
+				<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
+				<< endl;
 #endif
   // encode
   AddMachineCode(RXB(src, dest));
@@ -1215,8 +1215,8 @@ void JitCompiler::move_reg_mem(Register src, long offset, Register dest) {
 void JitCompiler::move_mem8_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movb " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(dest, src));
@@ -1230,8 +1230,8 @@ void JitCompiler::move_mem8_reg(long offset, Register src, Register dest) {
 void JitCompiler::move_mem32_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movw " << offset << L"(%" 
-       << GetRegisterName(src) << L"), %" << GetRegisterName(dest)
-       << L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB32(dest, src));
@@ -1244,8 +1244,8 @@ void JitCompiler::move_mem32_reg(long offset, Register src, Register dest) {
 void JitCompiler::move_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(dest, src));
@@ -1265,7 +1265,7 @@ void JitCompiler::move_imm_memx(RegInstr* instr, long offset, Register dest) {
 void JitCompiler::move_imm_mem8(long imm, long offset, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movb $" << imm << L", " << offset 
-	<< L"(%" << GetRegisterName(dest) << L")" << L"]" << endl;
+				<< L"(%" << GetRegisterName(dest) << L")" << L"]" << endl;
 #endif
   // encode
   AddMachineCode(XB(dest));
@@ -1281,7 +1281,7 @@ void JitCompiler::move_imm_mem8(long imm, long offset, Register dest) {
 void JitCompiler::move_imm_mem(long imm, long offset, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movq $" << imm << L", " << offset 
-	<< L"(%" << GetRegisterName(dest) << L")" << L"]" << endl;
+				<< L"(%" << GetRegisterName(dest) << L")" << L"]" << endl;
 #endif
   // encode
   AddMachineCode(XB(dest));
@@ -1297,7 +1297,7 @@ void JitCompiler::move_imm_mem(long imm, long offset, Register dest) {
 void JitCompiler::move_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movq $" << imm << L", %" 
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(XB(reg));
@@ -1319,8 +1319,8 @@ void JitCompiler::move_imm_xreg(RegInstr* instr, Register reg) {
 void JitCompiler::move_mem_xreg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movsd " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -1335,8 +1335,8 @@ void JitCompiler::move_mem_xreg(long offset, Register src, Register dest) {
 void JitCompiler::move_xreg_mem(Register src, long offset, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movsd %" << GetRegisterName(src) 
-	<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
-	<< endl;
+				<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
+				<< endl;
 #endif 
   // encode
   AddMachineCode(0xf2);
@@ -1352,7 +1352,7 @@ void JitCompiler::move_xreg_xreg(Register src, Register dest) {
   if(src != dest) {
 #ifdef _DEBUG
     wcout << L"  " << (++instr_count) << L": [movsd %" << GetRegisterName(src) 
-	  << L", %" << GetRegisterName(dest) << L"]" << endl;
+					<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
     // encode
     AddMachineCode(0xf2);
@@ -1367,19 +1367,20 @@ void JitCompiler::move_xreg_xreg(Register src, Register dest) {
   }
 }
 
-bool JitCompiler::cond_jmp(InstructionType type) {
-  if(instr_index >= method->GetInstructionCount()) {
+bool JitCompiler::cond_jmp(JitInstructionType type) {
+	/*
+		if(instr_index >= method->GetInstructionCount()) {
     return false;
-  }
+		}
+	*/
   
-  StackInstr* next_instr = method->GetInstruction(instr_index);
+	JitInstruction* next_instr = block_instrs[instr_index + 1];
   if(next_instr->GetType() == JMP && next_instr->GetOperand2() > -1) {
-    // if(false) {
 #ifdef _DEBUG
-    wcout << L"JMP: id=" << next_instr->GetOperand() << L", regs=" << aval_regs.size() << L"," << aux_regs.size() << endl;
+    std::wcout << L"JMP: id=" << next_instr->GetOperand() << L", regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
     AddMachineCode(0x0f);
-
+		
     //
     // jump if true
     //
@@ -1428,7 +1429,7 @@ bool JitCompiler::cond_jmp(InstructionType type) {
         break;
 
       default:
-	break;
+				break;
       }  
     }
     //
@@ -1479,14 +1480,19 @@ bool JitCompiler::cond_jmp(InstructionType type) {
         break;
 
       default:
-	break;
+				break;
       }  
     }    
-    // store update index
-    jump_table.insert(pair<long, StackInstr*>(code_index, next_instr));
+		// store update index
+    native_jump_table.insert(pair<long, JitInstruction*>(code_index, next_instr));
     // temp offset
     AddImm(0);
     skip_jump = true;
+
+		// add guard code if not jumping to the end-of-lopp
+		if(next_instr->GetOperand() != block_instrs.back()->GetOperand()) {
+			Epilog(next_instr->GetOperand());
+		}
     
     return true;
   }
@@ -1494,7 +1500,7 @@ bool JitCompiler::cond_jmp(InstructionType type) {
   return false;
 }
 
-void JitCompiler::math_imm_reg(long imm, Register reg, InstructionType type) {
+void JitCompiler::math_imm_reg(long imm, Register reg, JitInstructionType type) {
   switch(type) {
   case AND_INT:
     and_imm_reg(imm, reg);
@@ -1561,7 +1567,7 @@ void JitCompiler::math_imm_reg(long imm, Register reg, InstructionType type) {
   }
 }
 
-void JitCompiler::math_reg_reg(Register src, Register dest, InstructionType type) {
+void JitCompiler::math_reg_reg(Register src, Register dest, JitInstructionType type) {
   switch(type) {
   case SHL_INT:
     shl_reg_reg(src, dest);
@@ -1627,7 +1633,7 @@ void JitCompiler::math_reg_reg(Register src, Register dest, InstructionType type
   }
 }
 
-void JitCompiler::math_mem_reg(long offset, Register reg, InstructionType type) {
+void JitCompiler::math_mem_reg(long offset, Register reg, JitInstructionType type) {
   switch(type) {
   case SHL_INT:
     shl_mem_reg(offset, RBP, reg);
@@ -1694,7 +1700,7 @@ void JitCompiler::math_mem_reg(long offset, Register reg, InstructionType type) 
   }
 }
 
-void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, InstructionType type) {
+void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, JitInstructionType type) {
   switch(type) {
   case ADD_FLOAT:
     add_imm_xreg(instr, reg);
@@ -1726,14 +1732,14 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, InstructionType t
   }
 }
 
-void JitCompiler::math_mem_xreg(long offset, Register dest, InstructionType type) {
+void JitCompiler::math_mem_xreg(long offset, Register dest, JitInstructionType type) {
   RegisterHolder* holder = GetXmmRegister();
   move_mem_xreg(offset, RBP, holder->GetRegister());
   math_xreg_xreg(holder->GetRegister(), dest, type);
   ReleaseXmmRegister(holder);
 }
 
-void JitCompiler::math_xreg_xreg(Register src, Register dest, InstructionType type) {
+void JitCompiler::math_xreg_xreg(Register src, Register dest, JitInstructionType type) {
   switch(type) {
   case ADD_FLOAT:
     add_xreg_xreg(src, dest);
@@ -1768,7 +1774,7 @@ void JitCompiler::math_xreg_xreg(Register src, Register dest, InstructionType ty
 void JitCompiler::cmp_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cmpq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -1783,8 +1789,8 @@ void JitCompiler::cmp_reg_reg(Register src, Register dest) {
 void JitCompiler::cmp_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cmpq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(dest, src));
@@ -1797,7 +1803,7 @@ void JitCompiler::cmp_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::cmp_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cmpq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(XB(reg));
@@ -1809,15 +1815,15 @@ void JitCompiler::cmp_imm_reg(long imm, Register reg) {
   AddImm(imm);
 }
 
-void JitCompiler::cmov_reg(Register reg, InstructionType oper) {
+void JitCompiler::cmov_reg(Register reg, JitInstructionType oper) {
   // set register to 0; if eflag than set to 1
   move_imm_reg(0, reg);
   RegisterHolder* true_holder = GetRegister();
   move_imm_reg(1, true_holder->GetRegister());
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cmovq %" 
-	<< GetRegisterName(reg) << L", %" 
-	<< GetRegisterName(true_holder->GetRegister()) << L" ]" << endl;
+				<< GetRegisterName(reg) << L", %" 
+				<< GetRegisterName(true_holder->GetRegister()) << L" ]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(reg, true_holder->GetRegister()));
@@ -1881,7 +1887,7 @@ void JitCompiler::cmov_reg(Register reg, InstructionType oper) {
 void JitCompiler::add_imm_mem(long imm, long offset, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addq $" << imm << L", " 
-	<< offset << L"(%"<< GetRegisterName(dest) << L")]" << endl;
+				<< offset << L"(%"<< GetRegisterName(dest) << L")]" << endl;
 #endif
   // encode
   AddMachineCode(XB(dest));
@@ -1895,7 +1901,7 @@ void JitCompiler::add_imm_mem(long imm, long offset, Register dest) {
 void JitCompiler::add_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(B(reg));
@@ -1942,7 +1948,7 @@ void JitCompiler::mul_imm_xreg(RegInstr* instr, Register reg) {
 void JitCompiler::add_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -1957,7 +1963,7 @@ void JitCompiler::add_reg_reg(Register src, Register dest) {
 void JitCompiler::sub_xreg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [subsd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -1974,7 +1980,7 @@ void JitCompiler::sub_xreg_xreg(Register src, Register dest) {
 void JitCompiler::mul_xreg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [mulsd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -1991,7 +1997,7 @@ void JitCompiler::mul_xreg_xreg(Register src, Register dest) {
 void JitCompiler::div_xreg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [divsd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2008,7 +2014,7 @@ void JitCompiler::div_xreg_xreg(Register src, Register dest) {
 void JitCompiler::add_xreg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addsd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2025,8 +2031,8 @@ void JitCompiler::add_xreg_xreg(Register src, Register dest) {
 void JitCompiler::add_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(dest, src));
@@ -2039,8 +2045,8 @@ void JitCompiler::add_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::add_mem_xreg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [addsd " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2063,8 +2069,8 @@ void JitCompiler::sub_mem_xreg(long offset, Register src, Register dest) {
 void JitCompiler::mul_mem_xreg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [mulsd " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2086,7 +2092,7 @@ void JitCompiler::div_mem_xreg(long offset, Register src, Register dest) {
 void JitCompiler::sub_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [subq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(B(reg));
@@ -2100,7 +2106,7 @@ void JitCompiler::sub_imm_reg(long imm, Register reg) {
 void JitCompiler::sub_imm_mem(long imm, long offset, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [subq $" << imm << L", " 
-	<< offset << L"(%"<< GetRegisterName(dest) << L")]" << endl;
+				<< offset << L"(%"<< GetRegisterName(dest) << L")]" << endl;
 #endif
   // encode
   AddMachineCode(XB(dest));
@@ -2114,7 +2120,7 @@ void JitCompiler::sub_imm_mem(long imm, long offset, Register dest) {
 void JitCompiler::sub_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [subq %" << GetRegisterName(src)
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -2129,8 +2135,8 @@ void JitCompiler::sub_reg_reg(Register src, Register dest) {
 void JitCompiler::sub_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [subq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
 
   // encode
@@ -2144,7 +2150,7 @@ void JitCompiler::sub_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::mul_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [imuq $" << imm 
-	<< L", %"<< GetRegisterName(reg) << L"]" << endl;
+				<< L", %"<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(reg, reg));
@@ -2161,8 +2167,8 @@ void JitCompiler::mul_imm_reg(long imm, Register reg) {
 void JitCompiler::mul_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [imuq %" 
-	<< GetRegisterName(src) << L", %"<< GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L", %"<< GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -2178,8 +2184,8 @@ void JitCompiler::mul_reg_reg(Register src, Register dest) {
 void JitCompiler::mul_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [imuq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(dest, src));
@@ -2198,7 +2204,7 @@ void JitCompiler::div_imm_reg(long imm, Register reg, bool is_mod) {
 }
 
 void JitCompiler::div_mem_reg(long offset, Register src,
-				  Register dest, bool is_mod) {
+															Register dest, bool is_mod) {
   if(is_mod) {
     if(dest != RDX) {
       move_reg_mem(RDX, TMP_REG_1, RBP);
@@ -2227,11 +2233,11 @@ void JitCompiler::div_mem_reg(long offset, Register src,
 #ifdef _DEBUG
   if(is_mod) {
     wcout << L"  " << (++instr_count) << L": [imod " << offset << L"(%" 
-	  << GetRegisterName(src) << L")]" << endl;
+					<< GetRegisterName(src) << L")]" << endl;
   }
   else {
     wcout << L"  " << (++instr_count) << L": [idiv " << offset << L"(%" 
-	  << GetRegisterName(src) << L")]" << endl;
+					<< GetRegisterName(src) << L")]" << endl;
   }
 #endif
   // ============
@@ -2289,11 +2295,11 @@ void JitCompiler::div_reg_reg(Register src, Register dest, bool is_mod) {
 #ifdef _DEBUG
     if(is_mod) {
       wcout << L"  " << (++instr_count) << L": [imod %" 
-	    << GetRegisterName(src) << L"]" << endl;
+						<< GetRegisterName(src) << L"]" << endl;
     }
     else {
       wcout << L"  " << (++instr_count) << L": [idiv %" 
-	    << GetRegisterName(src) << L"]" << endl;
+						<< GetRegisterName(src) << L"]" << endl;
     }
 #endif
   }
@@ -2313,11 +2319,11 @@ void JitCompiler::div_reg_reg(Register src, Register dest, bool is_mod) {
 #ifdef _DEBUG
     if(is_mod) {
       wcout << L"  " << (++instr_count) << L": [imod " << TMP_REG_0 << L"(%" 
-	    << GetRegisterName(RBP) << L")]" << endl;
+						<< GetRegisterName(RBP) << L")]" << endl;
     }
     else {
       wcout << L"  " << (++instr_count) << L": [idiv " << TMP_REG_0 << L"(%" 
-	    << GetRegisterName(RBP) << L")]" << endl;
+						<< GetRegisterName(RBP) << L")]" << endl;
     }
 #endif
   }
@@ -2352,7 +2358,7 @@ void JitCompiler::dec_reg(Register dest) {
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [decq %" 
-	<< GetRegisterName(dest) << L"]" << endl;
+				<< GetRegisterName(dest) << L"]" << endl;
 #endif
 }
 
@@ -2365,7 +2371,7 @@ void JitCompiler::dec_mem(long offset, Register dest) {
   AddImm(offset);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [decq " << offset << L"(%" 
-	<< GetRegisterName(dest) << L")" << L"]" << endl;
+				<< GetRegisterName(dest) << L")" << L"]" << endl;
 #endif
 }
 
@@ -2378,7 +2384,7 @@ void JitCompiler::inc_mem(long offset, Register dest) {
   AddImm(offset);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [incq " << offset << L"(%" 
-	<< GetRegisterName(dest) << L")" << L"]" << endl;
+				<< GetRegisterName(dest) << L")" << L"]" << endl;
 #endif
 }
 
@@ -2391,7 +2397,7 @@ void JitCompiler::shl_imm_reg(long value, Register dest) {
   AddMachineCode(value);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shlq $" << value << L", %" 
-	<< GetRegisterName(dest) << L"]" << endl;
+				<< GetRegisterName(dest) << L"]" << endl;
 #endif
 }
 
@@ -2423,7 +2429,7 @@ void JitCompiler::shl_reg_reg(Register src, Register dest)
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shlq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
 
   // --------------------
@@ -2455,7 +2461,7 @@ void JitCompiler::shr_imm_reg(long value, Register dest) {
   AddMachineCode(value);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shrq $" << value << L", %" 
-	<< GetRegisterName(dest) << L"]" << endl;
+				<< GetRegisterName(dest) << L"]" << endl;
 #endif
 }
 
@@ -2487,7 +2493,7 @@ void JitCompiler::shr_reg_reg(Register src, Register dest)
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shrq %" << GetRegisterName(RCX) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
 
   // --------------------
@@ -2519,7 +2525,7 @@ void JitCompiler::push_mem(long offset, Register dest) {
   AddImm(offset);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [pushq " << offset << L"(%" 
-	<< GetRegisterName(dest) << L")" << L"]" << endl;
+				<< GetRegisterName(dest) << L")" << L"]" << endl;
 #endif
 }
 
@@ -2530,7 +2536,7 @@ void JitCompiler::push_reg(Register reg) {
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [pushq %" << GetRegisterName(reg) 
-	<< L"]" << endl;
+				<< L"]" << endl;
 #endif
 }
 
@@ -2549,7 +2555,7 @@ void JitCompiler::pop_reg(Register reg) {
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [popq %" << GetRegisterName(reg) 
-	<< L"]" << endl;
+				<< L"]" << endl;
 #endif
 }
 
@@ -2561,14 +2567,14 @@ void JitCompiler::call_reg(Register reg) {
   AddMachineCode(code);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [call %" << GetRegisterName(reg)
-	<< L"]" << endl;
+				<< L"]" << endl;
 #endif
 }
 
 void JitCompiler::cmp_xreg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [ucomisd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0x66);
@@ -2585,8 +2591,8 @@ void JitCompiler::cmp_xreg_xreg(Register src, Register dest) {
 void JitCompiler::cmp_mem_xreg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [ucomisd " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0x66);
@@ -2609,7 +2615,7 @@ void JitCompiler::cmp_imm_xreg(RegInstr* instr, Register reg) {
 void JitCompiler::cvt_xreg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cvtsd2si %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2634,8 +2640,8 @@ void JitCompiler::round_imm_xreg(RegInstr* instr, Register reg, bool is_floor) {
 void JitCompiler::round_mem_xreg(long offset, Register src, Register dest, bool is_floor) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << (is_floor ? ": [floor " : ": [ceil ") 
-	<< offset << L"(%" << GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< offset << L"(%" << GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   
   AddMachineCode(0x66);
@@ -2658,7 +2664,7 @@ void JitCompiler::round_mem_xreg(long offset, Register src, Register dest, bool 
 void JitCompiler::round_xreg_xreg(Register src, Register dest, bool is_floor) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << (is_floor ? ": [floor %" : ": [ceil %") 
-	<< GetRegisterName(src) << L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< GetRegisterName(src) << L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   
   AddMachineCode(0x66);
@@ -2691,8 +2697,8 @@ void JitCompiler::cvt_imm_reg(RegInstr* instr, Register reg) {
 void JitCompiler::cvt_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cvtsd2si " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2707,7 +2713,7 @@ void JitCompiler::cvt_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::cvt_reg_xreg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cvtsi2sd %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2732,8 +2738,8 @@ void JitCompiler::cvt_imm_xreg(RegInstr* instr, Register reg) {
 void JitCompiler::cvt_mem_xreg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cvtsi2sd " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(0xf2);
@@ -2748,7 +2754,7 @@ void JitCompiler::cvt_mem_xreg(long offset, Register src, Register dest) {
 void JitCompiler::and_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [andq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(B(reg));
@@ -2763,7 +2769,7 @@ void JitCompiler::and_imm_reg(long imm, Register reg) {
 void JitCompiler::and_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [andq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -2778,8 +2784,8 @@ void JitCompiler::and_reg_reg(Register src, Register dest) {
 void JitCompiler::and_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [andq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(src, dest));
@@ -2792,7 +2798,7 @@ void JitCompiler::and_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::or_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [orq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(B(reg));
@@ -2807,7 +2813,7 @@ void JitCompiler::or_imm_reg(long imm, Register reg) {
 void JitCompiler::or_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [orq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -2822,8 +2828,8 @@ void JitCompiler::or_reg_reg(Register src, Register dest) {
 void JitCompiler::or_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [orq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(src, dest));
@@ -2836,7 +2842,7 @@ void JitCompiler::or_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::xor_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [xorq $" << imm << L", %"
-	<< GetRegisterName(reg) << L"]" << endl;
+				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(B(reg));
@@ -2851,7 +2857,7 @@ void JitCompiler::xor_imm_reg(long imm, Register reg) {
 void JitCompiler::xor_reg_reg(Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [xorq %" << GetRegisterName(src) 
-	<< L", %" << GetRegisterName(dest) << L"]" << endl;
+				<< L", %" << GetRegisterName(dest) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(ROB(src, dest));
@@ -2866,8 +2872,8 @@ void JitCompiler::xor_reg_reg(Register src, Register dest) {
 void JitCompiler::xor_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [xorq " << offset << L"(%" 
-	<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
-	<< L"]" << endl;
+				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest) 
+				<< L"]" << endl;
 #endif
   // encode
   AddMachineCode(RXB(src, dest));
@@ -2875,33 +2881,4 @@ void JitCompiler::xor_mem_reg(long offset, Register src, Register dest) {
   AddMachineCode(ModRM(src, dest));
   // write value
   AddImm(offset);
-}
-
-/********************************
- * JitExecutorIA32 class
- ********************************/
-StackProgram* JitExecutorIA32::program;
-void JitExecutorIA32::Initialize(StackProgram* p) {
-  program = p;
-}
-
-long JitExecutorIA32::ExecuteMachineCode(long cls_id, long mthd_id, long* inst, unsigned char* code, 
-					 const long code_size, long* op_stack, long *stack_pos,
-					 StackFrame** call_stack, long* call_stack_pos) {
-  // create function
-  jit_fun_ptr jit_fun = (jit_fun_ptr)code;
-  
-  // execute
-#ifdef _TIMING
-  clock_t start = clock();
-  long result = jit_fun(cls_id, mthd_id, method->GetClass()->GetClassMemory(), 
-			inst, op_stack, stack_pos);
-  wcout << L"JIT execution: method='" << method->GetName() << L"', time=" 
-	<< (double)(clock() - start) / CLOCKS_PER_SEC << L" second(s)." << endl;
-  return result;
-#else
-  // execute
-  return jit_fun(cls_id, mthd_id, method->GetClass()->GetClassMemory(), 
-		 inst, op_stack, stack_pos, call_stack, call_stack_pos);
-#endif
 }

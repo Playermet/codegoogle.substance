@@ -18,8 +18,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
  * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -28,19 +27,14 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ***************************************************************************/
-#ifndef __REG_ALLOC_H__
-#define __REG_ALLOC_H__
 
-#include "../../os/posix/memory.h"
-#include "../../os/posix/posix.h"
+#ifndef __JIT_AMD64_H__
+#define __JIT_AMD64_H__
+
 #include "../../../common.h"
 #include "../../jit_common.h"
-#ifdef _WIN32
-#include <stdint.h>
-#else
 #include <sys/mman.h>
 #include <errno.h>
-#endif
 
 using namespace std;
 
@@ -52,6 +46,7 @@ using namespace std;
   // integer temps
 #define TMP_REG_0 -32
 #define TMP_REG_1 -40
+#define TMP_REG_2 -48
 
 #define RED_ZONE -128  
 #define MAX_DBLS 64
@@ -237,10 +232,10 @@ namespace jit {
     stack<RegisterHolder*> aux_regs;
     vector<RegisterHolder*> aval_xregs;
     list<RegisterHolder*> used_xregs;
-    unordered_map<int32_t, JitInstruction*> jump_labels;
-    unordered_map<int32_t, JitInstruction*> native_jump_table;
-    int32_t local_space;
-    int32_t instr_count;
+    unordered_map<long, JitInstruction*> jump_labels;
+    unordered_map<long, JitInstruction*> native_jump_table;
+    long local_space;
+    long instr_count;
     unsigned char* code;
     long code_index;   
     double* floats;     
@@ -722,7 +717,7 @@ namespace jit {
 	// Caculates the indices for
     // memory references.
     void ProcessIndices() {
-      org_local_space = local_space = -TMP_REG_2;
+			local_space = -TMP_REG_2;
 
       // update frame offsets
       for(size_t i = 0; i < block_instrs.size(); i++) {
@@ -742,7 +737,7 @@ namespace jit {
     }
     
     void Prolog();
-    void Epilog(int32_t imm);
+    void Epilog(long imm);
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
     void ProcessStore(JitInstruction* instruction);
@@ -858,100 +853,95 @@ namespace jit {
     jit_fun_ptr Compile() {
       compile_success = true;
       
-    // code buffer memory
-	code_buf_max = PAGE_SIZE;
-	if(posix_memalign((void**)&code, PAGE_SIZE, PAGE_SIZE)) {
-	  wcerr << L"Unable to reallocate JIT memory!" << endl;
-	  exit(1);
-	}
-	if(mprotect(code, code_buf_max, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
-	  wcerr << L"Unable to mprotect" << endl;
-	  exit(1);
-	}
-	// floats memory
-	if(posix_memalign((void**)&floats, PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
-	  wcerr << L"Unable to reallocate JIT memory!" << endl;
-	  exit(1);
-	}
-	floats_index = instr_index = code_index = instr_count = 0;
-	// general use registers
-	//	aval_regs.push_back(new RegisterHolder(RDX));
-	//	aval_regs.push_back(new RegisterHolder(RCX));
-	aval_regs.push_back(new RegisterHolder(RBX));
-	aval_regs.push_back(new RegisterHolder(RAX));
-	// aux general use registers
-	//        aux_regs.push(new RegisterHolder(RDI));
-	//        aux_regs.push(new RegisterHolder(RSI));
-	aux_regs.push(new RegisterHolder(R15));
-	aux_regs.push(new RegisterHolder(R14));
-	aux_regs.push(new RegisterHolder(R13));
-	// aux_regs.push(new RegisterHolder(R12));
-	aux_regs.push(new RegisterHolder(R11));
-	aux_regs.push(new RegisterHolder(R10));
-	// aux_regs.push(new RegisterHolder(R9));
-	aux_regs.push(new RegisterHolder(R8));
-	// floating point registers
-	aval_xregs.push_back(new RegisterHolder(XMM15));
-	aval_xregs.push_back(new RegisterHolder(XMM14)); 
-	aval_xregs.push_back(new RegisterHolder(XMM13));
-	aval_xregs.push_back(new RegisterHolder(XMM12)); 
-	aval_xregs.push_back(new RegisterHolder(XMM11));
-	aval_xregs.push_back(new RegisterHolder(XMM10));   
+			// code buffer memory
+			code_buf_max = PAGE_SIZE;
+			if(posix_memalign((void**)&code, PAGE_SIZE, PAGE_SIZE)) {
+				wcerr << L"Unable to reallocate JIT memory!" << endl;
+				exit(1);
+			}
+			if(mprotect(code, code_buf_max, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) {
+				wcerr << L"Unable to mprotect" << endl;
+				exit(1);
+			}
+			// floats memory
+			if(posix_memalign((void**)&floats, PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
+				wcerr << L"Unable to reallocate JIT memory!" << endl;
+				exit(1);
+			}
+			floats_index = instr_index = code_index = instr_count = 0;
+			// general use registers
+			//	aval_regs.push_back(new RegisterHolder(RDX));
+			//	aval_regs.push_back(new RegisterHolder(RCX));
+			aval_regs.push_back(new RegisterHolder(RBX));
+			aval_regs.push_back(new RegisterHolder(RAX));
+			// aux general use registers
+			//        aux_regs.push(new RegisterHolder(RDI));
+			//        aux_regs.push(new RegisterHolder(RSI));
+			aux_regs.push(new RegisterHolder(R15));
+			aux_regs.push(new RegisterHolder(R14));
+			aux_regs.push(new RegisterHolder(R13));
+			// aux_regs.push(new RegisterHolder(R12));
+			aux_regs.push(new RegisterHolder(R11));
+			aux_regs.push(new RegisterHolder(R10));
+			// aux_regs.push(new RegisterHolder(R9));
+			aux_regs.push(new RegisterHolder(R8));
+			// floating point registers
+			aval_xregs.push_back(new RegisterHolder(XMM15));
+			aval_xregs.push_back(new RegisterHolder(XMM14)); 
+			aval_xregs.push_back(new RegisterHolder(XMM13));
+			aval_xregs.push_back(new RegisterHolder(XMM12)); 
+			aval_xregs.push_back(new RegisterHolder(XMM11));
+			aval_xregs.push_back(new RegisterHolder(XMM10));   
 #ifdef _DEBUG
-	wcout << L"Compiling code for AMD64 architecture..." << endl;
+			wcout << L"Compiling code for AMD64 architecture..." << endl;
 #endif
 	
-	// process offsets
-	ProcessIndices();
-	// setup
-	Prolog();
-	// method information
+			// process offsets
+			ProcessIndices();
+			// setup
+			Prolog();
 
-	move_reg_mem(RDI, CLS_ID, RBP);
-	move_reg_mem(RSI, MTHD_ID, RBP);
-	move_reg_mem(RDX, CLASS_MEM, RBP);
-	move_reg_mem(RCX, INSTANCE_MEM, RBP);
-	move_reg_mem(R8, OP_STACK, RBP);
-	move_reg_mem(R9, STACK_POS, RBP);
-	
-
-	// register root
-	RegisterRoot();
-	// translate parameters
-	ProcessParameters(method->GetParamCount());
-	// tranlsate program
-	ProcessInstructions();
-	ProcessInstructions();
+			/* TODO:
+			// method information
+			move_reg_mem(RDI, CLS_ID, RBP);
+			move_reg_mem(RSI, MTHD_ID, RBP);
+			move_reg_mem(RDX, CLASS_MEM, RBP);
+			move_reg_mem(RCX, INSTANCE_MEM, RBP);
+			move_reg_mem(R8, OP_STACK, RBP);
+			move_reg_mem(R9, STACK_POS, RBP);
+			*/	
+			
+			// tranlsate program
+			ProcessInstructions();
       if(!compile_success) {
         return NULL;
       }
       Epilog(block_instrs.back()->GetOperand());
-
-	// show content
-	unordered_map<int, JitInstruction*>::iterator iter;
-	for(iter = jump_table.begin(); iter != jump_table.end(); ++iter) {
-	  JitInstruction* instr = iter->second;
-	  long src_offset = iter->first;
-	  long dest_index = method->GetLabelIndex(instr->GetOperand()) + 1;
-	  long dest_offset = method->GetInstruction(dest_index)->GetOffset();
-	  long offset = dest_offset - src_offset - 4; // 64-bit jump offset
-	  memcpy(&code[src_offset], &offset, 4); 
+			
+			// show content
+			unordered_map<long, JitInstruction*>::iterator iter;
+			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
+				JitInstruction* instr = iter->second;
+				long src_offset = iter->first;
+				// long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
+				// long dest_offset = block_instrs[dest_index]->GetOffset();
+				long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
+				long offset = dest_offset - src_offset - 4;
+				memcpy(&code[src_offset], &offset, 4); 
 #ifdef _DEBUG
-	  wcout << L"jump update: src=" << src_offset 
-		<< L"; dest=" << dest_offset << endl;
+				wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset 
+							<< L"; dest=" << dest_offset << endl;
 #endif
-	}
+			}
 #ifdef _DEBUG
 			wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" 
 						<< code_buf_max << L" byte(s)" << endl;
 #endif
-
-#ifndef _WIN32
+			
 			if(mprotect(code, code_index, PROT_EXEC | PROT_WRITE)) {
 				perror("Couldn't mprotect");
 				exit(errno);
 			}
-#endif
 			wcout << L"--------------------------" << endl;
 			
       return (jit_fun_ptr)code;
@@ -975,12 +965,12 @@ namespace jit {
     void move_xreg_xreg(Register src, Register dest);
 
     // math instructions
-    void math_imm_reg(long imm, Register reg, InstructionType type);    
-    void math_imm_xreg(RegInstr* instr, Register reg, InstructionType type);
-    void math_reg_reg(Register src, Register dest, InstructionType type);
-    void math_xreg_xreg(Register src, Register dest, InstructionType type);
-    void math_mem_reg(long offset, Register reg, InstructionType type);
-    void math_mem_xreg(long offset, Register reg, InstructionType type);
+    void math_imm_reg(long imm, Register reg, JitInstructionType type);    
+    void math_imm_xreg(RegInstr* instr, Register reg, JitInstructionType type);
+    void math_reg_reg(Register src, Register dest, JitInstructionType type);
+    void math_xreg_xreg(Register src, Register dest, JitInstructionType type);
+    void math_mem_reg(long offset, Register reg, JitInstructionType type);
+    void math_mem_xreg(long offset, Register reg, JitInstructionType type);
 
     // logical
     void and_imm_reg(long imm, Register reg);
@@ -1034,7 +1024,7 @@ namespace jit {
     void cmp_xreg_xreg(Register src, Register dest);
     void cmp_mem_xreg(long offset, Register src, Register dest);
     void cmp_imm_xreg(RegInstr* instr, Register reg);
-    void cmov_reg(Register reg, InstructionType oper);
+    void cmov_reg(Register reg, JitInstructionType oper);
     
     // inc/dec instructions
     void dec_reg(Register dest);
@@ -1070,7 +1060,7 @@ namespace jit {
     void call_reg(Register reg);
 
     // generates a conditional jump
-    bool cond_jmp(InstructionType type);
+    bool cond_jmp(JitInstructionType type);
     
   public: 
     JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T label_start) {

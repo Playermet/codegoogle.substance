@@ -31,7 +31,11 @@
 
 #include "runtime.h"
 #include "jit/jit_common.h"
+#ifdef _X64
+#include "jit/amd64/posix/jit_amd_lp64.h"
+#else
 #include "jit/ia32/jit_ia32.h"
+#endif
 
 using namespace runtime;
 
