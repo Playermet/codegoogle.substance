@@ -192,6 +192,10 @@ void Runtime::Run()
 #ifdef _DEBUG
 				wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
 #endif
+
+#if _NO_JIT
+        ip = jump_table[instruction->operand1];
+#else
 				if(is_recording && jump_dest == instruction->operand1) {
 					const INT_T next_label = instructions[ip]->operand1;
 					// add ending code for JIT compiler
@@ -205,12 +209,6 @@ void Runtime::Run()
 						exit(1);
 					}
 					ip = jump_table[guard_label];
-					/*
-          jit::jit_fun_ptr jit_fun = compiler.Compile();					
-					// return code of next instruction
-					long x = (*jit_fun)(frame, NULL, NULL); 
-					ip = jump_table[x];
-					*/
 					// reset
           is_recording = first_jmp = is_jump = false;
 					ClearJitInstructions();
@@ -224,6 +222,7 @@ void Runtime::Run()
 					}
 				  ip = next_ip;
         }
+#endif
 				break;
 				
 				// jump true
