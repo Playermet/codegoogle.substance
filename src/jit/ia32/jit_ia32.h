@@ -673,9 +673,9 @@ namespace jit {
       aval_xregs.push_back(new RegisterHolder(XMM1));
       aval_xregs.push_back(new RegisterHolder(XMM0));   
 #ifdef _DEBUG
-			wcout << L"==========================================" << endl;
-      wcout << L"==== Compiling block for IA-32 target ====" << endl;
-			wcout << L"==========================================" << endl;
+			wcout << L"========================================" << endl;
+      wcout << L"==== Compiling block for IA-32 host ====" << endl;
+			wcout << L"========================================" << endl;
 #endif
       // TODO: map referenced variables to stack references; impact memory manager
       ProcessIndices();
