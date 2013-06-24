@@ -1,32 +1,32 @@
 /***************************************************************************
- * JIT compiler for the AMD64 architecture.
- *
- * Copyright (c) 2008-2013 Randy Hollines
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright 
- * notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright 
- * notice, this list of conditions and the following disclaimer in 
- * the documentation and/or other materials provided with the distribution.
- * - Neither the name of the Objeck Team nor the names of its 
- * contributors may be used to endorse or promote products derived 
- * from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ***************************************************************************/
+* JIT compiler for the AMD64 architecture.
+*
+* Copyright (c) 2008-2013 Randy Hollines
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without 
+* modification, are permitted provided that the following conditions are met:
+*
+* - Redistributions of source code must retain the above copyright 
+* notice, this list of conditions and the following disclaimer.
+* - Redistributions in binary form must reproduce the above copyright 
+* notice, this list of conditions and the following disclaimer in 
+* the documentation and/or other materials provided with the distribution.
+* - Neither the name of the Objeck Team nor the names of its 
+* contributors may be used to endorse or promote products derived 
+* from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+* TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+*  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************/
 
 #ifndef __JIT_AMD64_H__
 #define __JIT_AMD64_H__
@@ -48,7 +48,7 @@ using namespace std;
 
 #define RED_ZONE -128  
 #define MAX_DBLS 64
-#define PAGE_SIZE 4096
+#define PAGE_OFFSET 24
 #define VALUE_OFFSET sizeof(long)
 
 // register type
@@ -61,7 +61,7 @@ namespace jit {
     REG_FLOAT,
     MEM_FLOAT,
   } RegType;
-  
+
   // general and SSE registers
   typedef enum _Register { 
     RAX = -5000, 
@@ -99,11 +99,11 @@ namespace jit {
   } Register;
 
   /********************************
-   * RegisterHolder class
-   ********************************/
+  * RegisterHolder class
+  ********************************/
   class RegisterHolder {
     Register reg;
-  
+
   public:
     RegisterHolder(Register r) {
       reg = r;
@@ -118,81 +118,81 @@ namespace jit {
   };
 
   /********************************
-   * RegInstr class
-   ********************************/
+  * RegInstr class
+  ********************************/
   class RegInstr {
     RegType type;
     long operand;
     RegisterHolder* holder;
     JitInstruction* instr;
-    
+
   public:    
     RegInstr(RegisterHolder* h) {
       if(h->GetRegister() < XMM0) {
-				type = REG_INT;
+        type = REG_INT;
       }
       else {
-				type = REG_FLOAT;
+        type = REG_FLOAT;
       }
       holder = h;
       instr = NULL;
     }
-  
+
     RegInstr(JitInstruction* si, double* da) {
       type = IMM_FLOAT;
       operand = (long)da;
       holder = NULL;
       instr = NULL;
     }
-    
+
     RegInstr(RegType t, long o) {
       type = t;
       operand = o;
     }
-    
+
     RegInstr(JitInstruction* si) {
       switch(si->GetType()) {
       case LOAD_CHAR_LIT:
       case LOAD_INT_LIT:
-				type = IMM_INT;
-				operand = si->GetOperand();
-				break;
+        type = IMM_INT;
+        operand = si->GetOperand();
+        break;
 
       case LOAD_CLS_MEM:
-				type = MEM_INT;
-				operand = CLASS_MEM;
-				break;
-	
+        type = MEM_INT;
+        operand = CLASS_MEM;
+        break;
+
       case LOAD_INST_MEM:
-				type = MEM_INT;
-				operand = INSTANCE_MEM;
-				break;
+        type = MEM_INT;
+        operand = INSTANCE_MEM;
+        break;
 
       case LOAD_INT_VAR:
       case STOR_INT_VAR:
-				type = MEM_INT;
-				operand = si->GetOperand3();
-				break;
+        type = MEM_INT;
+        operand = si->GetOperand3();
+        break;
 
       case LOAD_FLOAT_VAR:
       case STOR_FLOAT_VAR:
-				type = MEM_FLOAT;
-				operand = si->GetOperand3();
-				break;
+        type = MEM_FLOAT;
+        operand = si->GetOperand3();
+        break;
 
       default:
 #ifdef _DEBUG
-				assert(false);
+        assert(false);
 #endif
-				break;
+        break;
       }
       instr = si;
       holder = NULL;
     }
-  
+
     ~RegInstr() {
     }
-  
+
     JitInstruction* GetInstruction() {
       return instr;
     }
@@ -204,7 +204,7 @@ namespace jit {
     void SetType(RegType t) {
       type = t;
     }
-  
+
     RegType GetType() {
       return type;
     }
@@ -217,10 +217,10 @@ namespace jit {
       return operand;
     }
   };
-  
+
   /********************************
-   * JitCompiler class
-   ********************************/
+  * JitCompiler class
+  ********************************/
   class JitCompiler {
     vector<JitInstruction*> block_instrs;
     unordered_map<INT_T, size_t> jump_table;
@@ -239,136 +239,142 @@ namespace jit {
     double* floats;     
     size_t floats_index;
     size_t instr_index;
-    long code_buf_max;
+    size_t code_buf_max;
     bool compile_success;
     bool skip_jump;
     INT_T label_start;
+    size_t PAGE_SIZE;
 
     /********************************
-     * Add byte code to buffer
-     ********************************/
+    * Add byte code to buffer
+    ********************************/
     void AddMachineCode(unsigned char b) {
       if(code_index == code_buf_max) {
-				code = (unsigned char*)realloc(code, code_buf_max * 2); 
+        unsigned char* tmp;	
+        code = (unsigned char*)VirtualAlloc(NULL, code_buf_max * 2, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
         if(!code) {
           wcerr << L"Unable to allocate memory!" << std::endl;
           exit(1);
         }
-				code_buf_max *= 2;
+        memcpy(tmp, code, code_index);
+        VirtualFree(code, code_buf_max, MEM_RELEASE);
+        code = tmp;
+        code_buf_max *= 2;
       }
-      code[code_index++] = b;
+      code[code_index + PAGE_OFFSET] = b;
+      ++code_index;
     }
-    
+
     /********************************
-     * Encodes and writes out 32-bit
-     * integer values; note sizeof(int)
-     ********************************/
+    * Encodes and writes out 32-bit
+    * integer values; note sizeof(int)
+    ********************************/
     inline void AddImm(int imm) {
       unsigned char buffer[sizeof(int)];
       ByteEncode32(buffer, imm);
       for(size_t i = 0; i < sizeof(int); i++) {
-				AddMachineCode(buffer[i]);
+        AddMachineCode(buffer[i]);
       }
     }
-    
+
     /********************************
-     * Encodes and writes out 64-bit
-     * integer values
-     ********************************/
+    * Encodes and writes out 64-bit
+    * integer values
+    ********************************/
     inline void AddImm64(long imm) {
       unsigned char buffer[sizeof(long)];
       ByteEncode64(buffer, imm);
       for(size_t i = 0; i < sizeof(long); i++) {
-				AddMachineCode(buffer[i]);
+        AddMachineCode(buffer[i]);
       }
     }
-  
-    
+
+
     /********************************
-     * Encoding for AMD64 "B" bits
-     ********************************/
+    * Encoding for AMD64 "B" bits
+    ********************************/
     inline unsigned char B(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-				return 0x49;
+        return 0x49;
       }
-      
+
       return 0x48;
     }
 
     /********************************
-     * Encoding for AMD64 "XB" bits
-     ********************************/
+    * Encoding for AMD64 "XB" bits
+    ********************************/
     inline unsigned char XB(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-				return 0x4b;
+        return 0x4b;
       }
-      
+
       return 0x4a;
     }
-    
+
     /********************************
-     * Encoding for AMD64 "XB" bits
-     ********************************/
+    * Encoding for AMD64 "XB" bits
+    ********************************/
     inline unsigned char XB32(Register b) {
       if((b > RSP && b < XMM0) || b > XMM7) {
-				return 0x66;
+        return 0x66;
       }
-      
+
       return 0x67;
     }
-    
+
     /********************************
-     * Encoding for AMD64 "RXB" bits
-     ********************************/
+    * Encoding for AMD64 "RXB" bits
+    ********************************/
     inline unsigned char RXB(Register r, Register b) {
       unsigned char value = 0x4a;
       if((r > RSP && r < XMM0) || r > XMM7) {
-				value += 0x4;
+        value += 0x4;
       }
-      
+
       if((b > RSP && b < XMM0) || b > XMM7) {
-				value += 0x1;
+        value += 0x1;
       }
-      
+
       return value;
     }
 
     /********************************
-     * Encoding for AMD64 "RXB" bits
-     ********************************/
+    * Encoding for AMD64 "RXB" bits
+    ********************************/
     inline unsigned char RXB32(Register r, Register b) {
       unsigned char value = 0x42;
       if((r > RSP && r < XMM0) || r > XMM7) {
-				value += 0x4;
-      }
-      
-      if((b > RSP && b < XMM0) || b > XMM7) {
-				value += 0x1;
-      }
-      
-      return value;
-    }
-    
-    /********************************
-     * Encoding for AMD64 "ROB" bits
-     ********************************/
-    inline unsigned char ROB(Register r, Register b) {
-      unsigned char value = 0x48;
-      if((r > RSP && r < XMM0) || r > XMM7) {
-				value += 0x4;
+        value += 0x4;
       }
 
       if((b > RSP && b < XMM0) || b > XMM7) {
-				value += 0x1;
+        value += 0x1;
       }
-      
+
       return value;
     }
-    
+
     /********************************
-     * Caculates the AMD64 MOD R/M
-     * offset
-     ********************************/
+    * Encoding for AMD64 "ROB" bits
+    ********************************/
+    inline unsigned char ROB(Register r, Register b) {
+      unsigned char value = 0x48;
+      if((r > RSP && r < XMM0) || r > XMM7) {
+        value += 0x4;
+      }
+
+      if((b > RSP && b < XMM0) || b > XMM7) {
+        value += 0x1;
+      }
+
+      return value;
+    }
+
+    /********************************
+    * Caculates the AMD64 MOD R/M
+    * offset
+    ********************************/
     inline unsigned char ModRM(Register eff_adr, Register mod_rm) {
       unsigned char byte;
 
@@ -377,386 +383,386 @@ namespace jit {
       case XMM4:
       case R12:
       case XMM12:
-				byte = 0xa0;
-				break;
+        byte = 0xa0;
+        break;
 
       case RAX:
       case XMM0:
       case R8:
       case XMM8:
-				byte = 0x80;
-				break;
+        byte = 0x80;
+        break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-				byte = 0x98;
-				break;
+        byte = 0x98;
+        break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-				byte = 0x88;
-				break;
+        byte = 0x88;
+        break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-				byte = 0x90;
-				break;
+        byte = 0x90;
+        break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-				byte = 0xb8;
-				break;
+        byte = 0xb8;
+        break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-				byte = 0xb0;
-				break;
+        byte = 0xb0;
+        break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-				byte = 0xa8;
-				break;
+        byte = 0xa8;
+        break;
 
       default:
-				wcerr << L"internal error" << endl;
-				exit(1);
-				break;
+        wcerr << L"internal error" << endl;
+        exit(1);
+        break;
       }
-      
+
       switch(eff_adr) {
       case RAX:
       case XMM0:
       case R8:
       case XMM8:
-				break;
+        break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-				byte += 3;
-				break;
+        byte += 3;
+        break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-				byte += 1;
-				break;
+        byte += 1;
+        break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-				byte += 2;
-				break;
+        byte += 2;
+        break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-				byte += 7;
-				break;
+        byte += 7;
+        break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-				byte += 6;
-				break;
+        byte += 6;
+        break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-				byte += 5;
-				break;
+        byte += 5;
+        break;
 
       case XMM4:
       case R12:
       case XMM12:
-				byte += 4;
-				break;
-	
-				// should never happen for esp
+        byte += 4;
+        break;
+
+        // should never happen for esp
       case RSP:
-				wcerr << L"invalid register reference" << endl;
-				exit(1);
-				break;
+        wcerr << L"invalid register reference" << endl;
+        exit(1);
+        break;
 
       default:
-				wcerr << L"internal error" << endl;
-				exit(1);
-				break;
+        wcerr << L"internal error" << endl;
+        exit(1);
+        break;
       }
-      
+
       return byte;
     }
 
     /********************************
-     * Returns the name of a register
-     ********************************/
+    * Returns the name of a register
+    ********************************/
     wstring GetRegisterName(Register reg) {
       switch(reg) {
       case RAX:
-				return L"rax";
+        return L"rax";
 
       case RBX:
-				return L"rbx";
+        return L"rbx";
 
       case RCX:
-				return L"rcx";
+        return L"rcx";
 
       case RDX:
-				return L"rdx";
+        return L"rdx";
 
       case RDI:
-				return L"rdi";
+        return L"rdi";
 
       case RSI:
-				return L"rsi";
+        return L"rsi";
 
       case RBP:
-				return L"rbp";
+        return L"rbp";
 
       case RSP:
-				return L"rsp";
+        return L"rsp";
 
       case R8:
-				return L"r8";
+        return L"r8";
 
       case R9:
-				return L"r9";
-	
+        return L"r9";
+
       case R10:
-				return L"r10";
+        return L"r10";
 
       case R11:
-				return L"r11";
+        return L"r11";
 
       case R12:
-				return L"r12";
-	
+        return L"r12";
+
       case R13:
-				return L"r13";
-	
+        return L"r13";
+
       case R14:
-				return L"r14";
-	
+        return L"r14";
+
       case R15:
-				return L"r15";
+        return L"r15";
 
       case XMM0:
-				return L"xmm0";
+        return L"xmm0";
 
       case XMM1:
-				return L"xmm1";
+        return L"xmm1";
 
       case XMM2:
-				return L"xmm2";
+        return L"xmm2";
 
       case XMM3:
-				return L"xmm3";
+        return L"xmm3";
 
       case XMM4:
-				return L"xmm4";
+        return L"xmm4";
 
       case XMM5:
-				return L"xmm5";
+        return L"xmm5";
 
       case XMM6:
-				return L"xmm6";
-	
+        return L"xmm6";
+
       case XMM7:
-				return L"xmm7";
-	
+        return L"xmm7";
+
       case XMM8:
-				return L"xmm8";
+        return L"xmm8";
 
       case XMM9:
-				return L"xmm9";
+        return L"xmm9";
 
       case XMM10:
-				return L"xmm10";
+        return L"xmm10";
 
       case XMM11:
-				return L"xmm11";
+        return L"xmm11";
 
       case XMM12:
-				return L"xmm12";
+        return L"xmm12";
 
       case XMM13:
-				return L"xmm13";
+        return L"xmm13";
 
       case XMM14:
-				return L"xmm14";
-	
+        return L"xmm14";
+
       case XMM15:
-				return L"xmm15";
+        return L"xmm15";
       }
 
       return L"?";
     }
 
     /********************************
-     * Encodes a byte array with a
-     * 32-bit value
-     ********************************/
+    * Encodes a byte array with a
+    * 32-bit value
+    ********************************/
     inline void ByteEncode32(unsigned char buffer[], int value) {
       memcpy(buffer, &value, sizeof(int));
     }
 
     /********************************
-     * Encodes a byte array with a
-     * 64-bit value
-     ********************************/
+    * Encodes a byte array with a
+    * 64-bit value
+    ********************************/
     inline void ByteEncode64(unsigned char buffer[], long value) {
       memcpy(buffer, &value, sizeof(long));
     }
-    
+
     /********************************
-     * Encodes an array with the 
-     * binary ID of a register
-     ********************************/
+    * Encodes an array with the 
+    * binary ID of a register
+    ********************************/
     inline void RegisterEncode3(unsigned char& code, long offset, Register reg) {
 #ifdef _DEBUG
       assert(offset == 2 || offset == 5);
 #endif
-      
+
       unsigned char reg_id;
       switch(reg) {
       case RAX:
       case XMM0:
       case R8:
       case XMM8:
-				reg_id = 0x0;
-				break;
+        reg_id = 0x0;
+        break;
 
       case RBX:
       case XMM3:
       case R11:
       case XMM11:
-				reg_id = 0x3;     
-				break;
+        reg_id = 0x3;     
+        break;
 
       case RCX:
       case XMM1:
       case R9:
       case XMM9:
-				reg_id = 0x1;
-				break;
+        reg_id = 0x1;
+        break;
 
       case RDX:
       case XMM2:
       case R10:
       case XMM10:
-				reg_id = 0x2;
-				break;
+        reg_id = 0x2;
+        break;
 
       case RDI:
       case XMM7:
       case R15:
       case XMM15:
-				reg_id = 0x7;
-				break;
+        reg_id = 0x7;
+        break;
 
       case RSI:
       case XMM6:
       case R14:
       case XMM14:
-				reg_id = 0x6;
-				break;
+        reg_id = 0x6;
+        break;
 
       case RSP:
       case XMM4:
       case R12:
       case XMM12:
-				reg_id = 0x4;
-				break;
+        reg_id = 0x4;
+        break;
 
       case RBP:
       case XMM5:
       case R13:
       case XMM13:
-				reg_id = 0x5;
-				break;
-	
+        reg_id = 0x5;
+        break;
+
       default:
-				wcerr << L"internal error" << endl;
-				exit(1);
-				break;
+        wcerr << L"internal error" << endl;
+        exit(1);
+        break;
       }
 
       if(offset == 2) {
-				reg_id = reg_id << 3;
+        reg_id = reg_id << 3;
       }
       code = code | reg_id;
     }
-	
-		// Caculates the indices for
+
+    // Caculates the indices for
     // memory references.
     void ProcessIndices() {
-			local_space = -TMP_REG_2;
+      local_space = -TMP_REG_2;
 
       // update frame offsets
       for(size_t i = 0; i < block_instrs.size(); i++) {
         JitInstruction* instr = block_instrs[i];
         switch(instr->GetType()) {
-				case LOAD_INT_VAR:
-				case STOR_INT_VAR:
-				case LOAD_FLOAT_VAR:
-				case STOR_FLOAT_VAR:
-					instr->SetOperand3(instr->GetOperand() * sizeof(Value));
-					break;
+        case LOAD_INT_VAR:
+        case STOR_INT_VAR:
+        case LOAD_FLOAT_VAR:
+        case STOR_FLOAT_VAR:
+          instr->SetOperand3(instr->GetOperand() * sizeof(Value));
+          break;
 
-				default:
-					break;
+        default:
+          break;
         }
       }
     }
-    
+
     void Prolog();
     void Epilog(long imm);
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
     void ProcessStore(JitInstruction* instruction);
-		void ProcessIntToFloat();
-		void ProcessFloatToInt();
+    void ProcessIntToFloat();
+    void ProcessFloatToInt();
     void ProcessIntCalculation(JitInstruction* instruction);
     void ProcessFloatCalculation(JitInstruction* instruction);
-		void ProcessJump(JitInstruction* instr);
+    void ProcessJump(JitInstruction* instr);
     RegInstr* ProcessIntFold(long left_imm, long right_imm, JitInstructionType type);
-    
+
     // Gets an avaiable register from
     // the pool of registers
     RegisterHolder* GetRegister(bool use_aux = true) {
       RegisterHolder* holder;
       if(aval_regs.empty()) {
-				if(use_aux && !aux_regs.empty()) {
-					holder = aux_regs.top();
-					aux_regs.pop();
-				}
-				else {
-					compile_success = false;
+        if(use_aux && !aux_regs.empty()) {
+          holder = aux_regs.top();
+          aux_regs.pop();
+        }
+        else {
+          compile_success = false;
 #ifdef _DEBUG
-					wcout << L">>> No general registers avaiable! <<<" << endl;
+          wcout << L">>> No general registers avaiable! <<<" << endl;
 #endif
-					aux_regs.push(new RegisterHolder(RAX));
-					holder = aux_regs.top();
-					aux_regs.pop();
-				}
+          aux_regs.push(new RegisterHolder(RAX));
+          holder = aux_regs.top();
+          aux_regs.pop();
+        }
       }
       else {
         holder = aval_regs.back();
@@ -765,7 +771,7 @@ namespace jit {
       }
 #ifdef _VERBOSE
       wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-						<< L" *" << endl;
+        << L" *" << endl;
 #endif
 
       return holder;
@@ -775,22 +781,22 @@ namespace jit {
     void ReleaseRegister(RegisterHolder* h) {
 #ifdef _VERBOSE
       wcout << L"\t * releasing " << GetRegisterName(h->GetRegister())
-						<< L" *" << endl;
+        << L" *" << endl;
 #endif
 
 #ifdef _DEBUG
       assert(h->GetRegister() < XMM0);
       for(size_t i  = 0; i < aval_regs.size(); i++) {
-				assert(h != aval_regs[i]);
+        assert(h != aval_regs[i]);
       }
 #endif
 
       if(h->GetRegister() == RDI || h->GetRegister() == RSI) {
-				aux_regs.push(h);
+        aux_regs.push(h);
       }
       else {
-				aval_regs.push_back(h);
-				used_regs.remove(h);
+        aval_regs.push_back(h);
+        used_regs.remove(h);
       }
     }
 
@@ -799,12 +805,12 @@ namespace jit {
     RegisterHolder* GetXmmRegister() {
       RegisterHolder* holder;
       if(aval_xregs.empty()) {
-				compile_success = false;
+        compile_success = false;
 #ifdef _DEBUG
-				wcout << L">>> No XMM registers avaiable! <<<" << endl;
+        wcout << L">>> No XMM registers avaiable! <<<" << endl;
 #endif
-				aval_xregs.push_back(new RegisterHolder(XMM0));
-				holder = aval_xregs.back();
+        aval_xregs.push_back(new RegisterHolder(XMM0));
+        holder = aval_xregs.back();
         aval_xregs.pop_back();
         used_xregs.push_back(holder);
       }
@@ -815,7 +821,7 @@ namespace jit {
       }
 #ifdef _VERBOSE
       wcout << L"\t * allocating " << GetRegisterName(holder->GetRegister())
-						<< L" *" << endl;
+        << L" *" << endl;
 #endif
 
       return holder;
@@ -826,13 +832,13 @@ namespace jit {
 #ifdef _DEBUG
       assert(h->GetRegister() >= XMM0);
       for(size_t i = 0; i < aval_xregs.size(); i++) {
-				assert(h != aval_xregs[i]);
+        assert(h != aval_xregs[i]);
       }
 #endif
-      
+
 #ifdef _VERBOSE
       wcout << L"\t * releasing: " << GetRegisterName(h->GetRegister())
-						<< L" * " << endl;
+        << L" * " << endl;
 #endif
       aval_xregs.push_back(h);
       used_xregs.remove(h);
@@ -843,75 +849,78 @@ namespace jit {
     //
     jit_fun_ptr Compile() {
       compile_success = true;
-      code_buf_max = PAGE_SIZE;
       
-			code = (unsigned char*)malloc(code_buf_max);
-      floats = new double[MAX_DBLS];
-			floats_index = instr_index = code_index = instr_count = 0;
+      // get page size
+      SYSTEM_INFO sys_info;
+      GetSystemInfo(&sys_info);
+      code_buf_max = PAGE_SIZE = sys_info.dwPageSize;
 
-			// general use registers
-			// aval_regs.push_back(new RegisterHolder(RDX));
-			//	aval_regs.push_back(new RegisterHolder(RCX));
-			aval_regs.push_back(new RegisterHolder(RBX));
-			aval_regs.push_back(new RegisterHolder(RAX));
-			// aux general use registers
-			aux_regs.push(new RegisterHolder(RDI));
-			aux_regs.push(new RegisterHolder(RSI));
-			aux_regs.push(new RegisterHolder(R15));
-			aux_regs.push(new RegisterHolder(R14));
-			aux_regs.push(new RegisterHolder(R13));
-			aux_regs.push(new RegisterHolder(R12));
-			aux_regs.push(new RegisterHolder(R11));
-			aux_regs.push(new RegisterHolder(R10));
-			// aux_regs.push(new RegisterHolder(R9));
-			// aux_regs.push(new RegisterHolder(R8));
-			// floating point registers
-			aval_xregs.push_back(new RegisterHolder(XMM15));
-			aval_xregs.push_back(new RegisterHolder(XMM14)); 
-			aval_xregs.push_back(new RegisterHolder(XMM13));
-			aval_xregs.push_back(new RegisterHolder(XMM12)); 
-			aval_xregs.push_back(new RegisterHolder(XMM11));
-			aval_xregs.push_back(new RegisterHolder(XMM10));   
+      // allocate executable memory
+      code = (unsigned char*)VirtualAlloc(NULL, code_buf_max, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+      floats = (double*)VirtualAlloc(NULL, MAX_DBLS, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+      floats_index = instr_index = code_index = instr_count = 0;
+
+      // general use registers
+      // aval_regs.push_back(new RegisterHolder(RDX));
+      //	aval_regs.push_back(new RegisterHolder(RCX));
+      aval_regs.push_back(new RegisterHolder(RBX));
+      aval_regs.push_back(new RegisterHolder(RAX));
+      // aux general use registers
+      aux_regs.push(new RegisterHolder(RDI));
+      aux_regs.push(new RegisterHolder(RSI));
+      aux_regs.push(new RegisterHolder(R15));
+      aux_regs.push(new RegisterHolder(R14));
+      aux_regs.push(new RegisterHolder(R13));
+      aux_regs.push(new RegisterHolder(R12));
+      aux_regs.push(new RegisterHolder(R11));
+      aux_regs.push(new RegisterHolder(R10));
+      // aux_regs.push(new RegisterHolder(R9));
+      // aux_regs.push(new RegisterHolder(R8));
+      // floating point registers
+      aval_xregs.push_back(new RegisterHolder(XMM15));
+      aval_xregs.push_back(new RegisterHolder(XMM14)); 
+      aval_xregs.push_back(new RegisterHolder(XMM13));
+      aval_xregs.push_back(new RegisterHolder(XMM12)); 
+      aval_xregs.push_back(new RegisterHolder(XMM11));
+      aval_xregs.push_back(new RegisterHolder(XMM10));   
 #ifdef _DEBUG
-			wcout << L"Compiling code for AMD64 architecture..." << endl;
+      wcout << L"Compiling code for AMD64 architecture..." << endl;
 #endif
-	
-			// process offsets
-			ProcessIndices();
-			// setup
-			Prolog();
-			
-			move_reg_mem(RDI, FRAME, RBP);
-			
-			// tranlsate program
-			ProcessInstructions();
+
+      // process offsets
+      ProcessIndices();
+      // setup
+      Prolog();
+
+      move_reg_mem(RCX, FRAME, RBP);
+
+      // tranlsate program
+      ProcessInstructions();
       if(!compile_success) {
         return NULL;
       }
       Epilog(block_instrs.back()->GetOperand());
-			
-			// show content
-			unordered_map<long, JitInstruction*>::iterator iter;
-			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
-				JitInstruction* instr = iter->second;
-				long src_offset = iter->first;
-				// long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
-				// long dest_offset = block_instrs[dest_index]->GetOffset();
-				long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
-				long offset = dest_offset - src_offset - 4;
-				memcpy(&code[src_offset], &offset, 4); 
+
+      // show content
+      unordered_map<long, JitInstruction*>::iterator iter;
+      for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
+        JitInstruction* instr = iter->second;
+        long src_offset = iter->first;
+        // long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
+        // long dest_offset = block_instrs[dest_index]->GetOffset();
+        long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
+        long offset = dest_offset - src_offset - 4;
+        memcpy(&code[src_offset], &offset, 4); 
 #ifdef _DEBUG
-				wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset 
-							<< L"; dest=" << dest_offset << endl;
+        wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset << L"; dest=" << dest_offset << endl;
 #endif
-			}
+      }
 #ifdef _DEBUG
-			wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" 
-						<< code_buf_max << L" byte(s)" << endl;
+      wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" << code_buf_max << L" byte(s)" << endl;
 #endif			
-			wcout << L"--------------------------" << endl;
-			
-      return (jit_fun_ptr)code;
+      wcout << L"--------------------------" << endl;
+
+      return (jit_fun_ptr)(code + PAGE_OFFSET);
     }
 
     // move instructions
@@ -949,7 +958,7 @@ namespace jit {
     void xor_imm_reg(long imm, Register reg);    
     void xor_reg_reg(Register src, Register dest);
     void xor_mem_reg(long offset, Register src, Register dest);
-    
+
     // add instructions
     void add_imm_mem(long imm, long offset, Register dest);    
     void add_imm_reg(long imm, Register reg);    
@@ -992,12 +1001,12 @@ namespace jit {
     void cmp_mem_xreg(long offset, Register src, Register dest);
     void cmp_imm_xreg(RegInstr* instr, Register reg);
     void cmov_reg(Register reg, JitInstructionType oper);
-    
+
     // inc/dec instructions
     void dec_reg(Register dest);
     void dec_mem(long offset, Register dest);
     void inc_mem(long offset, Register dest);
-    
+
     // shift instructions
     void shl_reg_reg(Register src, Register dest);
     void shl_mem_reg(long offset, Register src, Register dest);
@@ -1005,13 +1014,13 @@ namespace jit {
     void shr_reg_reg(Register src, Register dest);
     void shr_mem_reg(long offset, Register src, Register dest);
     void shr_imm_reg(long value, Register dest);
-    
+
     // push/pop instructions
     void push_imm(long value);
     void push_reg(Register reg);
     void pop_reg(Register reg);
     void push_mem(long offset, Register src);
-    
+
     // type conversion instructions
     void round_imm_xreg(RegInstr* instr, Register reg, bool is_floor);
     void round_mem_xreg(long offset, Register src, Register dest, bool is_floor);
@@ -1022,78 +1031,78 @@ namespace jit {
     void cvt_reg_xreg(Register src, Register dest);
     void cvt_imm_xreg(RegInstr* instr, Register reg);
     void cvt_mem_xreg(long offset, Register src, Register dest);
-    
+
     // function call instruction
     void call_reg(Register reg);
 
     // generates a conditional jump
     bool cond_jmp(JitInstructionType type);
-    
+
   public: 
     JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T label_start) {
       this->block_instrs = block_instrs;
-			this->jump_table = jump_table;
-			this->label_start = label_start;
+      this->jump_table = jump_table;
+      this->label_start = label_start;
       skip_jump = false;
     }
 
     ~JitCompiler() {
-			if(code) {
-				free(code);
-				code = NULL;
-			}
+      if(code) {
+        VirtualFree(code, code_buf_max, MEM_RELEASE);
+        code = NULL;
+      }
 
-			if(floats) {
-				delete[] floats;
-				floats = NULL;
-			}
-			
-			for(size_t i = 0; i < aval_regs.size(); i++) {
-				RegisterHolder* tmp = aval_regs[i];
-				delete tmp;
-				tmp = NULL;
-			}
-			aval_regs.clear();
+      if(floats) {
+        delete[] floats;
+        floats = NULL;
+      }
 
-			for(list<RegisterHolder*>::iterator iter = used_regs.begin(); iter != used_regs.end(); ++iter) {
-				RegisterHolder* tmp = *iter;
-				delete tmp;
-				tmp = NULL;
-			}
-			
-			while(!aux_regs.empty()) {
-				RegisterHolder* tmp = aux_regs.top();
-				delete tmp;
-				tmp = NULL;
-				aux_regs.pop();
-			}
+      for(size_t i = 0; i < aval_regs.size(); i++) {
+        RegisterHolder* tmp = aval_regs[i];
+        delete tmp;
+        tmp = NULL;
+      }
+      aval_regs.clear();
 
-			for(size_t i = 0; i < aval_xregs.size(); i++) {
-				RegisterHolder* tmp = aval_xregs[i];
-				delete tmp;
-				tmp = NULL;
-			}
-			aval_xregs.clear();
-			
-			for(list<RegisterHolder*>::iterator iter = used_xregs.begin(); iter != used_xregs.end(); ++iter) {
-				RegisterHolder* tmp = *iter;
-				delete tmp;
-				tmp = NULL;
-			}
+      for(list<RegisterHolder*>::iterator iter = used_regs.begin(); iter != used_regs.end(); ++iter) {
+        RegisterHolder* tmp = *iter;
+        delete tmp;
+        tmp = NULL;
+      }
+
+      while(!aux_regs.empty()) {
+        RegisterHolder* tmp = aux_regs.top();
+        delete tmp;
+        tmp = NULL;
+        aux_regs.pop();
+      }
+
+      for(size_t i = 0; i < aval_xregs.size(); i++) {
+        RegisterHolder* tmp = aval_xregs[i];
+        delete tmp;
+        tmp = NULL;
+      }
+      aval_xregs.clear();
+
+      for(list<RegisterHolder*>::iterator iter = used_xregs.begin(); iter != used_xregs.end(); ++iter) {
+        RegisterHolder* tmp = *iter;
+        delete tmp;
+        tmp = NULL;
+      }
     }
-		
-		// Compiles and executes machine code
-		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
-			jit_fun_ptr jit_fun = Compile();
-			if(jit_fun) {
-#ifdef _DEBUG
-				wcout << L"(Executing machine code...)" << endl;
-#endif
-				return (*jit_fun)(frame, NULL, NULL);
-			}
 
-			return -1;
-		}		
+    // Compiles and executes machine code
+    long Execute(Value* frame, void* inst_mem, void* cls_mem) {
+      jit_fun_ptr jit_fun = Compile();
+      if(jit_fun) {
+#ifdef _DEBUG
+        wcout << L"(Executing machine code...)" << endl;
+#endif
+        return (*jit_fun)(frame, NULL, NULL);
+      }
+
+      return -1;
+    }		
   };
 }
 

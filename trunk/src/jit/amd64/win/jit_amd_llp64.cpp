@@ -48,8 +48,6 @@ void JitCompiler::Prolog() {
   unsigned char buffer[4];
   ByteEncode32(buffer, local_space);
 
-  // RCX,  RDX,  R8,  R9
-
   unsigned char setup_code[] = {
     // setup stack frame
     0x48, 0x55,                                    // push %rbp
@@ -769,7 +767,7 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
 
     case MEM_INT: {
       RegisterHolder* lhs = left->GetRegister();
-			RegisterHolder* rhs = GetRegister();
+      RegisterHolder* rhs = GetRegister();
       move_mem_reg(FRAME, RBP, rhs->GetRegister());
       add_imm_reg(right->GetOperand() + VALUE_OFFSET, rhs->GetRegister());
       move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());			
