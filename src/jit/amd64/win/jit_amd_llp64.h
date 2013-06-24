@@ -281,10 +281,10 @@ namespace jit {
     * Encodes and writes out 64-bit
     * integer values
     ********************************/
-    inline void AddImm64(long imm) {
-      unsigned char buffer[sizeof(long)];
+    inline void AddImm64(INT64 imm) {
+      unsigned char buffer[sizeof(INT64)];
       ByteEncode64(buffer, imm);
-      for(size_t i = 0; i < sizeof(long); i++) {
+      for(size_t i = 0; i < sizeof(INT64); i++) {
         AddMachineCode(buffer[i]);
       }
     }
@@ -628,8 +628,8 @@ namespace jit {
     * Encodes a byte array with a
     * 64-bit value
     ********************************/
-    inline void ByteEncode64(unsigned char buffer[], long value) {
-      memcpy(buffer, &value, sizeof(long));
+    inline void ByteEncode64(unsigned char buffer[], INT64 value) {
+      memcpy(buffer, &value, sizeof(INT64));
     }
 
     /********************************
