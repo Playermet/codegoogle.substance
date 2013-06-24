@@ -885,9 +885,9 @@ namespace jit {
       aval_xregs.push_back(new RegisterHolder(XMM11));
       aval_xregs.push_back(new RegisterHolder(XMM10));   
 #ifdef _DEBUG
-      wcout << L"===================================================" << endl;
-      wcout << L"=== Compiling code for AMD64 (LLP) architecture ===" << endl;
-      wcout << L"===================================================" << endl;
+      wcout << L"============================================" << endl;
+      wcout << L"=== Compiling block for AMD64 (LLP) host ===" << endl;
+      wcout << L"============================================" << endl;
 #endif
 
       // process offsets
