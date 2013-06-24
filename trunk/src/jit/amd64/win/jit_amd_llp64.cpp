@@ -1183,13 +1183,13 @@ void JitCompiler::move_reg_mem8(Register src, long offset, Register dest) {
 				<< endl;
 #endif
   // encode
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x88);
   AddMachineCode(ModRM(dest, src));
   // write value
   AddImm(offset);
 }
-
+// TODO: change to short for unicode support
 void JitCompiler::move_reg_mem32(Register src, long offset, Register dest) { 
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [movw %" << GetRegisterName(src) 
@@ -1206,12 +1206,12 @@ void JitCompiler::move_reg_mem32(Register src, long offset, Register dest) {
     
 void JitCompiler::move_reg_mem(Register src, long offset, Register dest) { 
 #ifdef _DEBUG
-  wcout << L"  " << (++instr_count) << L": [movl %" << GetRegisterName(src) 
+  wcout << L"  " << (++instr_count) << L": [mov %" << GetRegisterName(src) 
 				<< L", " << offset << L"(%" << GetRegisterName(dest) << L")" << L"]" 
 				<< endl;
 #endif
   // encode
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x89);
   AddMachineCode(ModRM(dest, src));
   // write value
@@ -1225,7 +1225,7 @@ void JitCompiler::move_mem8_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0xb6);
   AddMachineCode(ModRM(src, dest));
@@ -1249,12 +1249,12 @@ void JitCompiler::move_mem32_reg(long offset, Register src, Register dest) {
 
 void JitCompiler::move_mem_reg(long offset, Register src, Register dest) {
 #ifdef _DEBUG
-  wcout << L"  " << (++instr_count) << L": [movq " << offset << L"(%" 
+  wcout << L"  " << (++instr_count) << L": [mov " << offset << L"(%" 
 				<< GetRegisterName(src) << L"), %" << GetRegisterName(dest)
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x8b);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -1330,7 +1330,7 @@ void JitCompiler::move_mem_xreg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0x10);
   AddMachineCode(ModRM(src, dest));
@@ -1346,7 +1346,7 @@ void JitCompiler::move_xreg_mem(Register src, long offset, Register dest) {
 #endif 
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x0f);
   AddMachineCode(0x11);
   AddMachineCode(ModRM(dest, src));
@@ -1841,7 +1841,7 @@ void JitCompiler::cmp_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x3b);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -2083,7 +2083,7 @@ void JitCompiler::add_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x03);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -2098,7 +2098,7 @@ void JitCompiler::add_mem_xreg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0x58);
   AddMachineCode(ModRM(src, dest));
@@ -2122,7 +2122,7 @@ void JitCompiler::mul_mem_xreg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0x59);
   AddMachineCode(ModRM(src, dest));
@@ -2188,7 +2188,7 @@ void JitCompiler::sub_mem_reg(long offset, Register src, Register dest) {
 #endif
 
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x2b);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -2236,7 +2236,7 @@ void JitCompiler::mul_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0xaf);
   AddMachineCode(ModRM(src, dest));
@@ -2644,7 +2644,7 @@ void JitCompiler::cmp_mem_xreg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0x66);
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x0f);
   AddMachineCode(0x2e);
   AddMachineCode(ModRM(src, dest));
@@ -2693,7 +2693,7 @@ void JitCompiler::round_mem_xreg(long offset, Register src, Register dest, bool 
 #endif
   
   AddMachineCode(0x66);
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x0f);
   AddMachineCode(0x3a);
   AddMachineCode(0x0b);
@@ -2750,7 +2750,7 @@ void JitCompiler::cvt_mem_reg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0x2c);
   AddMachineCode(ModRM(src, dest));
@@ -2791,7 +2791,7 @@ void JitCompiler::cvt_mem_xreg(long offset, Register src, Register dest) {
 #endif
   // encode
   AddMachineCode(0xf2);
-  AddMachineCode(RXB(dest, src));
+  AddMachineCode(RXB32(dest, src));
   AddMachineCode(0x0f);
   AddMachineCode(0x2a);
   AddMachineCode(ModRM(src, dest));
@@ -2836,7 +2836,7 @@ void JitCompiler::and_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x23);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -2880,7 +2880,7 @@ void JitCompiler::or_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x0b);
   AddMachineCode(ModRM(src, dest));
   // write value
@@ -2924,7 +2924,7 @@ void JitCompiler::xor_mem_reg(long offset, Register src, Register dest) {
 				<< L"]" << endl;
 #endif
   // encode
-  AddMachineCode(RXB(src, dest));
+  AddMachineCode(RXB32(src, dest));
   AddMachineCode(0x33);
   AddMachineCode(ModRM(src, dest));
   // write value

@@ -49,7 +49,7 @@ using namespace std;
 #define RED_ZONE -128  
 #define MAX_DBLS 64
 #define PAGE_OFFSET 24
-#define VALUE_OFFSET sizeof(long)
+#define VALUE_OFFSET sizeof(long) * 2
 
 // register type
 namespace jit {
@@ -261,7 +261,7 @@ namespace jit {
         code = tmp;
         code_buf_max *= 2;
       }
-      code[code_index + PAGE_OFFSET] = b;
+      code[code_index] = b;
       ++code_index;
     }
 
@@ -857,8 +857,9 @@ namespace jit {
 
       // allocate executable memory
       code = (unsigned char*)VirtualAlloc(NULL, code_buf_max, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+      code_index = PAGE_OFFSET;
       floats = (double*)VirtualAlloc(NULL, MAX_DBLS, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-      floats_index = instr_index = code_index = instr_count = 0;
+      floats_index = instr_index = instr_count = 0;
 
       // general use registers
       // aval_regs.push_back(new RegisterHolder(RDX));
@@ -884,7 +885,9 @@ namespace jit {
       aval_xregs.push_back(new RegisterHolder(XMM11));
       aval_xregs.push_back(new RegisterHolder(XMM10));   
 #ifdef _DEBUG
-      wcout << L"Compiling code for AMD64 architecture..." << endl;
+      wcout << L"===================================================" << endl;
+      wcout << L"=== Compiling code for AMD64 (LLP) architecture ===" << endl;
+      wcout << L"===================================================" << endl;
 #endif
 
       // process offsets
@@ -1053,7 +1056,7 @@ namespace jit {
       }
 
       if(floats) {
-        delete[] floats;
+        VirtualFree(floats, code_buf_max, MEM_RELEASE);
         floats = NULL;
       }
 
