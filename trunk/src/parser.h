@@ -145,7 +145,7 @@ namespace compiler {
     Scanner* scanner;
 	  SymbolTable symbol_table;
 	  map<ScannerTokenType, wstring> error_msgs;
-    map<int, wstring> errors;
+    map<size_t, wstring> errors;
 	
     inline void NextToken() {
       scanner->NextToken();

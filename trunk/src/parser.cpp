@@ -318,15 +318,24 @@ Statement* Parser::ParseAssignment(int depth)
 	}
   Reference* reference = ParseReference(identifier, depth + 1);
   
-  if(!Match(TOKEN_ASSIGN)) {
+  ScannerTokenType type = TOKEN_UNKNOWN;
+  switch(GetToken()) {
+  case TOKEN_ASSIGN:
+  case TOKEN_ADD_EQL:
+  case TOKEN_SUB_EQL:
+  case TOKEN_MUL_EQL:
+  case TOKEN_DIV_EQL:
+    type = GetToken();
+    break;
+  default:
     ProcessError(TOKEN_ASSIGN);
     return NULL;
-  }  
+  } 
   NextToken();  
   
   Expression* expression = ParseExpression(depth + 1);
   if(reference && expression) {
-    return TreeFactory::Instance()->MakeAssignmentStatement(file_name, line_num, reference, expression);
+    return TreeFactory::Instance()->MakeAssignmentStatement(file_name, line_num, type, reference, expression);
   }
   
   return NULL;

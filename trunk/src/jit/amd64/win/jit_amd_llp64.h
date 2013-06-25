@@ -250,9 +250,8 @@ namespace jit {
     ********************************/
     void AddMachineCode(unsigned char b) {
       if(code_index == code_buf_max) {
-        unsigned char* tmp;	
-        code = (unsigned char*)VirtualAlloc(NULL, code_buf_max * 2, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-        if(!code) {
+        unsigned char* tmp = (unsigned char*)VirtualAlloc(NULL, code_buf_max * 2, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        if(!tmp) {
           wcerr << L"Unable to allocate memory!" << std::endl;
           exit(1);
         }
