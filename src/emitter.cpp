@@ -171,6 +171,43 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block
 	// emit expression
   EmitExpression(assignment->GetExpression(), block_instructions, jump_table);
 
+  switch(assignment->GetAssignmentType()) {
+  case TOKEN_ADD_EQL:
+    EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"operator: '+'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(ADD));
+    break;
+
+  case TOKEN_SUB_EQL:
+    EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"operator: '-'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(SUB));
+    break;
+
+  case TOKEN_MUL_EQL:
+    EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"operator: '*'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(MUL));
+    break;
+
+  case TOKEN_DIV_EQL:
+    EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"operator: '/'" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(DIV));
+    break;
+
+  default:
+    break;
+  }
+
 	// emit reference
   EmitReference(assignment->GetReference(), true, block_instructions, jump_table);
 }

@@ -33,6 +33,7 @@
 #define __TREE_H__
 
 #include "common.h"
+#include "scanner.h"
 
 using namespace std;
 
@@ -547,17 +548,23 @@ namespace compiler {
    ****************************/
   class Assignment : public Statement {
     friend class TreeFactory;
+    ScannerTokenType type;
     Reference* reference;
     Expression* expression;
   
    public:
-     Assignment(const wstring &file_name, const unsigned int line_num, Reference* reference, Expression* expression) 
+     Assignment(const wstring &file_name, const unsigned int line_num, ScannerTokenType type, Reference* reference, Expression* expression) 
 		   : Statement(file_name, line_num) {
+      this->type = type;
       this->reference = reference;
       this->expression = expression;
     }
   
     ~Assignment() {
+    }
+
+    ScannerTokenType GetAssignmentType() {
+      return type;
     }
 
     Reference* GetReference() {
@@ -684,8 +691,8 @@ namespace compiler {
     }
   
     Assignment* MakeAssignmentStatement(const wstring &file_name, const unsigned int line_num, 
-																			  Reference* reference, Expression* expression) {
-      Assignment* tmp = new Assignment(file_name, line_num, reference, expression);
+																			  ScannerTokenType type, Reference* reference, Expression* expression) {
+      Assignment* tmp = new Assignment(file_name, line_num, type, reference, expression);
       statements.push_back(tmp);
       return tmp;
     }

@@ -1,23 +1,9 @@
 {
-	a = 1;
-	y = 13;
-	while(a < 13) {
-		a = a + 1;
-		y = a + a;
-	};
-	dump y;
-
-	z = 0;
-	while(z < 11) {
-		a = a + 1;
-		z = z + 5;
-	};
-
-dump y;
-					dump z;
-	b = 1.2;
-	c = a * b + 5;
-	dump c;
-	dump z;
-	dump a;
+	a = 13;
+  b = 7;
+  b += a * a;
+  if(b == 176) {
+    b = 10;
+  };
+  dump b;
 }

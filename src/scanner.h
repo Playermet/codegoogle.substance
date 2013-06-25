@@ -81,6 +81,10 @@ namespace compiler {
     TOKEN_MUL,
     TOKEN_DIV,
     TOKEN_MOD,
+    TOKEN_ADD_EQL,
+    TOKEN_SUB_EQL,
+    TOKEN_MUL_EQL,
+    TOKEN_DIV_EQL,
     // literals
     TOKEN_IDENT,
     TOKEN_INT_LIT,

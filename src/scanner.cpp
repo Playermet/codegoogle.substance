@@ -540,6 +540,13 @@ void Scanner::ParseToken(int index)
 				tokens[index]->SetFileName(file_name);
         NextChar();
       } 
+      else if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_SUB_EQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } 
       else {
         tokens[index]->SetType(TOKEN_SUB);
 				tokens[index]->SetLineNbr(line_num);
@@ -689,24 +696,48 @@ void Scanner::ParseToken(int index)
       break;
 
     case L'+':
-      tokens[index]->SetType(TOKEN_ADD);
-			tokens[index]->SetLineNbr(line_num);
-			tokens[index]->SetFileName(file_name);
-      NextChar();
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_ADD_EQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } else {
+        tokens[index]->SetType(TOKEN_ADD);
+			  tokens[index]->SetLineNbr(line_num);
+			  tokens[index]->SetFileName(file_name);
+        NextChar();
+      }
       break;
 
     case L'*':
-      tokens[index]->SetType(TOKEN_MUL);
-			tokens[index]->SetLineNbr(line_num);
-			tokens[index]->SetFileName(file_name);
-      NextChar();
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_MUL_EQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } else {
+        tokens[index]->SetType(TOKEN_MUL);
+			  tokens[index]->SetLineNbr(line_num);
+			  tokens[index]->SetFileName(file_name);
+        NextChar();
+      }
       break;
 
     case L'/':
-      tokens[index]->SetType(TOKEN_DIV);
-			tokens[index]->SetLineNbr(line_num);
-			tokens[index]->SetFileName(file_name);
-      NextChar();
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_DIV_EQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } else {
+        tokens[index]->SetType(TOKEN_DIV);
+			  tokens[index]->SetLineNbr(line_num);
+			  tokens[index]->SetFileName(file_name);
+        NextChar();
+      }
       break;
 
     case L'%':
