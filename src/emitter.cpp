@@ -104,8 +104,7 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"dump value" << endl;
 #endif
-      EmitReference(static_cast<Dump*>(statement)->GetReference(), false, 
-										block_instructions, jump_table);
+      EmitExpression(static_cast<Dump*>(statement)->GetExpression(), block_instructions, jump_table);
       block_instructions.push_back(MakeInstruction(DUMP_VALUE));
       break;
       
