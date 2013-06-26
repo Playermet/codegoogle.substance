@@ -43,7 +43,7 @@ namespace compiler {
   class Emitter {
     StatementList* parsed_program;
     static vector<Instruction*> instruction_factory;
-	  long label_id;
+	  INT_T label_id;
   
     void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
                             unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
@@ -104,10 +104,14 @@ namespace compiler {
     
       return instruction;
     }
+
+    INT_T GetLastLabelId() {
+      return label_id;
+    }
   
     static void ClearInstructions();
   
-     ExecutableProgram* Emit();
+    ExecutableProgram* Emit();
   };
  }
 

@@ -271,7 +271,7 @@ void Scanner::ParseToken(int index)
   if(cur_char == L'\"') {
     NextChar();
     // mark
-    start_pos = buffer_pos - 1;
+    start_pos = (int)buffer_pos - 1;
     while(cur_char != L'\"' && cur_char != EOB) {
       if(cur_char == L'\\') {
         NextChar();
@@ -305,7 +305,7 @@ void Scanner::ParseToken(int index)
       NextChar();
     }
     // mark
-    end_pos = buffer_pos - 1;
+    end_pos = (int)buffer_pos - 1;
     // check wstring
     NextChar();
     CheckString(index);
@@ -320,12 +320,12 @@ void Scanner::ParseToken(int index)
       // read unicode string
       if(cur_char == L'u') {
         NextChar();
-        start_pos = buffer_pos - 1;
+        start_pos = (int)buffer_pos - 1;
         while(iswdigit(cur_char) || (cur_char >= L'a' && cur_char <= L'f') ||
 							(cur_char >= L'A' && cur_char <= L'F')) {
 					NextChar();
         }
-        end_pos = buffer_pos - 1;
+        end_pos = (int)buffer_pos - 1;
         ParseUnicodeChar(index);
         if(cur_char != L'\'') {
           tokens[index]->SetType(TOKEN_UNKNOWN);
@@ -452,13 +452,13 @@ void Scanner::ParseToken(int index)
   // identifier
   else if(isalpha(cur_char) || cur_char == L'@' || cur_char == L'?') {
     // mark
-    start_pos = buffer_pos - 1;
+    start_pos = (int)buffer_pos - 1;
     while((isalpha(cur_char) || isdigit(cur_char) || cur_char == L'_' || 
 					 cur_char == L'@' || cur_char == L'?' || cur_char == L'.') && cur_char != EOB) {
       NextChar();
     }
     // mark
-    end_pos = buffer_pos - 1;
+    end_pos = (int)buffer_pos - 1;
     // check identifier
     CheckIdentifier(index);
     return;
@@ -468,7 +468,7 @@ void Scanner::ParseToken(int index)
     bool is_double = false;
     int hex_state = 0;
     // mark
-    start_pos = buffer_pos - 1;
+    start_pos = (int)buffer_pos - 1;
 
     // test hex state
     if(cur_char == L'0') {
@@ -505,7 +505,7 @@ void Scanner::ParseToken(int index)
       NextChar();
     }
     // mark
-    end_pos = buffer_pos - 1;
+    end_pos = (int)buffer_pos - 1;
     if(is_double) {
       ParseDouble(index);
     } 

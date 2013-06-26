@@ -46,6 +46,7 @@ namespace runtime {
    ****************************/
   class Runtime {
 		ExecutableProgram* program;
+    INT_T last_label_id;
 		// execution stack and stack pointer
     Value* execution_stack;
 		size_t execution_stack_pos;
@@ -172,8 +173,9 @@ namespace runtime {
     void Add();
 	
    public:
-	  Runtime(ExecutableProgram *p) {
+	  Runtime(ExecutableProgram *p, INT_T last_label_id) {
 			program = p;
+      this->last_label_id = last_label_id;
       this->instructions = p->GetInstructions();
 		  this->jump_table = p->GetJumpTable();			
 			execution_stack = new Value[EXECUTION_STACK_SIZE];
