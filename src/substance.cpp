@@ -42,7 +42,7 @@ int main(int argc, const char* argv[]) {
     if(parsed_program) {
 			// emit and run code
       compiler::Emitter emitter(parsed_program);
-			runtime::Runtime runtime(emitter.Emit());
+      runtime::Runtime runtime(emitter.Emit(), emitter.GetLastLabelId());
 			runtime.Run();        
 			// clean up and exit
 			compiler::Emitter::ClearInstructions();

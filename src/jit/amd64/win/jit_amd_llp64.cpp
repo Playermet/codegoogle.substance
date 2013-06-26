@@ -1282,7 +1282,7 @@ void JitCompiler::move_imm_mem8(long imm, long offset, Register dest) {
   AddMachineCode(code);
   // write value
   AddImm(offset);
-  AddMachineCode(imm);
+  AddMachineCode((unsigned char)imm);
 }
 
 void JitCompiler::move_imm_mem(long imm, long offset, Register dest) {
@@ -1852,7 +1852,7 @@ void JitCompiler::cmp_mem_reg(long offset, Register src, Register dest) {
 void JitCompiler::cmp_imm_reg(long imm, Register reg) {
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [cmpq $" << imm << L", %"
-				<< GetRegisterName(reg) << L"]" << endl;
+ 				<< GetRegisterName(reg) << L"]" << endl;
 #endif
   // encode
   AddMachineCode(XB(reg));
@@ -2443,7 +2443,7 @@ void JitCompiler::shl_imm_reg(long value, Register dest) {
   unsigned char code = 0xe0;
   RegisterEncode3(code, 5, dest);
   AddMachineCode(code);
-  AddMachineCode(value);
+  AddMachineCode((unsigned char)value);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shlq $" << value << L", %" 
 				<< GetRegisterName(dest) << L"]" << endl;
@@ -2507,7 +2507,7 @@ void JitCompiler::shr_imm_reg(long value, Register dest) {
   unsigned char code = 0xe8;
   RegisterEncode3(code, 5, dest);
   AddMachineCode(code);
-  AddMachineCode(value);
+  AddMachineCode((unsigned char)value);
 #ifdef _DEBUG
   wcout << L"  " << (++instr_count) << L": [shrq $" << value << L", %" 
 				<< GetRegisterName(dest) << L"]" << endl;

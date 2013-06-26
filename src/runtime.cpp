@@ -48,15 +48,15 @@ using namespace runtime;
 #define HIT_THRESHOLD 3
 
 // delegates operation to the appropriate type class
-#define CALC(name, left, right, jit_instrs, is_recording) {   \
-  left = PopValue();                                          \
-  right = PopValue();                                         \
-  if(left.klass) {																						\
+#define CALC(name, left, right, jit_instrs, is_recording) { \
+  left = PopValue();                                        \
+  right = PopValue();                                       \
+  if(left.klass) {																					\
   Operation oper = left.klass->GetOperation(name);					\
   (*oper)(left, right, left, jit_instrs, is_recording);			\
   PushValue(left);                                          \
-  }                                                           \
-  else {                                                      \
+  }                                                         \
+  else {                                                    \
   wcerr << L">>> invalid operation <<<" << endl;            \
   exit(1);                                                  \
 }                                                           \
@@ -74,7 +74,11 @@ void Runtime::Run()
   // runtime variables
   Value* frame = new Value[8];
   Value left, right;
+
+  // tracing jit variables
   bool first_jmp = false;
+  INT_T jit_base_label = last_label_id;
+  INT_T jit_initial_label = jit_base_label;
 
   // execute code
   size_t ip = 0;  
@@ -127,7 +131,8 @@ void Runtime::Run()
           break;
 
         default:
-          break;
+          cerr << "Invalid operation" << endl;
+          exit(1);
         }
       }
       break;
@@ -151,7 +156,8 @@ void Runtime::Run()
             break;
 
           default:
-            break;
+            cerr << "Invalid operation" << endl;
+            exit(1);
           }
         }
         // reset
@@ -171,15 +177,18 @@ void Runtime::Run()
           instruction->operand2 = 0;
           is_recording = first_jmp = true;
           label_start = (INT_T)ip;
+          jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_initial_label));
 #ifdef _DEBUG
           wcout << L"============ RECORDING ============" << endl;
 #endif
         }
       }
+      /*
       // record JIT instructions
       if(is_recording) {
         jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
       }	
+      */
 #ifdef _DEBUG
       wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" 
         << instruction->operand2 << L", loop_pos=" << loop_iterations.size() <<  endl;
@@ -200,7 +209,7 @@ void Runtime::Run()
         if(is_recording && jump_dest == instruction->operand1) {
           const INT_T next_label = instructions[ip]->operand1;
           // add ending code for JIT compiler
-          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, -1));
+          jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_initial_label, -1));
           jit_instrs.push_back(new jit::JitInstruction(jit::LBL, next_label));
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
@@ -212,6 +221,8 @@ void Runtime::Run()
           ip = jump_table[guard_label];
           // reset
           is_recording = first_jmp = is_jump = false;
+          jit_base_label = last_label_id;
+          jit_initial_label = jit_base_label;
           ClearJitInstructions();
         }
         else {
@@ -242,13 +253,13 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
-              left.value.int_value ? 1 : 0));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value ? 1 : 0));
             first_jmp = false;
           }
           else {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, 
-              left.value.int_value ? 0 : 1));
+            jit_base_label++;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, left.value.int_value ? 0 : 1));
+            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
         break;
@@ -266,13 +277,13 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-              !left.value.int_value ? 1 : 0));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, !left.value.int_value ? 1 : 0));
             first_jmp = false;
           }
           else {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1,
-              !left.value.int_value ? 0 : 1));
+            jit_base_label++;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !left.value.int_value ? 0 : 1));
+            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
         // update ip
@@ -354,9 +365,6 @@ void Runtime::Run()
     case MOD:
       break;
 
-    case RTRN:
-      break;
-
     case DUMP_VALUE:
 #ifdef _DEBUG
       wcout << L"DUMP" << endl;
@@ -371,9 +379,9 @@ void Runtime::Run()
         wcout << L"type=float, value=" << left.value.float_value << endl;
         break;
 
-        // TODO:
       default:
-        break;
+        cerr << "Invalid operation" << endl;
+        exit(1);
       }
       break;
     }
