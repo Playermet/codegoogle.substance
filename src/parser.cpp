@@ -228,7 +228,7 @@ Statement* Parser::ParseStatement(int depth)
     Show(L"Dump", depth);
 #endif
     NextToken();
-    statement  =TreeFactory::Instance()->MakeDumpStatement(file_name, line_num,  ParseExpression(depth + 1));
+    statement  =TreeFactory::Instance()->MakeDumpStatement(file_name, line_num, ParseExpression(depth + 1));
   }
     break;
 
