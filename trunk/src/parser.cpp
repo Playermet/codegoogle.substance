@@ -227,16 +227,8 @@ Statement* Parser::ParseStatement(int depth)
 #ifdef _DEBUG
     Show(L"Dump", depth);
 #endif
-    
     NextToken();
-    if(!Match(TOKEN_IDENT)) {
-      ProcessError(TOKEN_IDENT);
-      return NULL;
-    }
-    wstring identifier = scanner->GetToken()->GetIdentifier();
-    NextToken();
-    Reference* reference = ParseReference(identifier, depth + 1);
-    statement = TreeFactory::Instance()->MakeDumpStatement(file_name, line_num, reference);
+    statement  =TreeFactory::Instance()->MakeDumpStatement(file_name, line_num,  ParseExpression(depth + 1));
   }
     break;
 

@@ -790,7 +790,6 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
       move_mem_reg(FRAME, RBP, holder->GetRegister());
       add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
       move_mem_reg(0, holder->GetRegister(), holder->GetRegister());
-      //...
       math_imm_reg(right->GetOperand(), holder->GetRegister(), instruction->GetType());
       working_stack.push_front(new RegInstr(holder));
     }
@@ -799,7 +798,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
     case REG_INT: {
       RegisterHolder* lhs = right->GetRegister();
       RegisterHolder* rhs = GetRegister();
-      move_mem_reg(left->GetOperand(), RBP, rhs->GetRegister());
+      move_mem_reg(FRAME, RBP, rhs->GetRegister());
+      add_imm_reg(left->GetOperand() + VALUE_OFFSET, rhs->GetRegister());
+      move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());
       math_reg_reg(lhs->GetRegister(), rhs->GetRegister(), instruction->GetType());
       ReleaseRegister(lhs);
       working_stack.push_front(new RegInstr(rhs));

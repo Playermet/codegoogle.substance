@@ -492,16 +492,16 @@ namespace compiler {
    ****************************/
   class Dump : public Statement {
     friend class TreeFactory;
-    Reference* reference;
+    Expression* expression;
   
    public:
-     Dump(const wstring &file_name, const unsigned int line_num, Reference* reference) 
+     Dump(const wstring &file_name, const unsigned int line_num, Expression* expression) 
 		   : Statement(file_name, line_num) {
-      this->reference = reference;
+      this->expression = expression;
     }
   
-    Reference* GetReference() {
-      return reference;
+    Expression* GetExpression() {
+      return expression;
     }
 
     const StatementType GetStatementType() {
@@ -704,8 +704,8 @@ namespace compiler {
 		  return tmp;
 	  }
   
-    Dump* MakeDumpStatement(const wstring &file_name, const unsigned int line_num, Reference* reference) {
-      Dump* tmp = new Dump(file_name, line_num, reference);
+    Dump* MakeDumpStatement(const wstring &file_name, const unsigned int line_num, Expression* expression) {
+      Dump* tmp = new Dump(file_name, line_num, expression);
       statements.push_back(tmp);
       return tmp;
     }
