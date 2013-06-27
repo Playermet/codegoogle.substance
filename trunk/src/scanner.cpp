@@ -81,6 +81,7 @@ Scanner::~Scanner()
 void Scanner::LoadKeywords()
 {
 	ident_map[L"if"] = TOKEN_IF_ID;
+  ident_map[L"else"] = TOKEN_ELSE_ID;
 	ident_map[L"while"] = TOKEN_WHILE_ID;
   ident_map[L"dump"] = TOKEN_DUMP_ID;
   ident_map[L"this"] = TOKEN_THIS_ID;
@@ -101,6 +102,7 @@ void Scanner::CheckIdentifier(int index)
   enum ScannerTokenType ident_type = ident_map[ident];
   switch(ident_type) {
 	case TOKEN_IF_ID:
+  case TOKEN_ELSE_ID:
 	case TOKEN_WHILE_ID:
   case TOKEN_DUMP_ID:
   case TOKEN_THIS_ID:

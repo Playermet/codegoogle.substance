@@ -443,8 +443,9 @@ namespace compiler {
    ****************************/
   enum StatementType {
     ASSIGNMENT_STATEMENT = -200,
-	  IF_WHILE_STATEMENT,
+	  IF_ELSE_STATEMENT,
 	  WHILE_STATEMENT,
+    FOR_STATEMENT,
     DUMP_STATEMENT
   };
 
@@ -510,20 +511,18 @@ namespace compiler {
   };
 
   /****************************
-   * If or While statement
+   * While statement
    ****************************/
-  class IfWhile : public Statement {
+  class While : public Statement {
     friend class TreeFactory;
     Expression* logical_expression;
 	  StatementList* block;
-	  bool is_if;
 	
    public:
-     IfWhile(const wstring &file_name, const unsigned int line_num, Expression* logical_expression, 
-					   StatementList* block, bool is_if)  : Statement(file_name, line_num) {
+     While(const wstring &file_name, const unsigned int line_num, Expression* logical_expression, 
+					   StatementList* block)  : Statement(file_name, line_num) {
 		  this->logical_expression = logical_expression;
 	    this->block = block;
-		  this->is_if = is_if;
 	  }
 	
 	  Expression* GetExpression() {
@@ -534,12 +533,54 @@ namespace compiler {
 		  return block;
 	  }
 
-	  bool IsIf() {
-		  return is_if;
+	  const StatementType GetStatementType() {
+      return WHILE_STATEMENT;
+    }
+  };
+
+  /****************************
+   * If/Else statement
+   ****************************/
+  class IfElse : public Statement {
+    friend class TreeFactory;
+    Expression* logical_expression;
+	  StatementList* if_block;
+    IfElse* if_else;
+    StatementList* else_block;
+
+  public:
+    IfElse(const wstring &file_name, const unsigned int line_num, Expression* logical_expression, 
+					 StatementList* if_block)  : Statement(file_name, line_num) {
+		  this->logical_expression = logical_expression;
+	    this->if_block = if_block;
 	  }
 
+    Expression* GetExpression() {
+		  return logical_expression;
+	  }
+
+	  StatementList* GetIfBlock() {
+		  return if_block;
+	  }
+
+    void SetElseBlock(StatementList* else_block) {
+		  this->else_block = else_block;
+	  }
+
+    StatementList* GetElseBlock() {
+		  return else_block;
+	  }
+
+    void SetIfElse(IfElse* if_else) {
+		  this->if_else = if_else;
+	  }
+
+    IfElse* GetIfElse() {
+		  return if_else;
+	  }
+    
 	  const StatementType GetStatementType() {
-      return IF_WHILE_STATEMENT;
+      return IF_ELSE_STATEMENT;
     }
   };
 
@@ -697,9 +738,16 @@ namespace compiler {
       return tmp;
     }
 
-	  IfWhile* MakeIfWhileStatement(const wstring &file_name, const unsigned int line_num, 
-																  Expression* logical_expression, StatementList* block, bool is_if) {
-		  IfWhile* tmp = new IfWhile(file_name, line_num, logical_expression, block, is_if);
+	  While* MakeWhileStatement(const wstring &file_name, const unsigned int line_num, 
+																  Expression* logical_expression, StatementList* block) {
+		  While* tmp = new While(file_name, line_num, logical_expression, block);
+		  statements.push_back(tmp);
+		  return tmp;
+	  }
+
+    IfElse* MakeIfElseStatement(const wstring &file_name, const unsigned int line_num, 
+																  Expression* logical_expression, StatementList* if_block) {
+		  IfElse* tmp = new IfElse(file_name, line_num, logical_expression, if_block);
 		  statements.push_back(tmp);
 		  return tmp;
 	  }
