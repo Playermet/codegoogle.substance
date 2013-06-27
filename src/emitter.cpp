@@ -96,8 +96,8 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions, jump_table);
       break;
 			
-		case IF_WHILE_STATEMENT:
-			EmitIfWhile(static_cast<IfWhile*>(statement), block_instructions, jump_table);
+		case WHILE_STATEMENT:
+			EmitWhile(static_cast<While*>(statement), block_instructions, jump_table);
       break;
 
     case DUMP_STATEMENT:
@@ -118,20 +118,28 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 
-													unordered_map<long, size_t> &jump_table)
+void Emitter::EmitIfElse(While* if_while, vector<Instruction*> &block_instructions, 
+                         unordered_map<long, size_t> &jump_table)
 {
+
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitWhile(While* if_while, vector<Instruction*> &block_instructions, 
+                        unordered_map<long, size_t> &jump_table)
+{
+  /*
 	const long top_label = label_id++;
 	const long end_label = label_id++;
 	
-	// 'while'; top label
-	if(!if_while->IsIf()) {
+	
 #ifdef _DEBUG
    wcout << block_instructions.size() << L": " << L"label: id=" << top_label << endl;
 #endif
-		block_instructions.push_back(MakeInstruction(LBL, (int)top_label, 0));
-		jump_table.insert(pair<long, size_t>(top_label, block_instructions.size() - 1));
-	}
+	block_instructions.push_back(MakeInstruction(LBL, (int)top_label, 0));
+	jump_table.insert(pair<long, size_t>(top_label, block_instructions.size() - 1));
 	
 	// emit conditional expression
 	EmitExpression(if_while->GetExpression(), block_instructions, jump_table);
@@ -145,20 +153,18 @@ void Emitter::EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instruc
 	// emit block
 	EmitBlock(if_while->GetBlock(), block_instructions, jump_table);
 	
-	// 'while'; jump
-	if(!if_while->IsIf()) {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump: id=" << top_label << endl;
+  wcout << block_instructions.size() << L": " << L"jump: id=" << top_label << endl;
 #endif
-		block_instructions.push_back(MakeInstruction(JMP, top_label, (int)-1));
-	}
+	block_instructions.push_back(MakeInstruction(JMP, top_label, (int)-1));
 	
 	// end label
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
+  wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
 #endif
 	block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
 	jump_table.insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+  */
 }
 
 /****************************

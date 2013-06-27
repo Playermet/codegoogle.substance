@@ -93,6 +93,7 @@ namespace compiler {
     TOKEN_CHAR_STRING_LIT,
     // reserved words
 	  TOKEN_IF_ID,
+    TOKEN_ELSE_ID,
 	  TOKEN_WHILE_ID,
     TOKEN_DUMP_ID,
     TOKEN_THIS_ID,

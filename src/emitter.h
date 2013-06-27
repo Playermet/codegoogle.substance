@@ -45,19 +45,13 @@ namespace compiler {
     static vector<Instruction*> instruction_factory;
 	  INT_T label_id;
   
-    void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
-                            unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
-    void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
-								   unordered_map<long, size_t> &jump_table);
-	  void EmitIfWhile(IfWhile* if_while, vector<Instruction*> &block_instructions, 
-									   unordered_map<long, size_t> &jump_table);
-    void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
-											  unordered_map<long, size_t> &jump_table);
-    void EmitReference(Reference* reference, bool is_store, 
-										   vector<Instruction*> &block_instructions, 
-										   unordered_map<long, size_t> &jump_table);
-    void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
-											  unordered_map<long, size_t> &jump_table);
+    void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
+    void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+    void EmitIfElse(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);    
+	  void EmitWhile(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+    void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+    void EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+    void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
   
    public:
     Emitter(StatementList* parsed_program) {

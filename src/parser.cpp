@@ -38,6 +38,7 @@ using namespace compiler;
  ****************************/
 void Parser::LoadErrorCodes()
 {
+  error_msgs[TOKEN_IF_ID] = L"Expected 'if'";
   error_msgs[TOKEN_IDENT] = L"Expected identifier";
   error_msgs[TOKEN_OPEN_PAREN] = L"Expected '('";
   error_msgs[TOKEN_CLOSED_PAREN] = L"Expected ')'";
@@ -214,12 +215,12 @@ Statement* Parser::ParseStatement(int depth)
 
 		// if
   case TOKEN_IF_ID:
-    statement = ParseIfWhile(true, depth + 1);
+    statement = ParseIfElse(NULL, depth + 1);
     break;
 		
 		// while
   case TOKEN_WHILE_ID:
-    statement = ParseIfWhile(false, depth + 1);
+    statement = ParseWhile(depth + 1);
     break;
     
     // value dump
@@ -249,16 +250,75 @@ Statement* Parser::ParseStatement(int depth)
 }
 
 /****************************
- * Parses an 'if' and 'while' 
- * statements.
+ * Parses an 'if/else' 
+ * statement.
  ****************************/
-Statement* Parser::ParseIfWhile(bool is_if, int depth)
+Statement* Parser::ParseIfElse(IfElse* parent, int depth)
+{
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
+#ifdef _DEBUG
+	Show(L"If/Else", depth);
+#endif
+
+  // conditional expression
+  if(!Match(TOKEN_IF_ID)) {
+    ProcessError(TOKEN_IF_ID);
+    return NULL;
+  }
+  NextToken();
+
+  if(!Match(TOKEN_OPEN_PAREN)) {
+    ProcessError(TOKEN_OPEN_PAREN);
+    return NULL;
+  }
+  NextToken();
+
+	Expression* expression = ParseExpression(depth + 1);
+
+	if(!Match(TOKEN_CLOSED_PAREN)) {
+    ProcessError(TOKEN_CLOSED_PAREN);
+    return NULL;
+  }
+  NextToken();
+
+  // statement block
+	StatementList* if_block = ParseBlock(true, depth + 1);
+
+	if(expression && if_block) {
+		// TODO: create IFElse instance
+    IfElse* if_else = TreeFactory::Instance()->MakeIfElseStatement(file_name, line_num, expression, if_block);
+    
+    if(Match(TOKEN_ELSE_ID)) {
+      NextToken();
+      
+      // 'else if'
+      if(Match(TOKEN_IF_ID)) {
+        // TODO...
+      }
+      // 'else'
+      else {
+        StatementList* else_block = ParseBlock(true, depth + 1);
+      }
+    }
+
+    return if_else;
+	}
+	
+	return NULL;
+}
+
+/****************************
+ * Parses an 'if' statement.
+ ****************************/
+Statement* Parser::ParseWhile(int depth)
 {
 	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
-	Show(L"If", depth);
+	Show(L"While", depth);
 #endif
 
 	NextToken();
@@ -280,14 +340,15 @@ Statement* Parser::ParseIfWhile(bool is_if, int depth)
 	StatementList* block = ParseBlock(true, depth + 1);
 	
 	if(expression && block) {
-		return TreeFactory::Instance()->MakeIfWhileStatement(file_name, line_num, expression, block, is_if);
+		return TreeFactory::Instance()->MakeWhileStatement(file_name, line_num, expression, block);
 	}
 	
 	return NULL;
 }
 
 /****************************
- * Parses an assignment statement.
+ * Parses an assignment 
+ * statement.
  ****************************/
 Statement* Parser::ParseAssignment(int depth)
 {
@@ -725,7 +786,7 @@ Reference* Parser::ParseReference(int depth)
 	const wstring identifier = L"@self";
 	int entry_id = symbol_table.GetEntry(identifier);
 	if(entry_id < 0) {
-		ProcessError(L"Unknown refernce '" + identifier + L"'");
+		ProcessError(L"Unknown reference '" + identifier + L"'");
 		return NULL;
 	}
 	
@@ -754,7 +815,7 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
 	// self reference
 	int entry_id = symbol_table.GetEntry(identifier);
 	if(entry_id < 0) {
-		ProcessError(L"Unknown refernce '" + identifier + L"'");
+		ProcessError(L"Unknown reference '" + identifier + L"'");
 		return NULL;
 	}
 	
