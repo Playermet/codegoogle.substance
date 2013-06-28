@@ -96,6 +96,10 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions, jump_table);
       break;
 			
+    case IF_ELSE_STATEMENT:
+      EmitIfElse(static_cast<IfElse*>(statement), block_instructions, jump_table);
+      break;
+      
 		case WHILE_STATEMENT:
 			EmitWhile(static_cast<While*>(statement), block_instructions, jump_table);
       break;
@@ -118,10 +122,35 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitIfElse(While* if_while, vector<Instruction*> &block_instructions, 
+void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, 
                          unordered_map<long, size_t> &jump_table)
 {
+  const long end_label = NextEndId();
+  long start_label = NextStartId();
+  
+  // emit test
+	EmitExpression(if_else->GetExpression(), block_instructions, jump_table);
+  // basic 'if' statement
+  if(if_else->GetElseIfs().size() == 0) {
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump false: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, 0));
+    // emit 'if' block
+    EmitBlock(if_else->GetIfBlock(), block_instructions, jump_table);
+  }
+  // 'if-else' statements
+  else {
+    
+  }
+  
 
+  // end label
+#ifdef _DEBUG
+  wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
+#endif
+	block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
+	jump_table.insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
 }
 
 /****************************

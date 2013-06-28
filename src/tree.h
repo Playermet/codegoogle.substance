@@ -545,9 +545,9 @@ namespace compiler {
     friend class TreeFactory;
     Expression* logical_expression;
 	  StatementList* if_block;
-    IfElse* if_else;
+    vector<IfElse*> else_ifs;
     StatementList* else_block;
-
+    
   public:
     IfElse(const wstring &file_name, const unsigned int line_num, Expression* logical_expression, 
 					 StatementList* if_block)  : Statement(file_name, line_num) {
@@ -571,19 +571,19 @@ namespace compiler {
 		  return else_block;
 	  }
 
-    void SetIfElse(IfElse* if_else) {
-		  this->if_else = if_else;
+    void AddElseIf(IfElse* if_else) {
+		  else_ifs.push_back(if_else);
 	  }
 
-    IfElse* GetIfElse() {
-		  return if_else;
+    vector<IfElse*> GetElseIfs() {
+		  return else_ifs;
 	  }
     
 	  const StatementType GetStatementType() {
       return IF_ELSE_STATEMENT;
     }
   };
-
+  
   /****************************
    * Assignment statement
    ****************************/
