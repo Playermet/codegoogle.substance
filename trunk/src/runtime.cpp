@@ -379,6 +379,9 @@ void Runtime::Run()
         wcout << L"type=float, value=" << left.value.float_value << endl;
         break;
 
+      case RTRN:
+        break;
+        
       default:
         cerr << "Invalid operation" << endl;
         exit(1);

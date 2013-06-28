@@ -34,6 +34,7 @@
 
 #include "common.h"
 #include "tree.h"
+#include <limits.h>
 
 /****************************
  * Translate trees to instructions
@@ -43,11 +44,20 @@ namespace compiler {
   class Emitter {
     StatementList* parsed_program;
     static vector<Instruction*> instruction_factory;
-	  INT_T label_id;
+	  INT_T start_label_id;
+    INT_T end_label_id;
+
+    INT_T NextEndId() {
+      return end_label_id++;
+    }
+    
+    INT_T NextStartId() {
+      return start_label_id++;
+    }
   
     void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
-    void EmitIfElse(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);    
+    void EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);    
 	  void EmitWhile(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
@@ -56,7 +66,8 @@ namespace compiler {
    public:
     Emitter(StatementList* parsed_program) {
       this->parsed_program = parsed_program;
-		  label_id = 0;
+		  start_label_id = 0;
+      end_label_id = INT_MIN;
     }
   
     ~Emitter() {
@@ -100,7 +111,7 @@ namespace compiler {
     }
 
     INT_T GetLastLabelId() {
-      return label_id;
+      return 0; // return label_id;
     }
   
     static void ClearInstructions();

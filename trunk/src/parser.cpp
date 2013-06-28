@@ -215,7 +215,7 @@ Statement* Parser::ParseStatement(int depth)
 
 		// if
   case TOKEN_IF_ID:
-    statement = ParseIfElse(NULL, depth + 1);
+    statement = ParseIfElse(depth + 1);
     break;
 		
 		// while
@@ -253,7 +253,7 @@ Statement* Parser::ParseStatement(int depth)
  * Parses an 'if/else' 
  * statement.
  ****************************/
-Statement* Parser::ParseIfElse(IfElse* parent, int depth)
+Statement* Parser::ParseIfElse(int depth)
 {
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
@@ -276,7 +276,6 @@ Statement* Parser::ParseIfElse(IfElse* parent, int depth)
   NextToken();
 
 	Expression* expression = ParseExpression(depth + 1);
-
 	if(!Match(TOKEN_CLOSED_PAREN)) {
     ProcessError(TOKEN_CLOSED_PAREN);
     return NULL;
@@ -285,24 +284,51 @@ Statement* Parser::ParseIfElse(IfElse* parent, int depth)
 
   // statement block
 	StatementList* if_block = ParseBlock(true, depth + 1);
-
 	if(expression && if_block) {
-		// TODO: create IFElse instance
-    IfElse* if_else = TreeFactory::Instance()->MakeIfElseStatement(file_name, line_num, expression, if_block);
-    
-    if(Match(TOKEN_ELSE_ID)) {
-      NextToken();
-      
-      // 'else if'
-      if(Match(TOKEN_IF_ID)) {
-        // TODO...
+		IfElse* if_else = TreeFactory::Instance()->MakeIfElseStatement(file_name, line_num, expression, if_block);
+    // find 'else/if' blocks
+    bool found_else = false;
+    while(Match(TOKEN_ELSE_ID) && !found_else) {
+      NextToken();      
+      // 'else if' part
+      if(Match(TOKEN_IF_ID)) {        
+        NextToken();
+        
+        if(!Match(TOKEN_OPEN_PAREN)) {
+          ProcessError(TOKEN_OPEN_PAREN);
+          return NULL;
+        }
+        NextToken();
+        
+        Expression* else_if_expression = ParseExpression(depth + 1);
+        if(!Match(TOKEN_CLOSED_PAREN)) {
+          ProcessError(TOKEN_CLOSED_PAREN);
+          return NULL;
+        }
+        NextToken();
+        
+        // statement block
+        StatementList* else_if_block = ParseBlock(true, depth + 1);
+        if(else_if_expression && else_if_block) {
+          if_else->AddElseIf(TreeFactory::Instance()->MakeIfElseStatement(file_name, line_num, 
+                                                                          else_if_expression, 
+                                                                          else_if_block));
+        }
+        else {
+          return NULL;
+        }
       }
-      // 'else'
+      // 'else' part
       else {
         StatementList* else_block = ParseBlock(true, depth + 1);
+        if(!else_block) {
+          return NULL;
+        }
+        if_else->SetElseBlock(else_block);
+        found_else = true;
       }
     }
-
+    
     return if_else;
 	}
 	
