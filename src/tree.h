@@ -553,6 +553,7 @@ namespace compiler {
 					 StatementList* if_block)  : Statement(file_name, line_num) {
 		  this->logical_expression = logical_expression;
 	    this->if_block = if_block;
+      else_block = NULL;
 	  }
 
     Expression* GetExpression() {
