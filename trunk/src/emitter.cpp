@@ -89,7 +89,7 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 												unordered_map<long, size_t> &jump_table)
 {
   vector<Statement*> statements = block_statements->GetStatements();
-  for(size_t i = 0; i < statements.size(); ++i) {
+  for(size_t i = 0; i < statements.size(); i++) {
     Statement* statement = statements[i];
     switch(statement->GetStatementType()) {
     case ASSIGNMENT_STATEMENT:
@@ -126,12 +126,15 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructio
                          unordered_map<long, size_t> &jump_table)
 {
   const long end_label = NextEndId();
-  long start_label = NextStartId();
+  long next_label = NextStartId();
   
   // emit test
 	EmitExpression(if_else->GetExpression(), block_instructions, jump_table);
+
   // basic 'if' statement
-  if(if_else->GetElseIfs().size() == 0) {
+  vector<IfElse*> else_ifs = if_else->GetElseIfs();
+  StatementList* else_block = if_else->GetElseBlock();
+  if(else_ifs.size() == 0 && !else_block) {
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"jump false: id=" << end_label << endl;
 #endif
@@ -139,12 +142,66 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructio
     // emit 'if' block
     EmitBlock(if_else->GetIfBlock(), block_instructions, jump_table);
   }
-  // 'if-else' statements
   else {
-    
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump false: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, 0));
+    // emit 'if' block
+    EmitBlock(if_else->GetIfBlock(), block_instructions, jump_table);    
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
   }
   
-
+  // 'if-else' blocks
+  if(else_ifs.size() > 0) {
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"label: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
+    jump_table.insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+    
+    for(size_t i = 0; i < else_ifs.size(); i++) {
+      IfElse* else_if = else_ifs[i];
+      // emit test
+      EmitExpression(else_if->GetExpression(), block_instructions, jump_table);  
+#ifdef _DEBUG
+      wcout << block_instructions.size() << L": " << L"jump false: id=" << (next_label + 1) << endl;
+#endif
+      block_instructions.push_back(MakeInstruction(JMP, (int)next_label + 1, 0));
+      
+      // emit 'if' block
+      EmitBlock(else_if->GetIfBlock(), block_instructions, jump_table);    
+#ifdef _DEBUG
+      wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+#endif
+      // jump to end
+      block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
+      
+      next_label = NextStartId();
+#ifdef _DEBUG
+      wcout << block_instructions.size() << L": " << L"label: id=" << next_label << endl;
+#endif
+      block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
+      jump_table.insert(pair<long, size_t>(next_label, block_instructions.size() - 1));      
+    }
+  }
+  
+  // 'else' blocks
+  if(else_block) {
+    if(else_ifs.size() == 0) {
+#ifdef _DEBUG
+      wcout << block_instructions.size() << L": " << L"label: id=" << next_label << endl;
+#endif
+      block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
+      jump_table.insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+    }
+    // 'else' block
+    EmitBlock(if_else->GetElseBlock(), block_instructions, jump_table);
+  }
+  
   // end label
 #ifdef _DEBUG
   wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
