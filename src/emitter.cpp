@@ -371,23 +371,75 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (FLOAT_T)static_cast<FloatLiteral*>(expression)->GetValue()));
     break;
     
-  case AND_EXPR: {    
+  case AND_EXPR: {
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
+    const long next_label = NextEndId();
+    const long end_label = NextEndId();
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump true: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, 1));
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"load literal: type=integer, value=0" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
+
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"label: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
+    jump_table.insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
+
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
+    jump_table.insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"operator: '&'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(AND));
   }
     break;
 
-  case OR_EXPR: {    
+  case OR_EXPR: {        
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
+    const long next_label = NextEndId();
+    const long end_label = NextEndId();
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump false: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, 0));
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"load literal: type=integer, value=0" << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
+
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"label: id=" << next_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
+    jump_table.insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
+
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"label: id=" << end_label << endl;
+#endif
+    block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
+    jump_table.insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"operator: '|'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(OR));
   }
     break;
     

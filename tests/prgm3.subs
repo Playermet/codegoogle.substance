@@ -1,0 +1,5 @@
+{
+	a = true & true & false;
+  dump a;
+#	b = false | false | true;
+}

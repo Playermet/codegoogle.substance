@@ -1,4 +1,0 @@
-{
-	a = true & false & true;
-	b = false | false | true;
-}
