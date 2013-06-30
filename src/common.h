@@ -65,10 +65,16 @@ using namespace std;
 
 class RuntimeClass;
 
+// basic datatypes
 #define INT_T long
 #define FLOAT_T double
 #define CHAR_T wchar_t
 #define BYTE_T char
+
+// jump operands
+#define JMP_TRUE 1
+#define JMP_FALSE 0
+#define JMP_UNCND -1
 
 /****************************
  * Runtime instructions
@@ -144,8 +150,7 @@ class Value {
   BaseValue value;
   RuntimeClass* klass;
 
-	Value() {
-	}
+	Value() {}
 
 	Value(const Value &rhs) {
 		memcpy(this, &rhs, sizeof(Value));
