@@ -3,6 +3,49 @@
 using namespace jit;
 
 /****************************
+* Boolean class
+****************************/
+BooleanClass* BooleanClass::instance;
+
+void BooleanClass::Equal(Value &left, Value &right, Value &result, vector<JitInstruction*> &jit_instrs, bool is_recording) {
+  switch(right.type) {
+  case INT_VALUE:
+    result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
+    result.value.int_value = left.value.int_value == right.value.int_value;
+    // record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(EQL_INT));
+    }
+    break;
+
+  default:
+    wcerr << L">>> invalid logical operation <<<" << endl;
+    exit(1);
+    break;
+  }
+}
+
+void BooleanClass::NotEqual(Value &left, Value &right, Value &result, vector<JitInstruction*> &jit_instrs, bool is_recording) {
+  switch(right.type) {
+  case INT_VALUE:
+    result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
+    result.value.int_value = left.value.int_value != right.value.int_value;
+    // record JIT instructions
+    if(is_recording) {
+      jit_instrs.push_back(new JitInstruction(EQL_INT));
+    }
+    break;
+
+  default:
+    wcerr << L">>> invalid logical operation <<<" << endl;
+    exit(1);
+    break;
+  }
+}
+
+/****************************
 * Integer class
 ****************************/
 IntegerClass* IntegerClass::instance;
@@ -127,6 +170,7 @@ void IntegerClass::Less(Value &left, Value &right, Value &result, vector<JitInst
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value < right.value.int_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(LES_INT));
@@ -135,6 +179,7 @@ void IntegerClass::Less(Value &left, Value &right, Value &result, vector<JitInst
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value < right.value.float_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(LES_FLOAT));
@@ -152,6 +197,7 @@ void IntegerClass::Greater(Value &left, Value &right, Value &result, vector<JitI
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value > right.value.int_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(GTR_INT));
@@ -160,6 +206,7 @@ void IntegerClass::Greater(Value &left, Value &right, Value &result, vector<JitI
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value > right.value.float_value;
     // record JIT instructions
     if(is_recording) {
@@ -178,6 +225,7 @@ void IntegerClass::Equal(Value &left, Value &right, Value &result, vector<JitIns
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value == right.value.int_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(EQL_INT));
@@ -186,6 +234,7 @@ void IntegerClass::Equal(Value &left, Value &right, Value &result, vector<JitIns
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value == right.value.float_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(EQL_FLOAT));
@@ -203,6 +252,7 @@ void IntegerClass::NotEqual(Value &left, Value &right, Value &result, vector<Jit
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value != right.value.int_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(NEQL_INT));
@@ -211,6 +261,7 @@ void IntegerClass::NotEqual(Value &left, Value &right, Value &result, vector<Jit
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value != right.value.float_value;
     if(is_recording) {
       jit_instrs.push_back(new JitInstruction(NEQL_FLOAT));
@@ -341,6 +392,7 @@ void FloatClass::Less(Value &left, Value &right, Value &result, vector<JitInstru
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value < right.value.int_value;
     // record JIT instructions
     if(is_recording) {
@@ -350,6 +402,7 @@ void FloatClass::Less(Value &left, Value &right, Value &result, vector<JitInstru
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value < right.value.float_value;
     // record JIT instructions
     if(is_recording) {
@@ -368,6 +421,7 @@ void FloatClass::Greater(Value &left, Value &right, Value &result, vector<JitIns
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value > right.value.int_value;	
     // record JIT instructions
     if(is_recording) {
@@ -377,6 +431,7 @@ void FloatClass::Greater(Value &left, Value &right, Value &result, vector<JitIns
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value > right.value.float_value;
     // record JIT instructions
     if(is_recording) {
@@ -395,6 +450,7 @@ void FloatClass::Equal(Value &left, Value &right, Value &result, vector<JitInstr
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value == right.value.int_value;
     // record JIT instructions
     if(is_recording) {
@@ -404,6 +460,7 @@ void FloatClass::Equal(Value &left, Value &right, Value &result, vector<JitInstr
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value == right.value.float_value;
     // record JIT instructions
     if(is_recording) {
@@ -422,6 +479,7 @@ void FloatClass::NotEqual(Value &left, Value &right, Value &result, vector<JitIn
   switch(right.type) {
   case INT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value != right.value.int_value;
     // record JIT instructions
     if(is_recording) {
@@ -431,6 +489,7 @@ void FloatClass::NotEqual(Value &left, Value &right, Value &result, vector<JitIn
 
   case FLOAT_VALUE:
     result.type = BOOL_VALUE;
+    result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.float_value != right.value.float_value;
     // record JIT instructions
     if(is_recording) {

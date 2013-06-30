@@ -75,7 +75,9 @@ class RuntimeClass;
  ****************************/
 enum InstructionType {
 	// literals and variables
-  LOAD_INT_LIT = -256,
+  LOAD_TRUE_LIT = -256,
+  LOAD_FALSE_LIT,
+  LOAD_INT_LIT,
   LOAD_FLOAT_LIT,
   LOAD_VAR,
   STOR_VAR,
