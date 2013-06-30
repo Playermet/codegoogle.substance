@@ -68,6 +68,33 @@ public:
 };
 
 /****************************
+* Boolean class
+****************************/
+class BooleanClass : public RuntimeClass {
+  static BooleanClass* instance;
+
+  BooleanClass() {
+    AddOperation(L"==", Equal);
+    AddOperation(L"!=", NotEqual);    
+  }
+
+  ~BooleanClass() {
+  }
+
+public:
+  static BooleanClass* Instance() {
+    if(!instance) {
+      instance = new BooleanClass;
+    }
+
+    return instance;
+  }
+
+  static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+};
+
+/****************************
 * Integer class
 ****************************/
 class IntegerClass : public RuntimeClass {

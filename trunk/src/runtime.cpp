@@ -87,7 +87,35 @@ void Runtime::Run()
     switch(instruction->type) {
     case RTRN:
       break;
+
+    case LOAD_TRUE_LIT:
+      left.type = BOOL_VALUE;
+      left.klass = BooleanClass::Instance();
+      left.value.int_value = 1;
+#ifdef _DEBUG
+      wcout << L"LOAD_TRUE_LIT: value=true" << endl;
+#endif
+      PushValue(left);
+      // record JIT instructions
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_LIT, (long)1));
+      }
+      break;
       
+    case LOAD_FALSE_LIT:
+      left.type = BOOL_VALUE;
+      left.klass = BooleanClass::Instance();
+      left.value.int_value = 0;
+#ifdef _DEBUG
+      wcout << L"LOAD_FALSE_LIT: value=false" << endl;
+#endif
+      PushValue(left);
+      // record JIT instructions
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_LIT, (long)0));
+      }
+      break;
+
     case LOAD_INT_LIT:
       left.type = INT_VALUE;
       left.klass = IntegerClass::Instance();
@@ -186,12 +214,6 @@ void Runtime::Run()
 #endif
         }
       }
-      /*
-      // record JIT instructions
-      if(is_recording) {
-        jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
-      }	
-      */
 #ifdef _DEBUG
       wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" 
         << instruction->operand2 << L", loop_pos=" << loop_iterations.size() <<  endl;
@@ -246,7 +268,7 @@ void Runtime::Run()
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 #endif
         left = PopValue();
-        if(left.type != BOOL_VALUE && left.type != INT_VALUE) {
+        if(left.type != BOOL_VALUE) {
           wcerr << L">>> Expected a boolean value <<<" << endl;
           exit(1);
         }
@@ -273,7 +295,7 @@ void Runtime::Run()
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
 #endif
         left = PopValue();
-        if(left.type != BOOL_VALUE && left.type != INT_VALUE) {
+        if(left.type != BOOL_VALUE) {
           wcerr << L">>> Expected a boolean value <<<" << endl;
           exit(1);
         }				
@@ -374,6 +396,10 @@ void Runtime::Run()
 #endif
       left = PopValue();
       switch(left.type) {
+      case BOOL_VALUE:
+        wcout << L"type=boolean, value=" << (left.value.int_value ? L"true" : L"false") << endl;
+        break;
+
       case INT_VALUE:
         wcout << L"type=integer, value=" << left.value.int_value << endl;
         break;
@@ -386,7 +412,7 @@ void Runtime::Run()
         break;
         
       default:
-        wcerr << L"Invalid operation" << endl;
+        wcerr << L"Invalid dump value" << endl;
         exit(1);
       }
       break;

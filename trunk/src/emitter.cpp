@@ -341,13 +341,13 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
   case BOOLEAN_LIT_EXPR:
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=" 
-          << static_cast<BooleanLiteral*>(expression)->GetValue() << endl;
+          << (static_cast<BooleanLiteral*>(expression)->GetValue() ? L"true" : L"false") << endl;
 #endif
     if(static_cast<BooleanLiteral*>(expression)->GetValue()) {      
-      block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)1));
+      block_instructions.push_back(MakeInstruction(LOAD_TRUE_LIT));
     }
     else {
-      block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+      block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
     }
     break;
     
@@ -380,9 +380,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
 #endif
     block_instructions.push_back(MakeInstruction(JMP, (int)next_label, 1));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=integer, value=0" << endl;
+    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=false" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+    block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
 #endif
@@ -416,9 +416,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
 #endif
     block_instructions.push_back(MakeInstruction(JMP, (int)next_label, 0));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=integer, value=0" << endl;
+    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=false" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+    block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
 #ifdef _DEBUG
     wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
 #endif
