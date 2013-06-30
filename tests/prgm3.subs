@@ -1,9 +1,12 @@
 {
   i = 0;
+  a = false;
   while(i < 15) {    
     i += 1;
+    a = true & false & true;
   };
   dump i;
+  dump a;
 #	a = true & true & true;
 #  dump a;
 #	b = false | false | true;
