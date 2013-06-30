@@ -134,7 +134,7 @@ void Runtime::Run()
           break;
 
         default:
-          cerr << "Invalid operation" << endl;
+          wcerr << L"Invalid operation" << endl;
           exit(1);
         }
       }
@@ -159,7 +159,7 @@ void Runtime::Run()
             break;
 
           default:
-            cerr << "Invalid operation" << endl;
+            wcerr << L"Invalid operation" << endl;
             exit(1);
           }
         }
@@ -218,7 +218,7 @@ void Runtime::Run()
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           const INT_T guard_label = compiler.Execute(frame, NULL, NULL);
           if(guard_label < 0) {
-            cerr << L">>> Error executing native code <<<" << endl;
+            wcerr << L">>> Error executing native code <<<" << endl;
             exit(1);
           }
           ip = jump_table[guard_label];
@@ -246,8 +246,8 @@ void Runtime::Run()
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 #endif
         left = PopValue();
-        if(left.type != BOOL_VALUE) {
-          cerr << L">>> Expected a boolean value <<<" << endl;
+        if(left.type != BOOL_VALUE && left.type != INT_VALUE) {
+          wcerr << L">>> Expected a boolean value <<<" << endl;
           exit(1);
         }
         if(left.value.int_value) {
@@ -273,7 +273,7 @@ void Runtime::Run()
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
 #endif
         left = PopValue();
-        if(left.type != BOOL_VALUE) {
+        if(left.type != BOOL_VALUE && left.type != INT_VALUE) {
           wcerr << L">>> Expected a boolean value <<<" << endl;
           exit(1);
         }				
@@ -386,7 +386,7 @@ void Runtime::Run()
         break;
         
       default:
-        cerr << "Invalid operation" << endl;
+        wcerr << L"Invalid operation" << endl;
         exit(1);
       }
       break;
