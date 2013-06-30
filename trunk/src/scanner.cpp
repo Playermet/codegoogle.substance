@@ -87,6 +87,8 @@ void Scanner::LoadKeywords()
   ident_map[L"this"] = TOKEN_THIS_ID;
   ident_map[L"class"] = TOKEN_CLASS_ID;
   ident_map[L"method"] = TOKEN_METHOD_ID;
+  ident_map[L"true"] = TOKEN_TRUE_LIT;
+  ident_map[L"false"] = TOKEN_FALSE_LIT;
 }
 
 /****************************
@@ -101,6 +103,8 @@ void Scanner::CheckIdentifier(int index)
   // check wstring
   enum ScannerTokenType ident_type = ident_map[ident];
   switch(ident_type) {
+  case TOKEN_TRUE_LIT:
+  case TOKEN_FALSE_LIT:
 	case TOKEN_IF_ID:
   case TOKEN_ELSE_ID:
 	case TOKEN_WHILE_ID:

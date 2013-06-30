@@ -85,6 +85,9 @@ void Runtime::Run()
   Instruction* instruction = instructions[ip++];
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
+    case RTRN:
+      break;
+      
     case LOAD_INT_LIT:
       left.type = INT_VALUE;
       left.klass = IntegerClass::Instance();

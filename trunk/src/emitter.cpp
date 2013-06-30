@@ -338,6 +338,19 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitReference(static_cast<Reference*>(expression), false, block_instructions, jump_table);
     break;
 
+  case BOOLEAN_LIT_EXPR:
+#ifdef _DEBUG
+    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=" 
+          << static_cast<BooleanLiteral*>(expression)->GetValue() << endl;
+#endif
+    if(static_cast<BooleanLiteral*>(expression)->GetValue()) {      
+      block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)1));
+    }
+    else {
+      block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)0));
+    }
+    break;
+    
   case CHAR_LIT_EXPR:
     // TODO: implement
     break;
@@ -357,15 +370,12 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
 #endif
     block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (FLOAT_T)static_cast<FloatLiteral*>(expression)->GetValue()));
     break;
-
-  case BOOLEAN_LIT_EXPR:
-    break;
-
+    
   case AND_EXPR: {    
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '&&'" << endl;
+    wcout << block_instructions.size() << L": " << L"operator: '&'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(AND));
   }
@@ -375,7 +385,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '||'" << endl;
+    wcout << block_instructions.size() << L": " << L"operator: '|'" << endl;
 #endif
     block_instructions.push_back(MakeInstruction(OR));
   }
