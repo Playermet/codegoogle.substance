@@ -74,27 +74,30 @@ class RuntimeClass;
  * Runtime instructions
  ****************************/
 enum InstructionType {
-	// literals and variables
+	// literals
   LOAD_TRUE_LIT = -256,
   LOAD_FALSE_LIT,
   LOAD_INT_LIT,
   LOAD_FLOAT_LIT,
+  // variables
   LOAD_VAR,
   STOR_VAR,
-	// operations
-  AND,
-  OR,
+	// logical  
   EQL,
   NEQL,
   GTR,
   LES,
   GTR_EQL,
   LES_EQL,  
+  // mathematical
   ADD,
   SUB,
   MUL,
   DIV,
   MOD,
+  // bitwise
+  BIT_AND,
+  BIT_OR,
 	// jumps
 	JMP,
 	LBL,
