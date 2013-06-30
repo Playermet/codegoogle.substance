@@ -750,6 +750,16 @@ Expression* Parser::ParseSimpleExpression(int depth)
   }
   else {
     switch(GetToken()) {
+    case TOKEN_TRUE_LIT:
+      expression = TreeFactory::Instance()->MakeBooleanLiteral(file_name, line_num, true);
+      NextToken();
+      break;
+
+    case TOKEN_FALSE_LIT:
+      expression = TreeFactory::Instance()->MakeBooleanLiteral(file_name, line_num, false);
+      NextToken();
+      break;
+
     case TOKEN_CHAR_LIT:
       expression = TreeFactory::Instance()->MakeCharacterLiteral(file_name, line_num, 
 																																 scanner->GetToken()->GetCharLit());

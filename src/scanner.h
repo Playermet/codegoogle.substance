@@ -87,6 +87,8 @@ namespace compiler {
     TOKEN_DIV_EQL,
     // literals
     TOKEN_IDENT,
+    TOKEN_TRUE_LIT,
+    TOKEN_FALSE_LIT,
     TOKEN_INT_LIT,
     TOKEN_FLOAT_LIT,
     TOKEN_CHAR_LIT,
