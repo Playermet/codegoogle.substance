@@ -1323,12 +1323,6 @@ void JitCompiler::move_xreg_xreg(Register src, Register dest) {
 }
 
 bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
-	/*
-  if(instr_index >= block_instrs.size()) {
-    return false;
-  }
-	*/
-	
   JitInstruction* next_instr = block_instrs[instr_index + 1];
   if(next_instr->GetType() == JMP && next_instr->GetOperand2() > -1) {
 #ifdef _DEBUG
@@ -1339,7 +1333,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
     //
     // jump if true
     //
-    if(next_instr->GetOperand2() == 1) {
+    if(!next_instr->GetOperand2()) {
       switch(type) {
       case LES_INT:	
 #ifdef _DEBUG

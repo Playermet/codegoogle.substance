@@ -936,7 +936,10 @@ namespace jit {
 				perror("Couldn't mprotect");
 				exit(errno);
 			}
+			
+#ifdef _DEBUG
 			wcout << L"--------------------------" << endl;
+#endif      
 			
       return (jit_fun_ptr)code;
     }

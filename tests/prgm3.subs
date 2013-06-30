@@ -1,9 +1,11 @@
 {
   i = 0;
   a = false;
+  b = 1;
+  c = 3;
   while(i < 15) {    
     i += 1;
-    a = true & false & true;
+    a = true & b < c & true;
   };
   dump i;
   dump a;

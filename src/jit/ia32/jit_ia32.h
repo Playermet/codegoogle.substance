@@ -712,7 +712,10 @@ namespace jit {
 				exit(errno);
 			}
 #endif
+
+#ifdef _DEBUG
 			wcout << L"--------------------------" << endl;
+#endif
 			
       return (jit_fun_ptr)code;
     }

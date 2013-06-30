@@ -275,9 +275,6 @@ void Runtime::Run()
           wcerr << L">>> Expected a boolean value <<<" << endl;
           exit(1);
         }
-        if(left.value.int_value) {
-          ip = jump_table[instruction->operand1];
-        }
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
@@ -289,6 +286,10 @@ void Runtime::Run()
             jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, left.value.int_value ? 0 : 1));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
+        }
+        // update ip
+        if(left.value.int_value) {
+          ip = jump_table[instruction->operand1];
         }
         break;
 

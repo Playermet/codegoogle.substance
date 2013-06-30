@@ -919,8 +919,11 @@ namespace jit {
       }
 #ifdef _DEBUG
       wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" << code_buf_max << L" byte(s)" << endl;
-#endif			
-      wcout << L"--------------------------" << endl;
+#endif
+
+#ifdef _DEBUG
+			wcout << L"--------------------------" << endl;
+#endif
 
       return (jit_fun_ptr)(code + PAGE_OFFSET);
     }
