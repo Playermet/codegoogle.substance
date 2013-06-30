@@ -319,10 +319,10 @@ void Runtime::Run()
       }
       break;
 
-    case AND:
+    case BIT_AND:
       break;
 
-    case OR:
+    case BIT_OR:
       break;
 
     case EQL:
