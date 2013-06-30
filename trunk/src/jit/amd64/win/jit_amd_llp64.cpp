@@ -1108,13 +1108,13 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
       case IMM_INT:{
         RegisterHolder* holder = GetRegister();
         move_imm_reg(left->GetOperand(), holder->GetRegister());
-        cmp_imm_reg(instr->GetOperand2(), holder->GetRegister());
+        cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
         ReleaseRegister(holder);
       }
         break;
         
       case REG_INT:
-        cmp_imm_reg(instr->GetOperand2(), left->GetRegister()->GetRegister());
+        cmp_imm_reg(!instr->GetOperand2(), left->GetRegister()->GetRegister());
         ReleaseRegister(left->GetRegister());
         break;
 
@@ -1123,7 +1123,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 				move_mem_reg(FRAME, RBP, holder->GetRegister());
 				add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
 				move_mem_reg(0, holder->GetRegister(), holder->GetRegister());				
-        cmp_imm_reg(instr->GetOperand2(), holder->GetRegister());
+        cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
         ReleaseRegister(holder);
       }
         break;
