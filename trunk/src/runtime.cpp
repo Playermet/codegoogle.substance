@@ -223,7 +223,7 @@ void Runtime::Run()
     case JMP:
       switch(instruction->operand2) {
         // unconditional jump
-      case -1:
+      case JMP_UNCND:
 #ifdef _DEBUG
         wcout << L"JMP: unconditional, to=" << instruction->operand2 << endl;
 #endif
@@ -239,10 +239,13 @@ void Runtime::Run()
           // compile into native code and execute
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           const INT_T guard_label = compiler.Execute(frame, NULL, NULL);
+          // TODO: manage error codes
+/*
           if(guard_label < 0) {
             wcerr << L">>> Error executing native code <<<" << endl;
             exit(1);
           }
+*/
           ip = jump_table[guard_label];
           // reset
           is_recording = first_jmp = is_jump = false;
@@ -263,7 +266,7 @@ void Runtime::Run()
         break;
 
         // jump true
-      case 1:
+      case JMP_TRUE:
 #ifdef _DEBUG
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 #endif
@@ -290,7 +293,7 @@ void Runtime::Run()
         break;
 
         // jump false
-      case 0:
+      case JMP_FALSE:
 #ifdef _DEBUG
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
 #endif
