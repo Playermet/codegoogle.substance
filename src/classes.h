@@ -74,6 +74,7 @@ class BooleanClass : public RuntimeClass {
   static BooleanClass* instance;
 
   BooleanClass() {
+    // note that '&' and '|' are implemented as conditional jumps
     AddOperation(L"==", Equal);
     AddOperation(L"!=", NotEqual);    
   }
@@ -109,6 +110,9 @@ class IntegerClass : public RuntimeClass {
     AddOperation(L"!=", NotEqual);
     AddOperation(L"<", Less);
     AddOperation(L">", Greater);
+    AddOperation(L"<=", LessEqual);
+    AddOperation(L">=", GreaterEqual);
+    AddOperation(L"%", Modulo);
   }
 
   ~IntegerClass() {
@@ -127,10 +131,13 @@ public:
   static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Divide(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Modulo(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Less(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 };
 
 /****************************
@@ -148,6 +155,9 @@ class FloatClass : public RuntimeClass {
     AddOperation(L"!=", NotEqual);
     AddOperation(L"<", Less);
     AddOperation(L">", Greater);
+    AddOperation(L"<=", LessEqual);
+    AddOperation(L">=", GreaterEqual);
+    AddOperation(L"%", Modulo);
   }
 
   ~FloatClass() {
@@ -166,10 +176,13 @@ public:
   static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Divide(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Modulo(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Less(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 };
 
 #endif

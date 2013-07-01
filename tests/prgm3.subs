@@ -13,7 +13,16 @@
   dump i;
   dump a;
   dump g;
-#	a = true & true & true;
-#  dump a;
-#	b = false | false | true;
+
+  
+  x = 12;
+  i = 0;
+  while(i < 15) {
+    x = x % 7;
+    i += 1;
+  };
+  dump x;
+  
+  r = x <= 5;
+  dump r;
 }

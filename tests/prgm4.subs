@@ -1,4 +1,6 @@
 {
+  topCandidate = 50;
+  
   candidate = 2;
   while(candidate <= topCandidate) {
     trialDivisor = 2;
@@ -6,12 +8,12 @@
 				
     found = true;
     while(trialDivisor * trialDivisor <= candidate & found) {
-      if(candidate % trialDivisor = 0) {
+      if(candidate % trialDivisor == 0) {
         prime = 0;
         found = false;
       }
       else {
-        trialDivisor = trialDivisor + 1;
+        trialDivisor += 1;
       };
     };
     
