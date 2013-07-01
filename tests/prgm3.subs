@@ -3,12 +3,15 @@
   a = false;
   b = 1;
   c = 3;
+  g = 0;
   while(i < 15) {    
-    i += 1;
-    a = true & b < c & true;
+    i += 1;   
+    a = true & b > c & true;
+    g = i / 2;
   };
   dump i;
   dump a;
+  dump g;
 #	a = true & true & true;
 #  dump a;
 #	b = false | false | true;
