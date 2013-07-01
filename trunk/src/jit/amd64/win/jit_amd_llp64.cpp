@@ -1152,7 +1152,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			AddImm(0);
 
 			// add guard code if not jumping to the end-of-lopp
-			if(instr->GetOperand() != block_instrs.back()->GetOperand()) {
+			if(instr->GetOperand() != end_label) {
 				Epilog(instr->GetOperand3() < 0 ? instr->GetOperand() : instr->GetOperand3());
 			}
     }    
