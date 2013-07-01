@@ -684,7 +684,7 @@ namespace jit {
       if(!compile_success) {
         return NULL;
       }
-			Epilog(block_instrs.back()->GetOperand());
+			Epilog(-1);
 
 			// show content
 			unordered_map<int32_t, JitInstruction*>::iterator iter;
