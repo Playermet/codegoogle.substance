@@ -240,13 +240,7 @@ void Runtime::Run()
           jit::JitCompiler compiler(jit_instrs, jump_table, label_start);
           const INT_T guard_label = compiler.Execute(frame, NULL, NULL);
           // TODO: manage error codes
-/*
-          if(guard_label < 0) {
-            wcerr << L">>> Error executing native code <<<" << endl;
-            exit(1);
-          }
-*/
-          ip = jump_table[guard_label];
+          ip = guard_label == -1 ? ip + 1 : guard_label;
           // reset
           is_recording = first_jmp = is_jump = false;
           jit_base_label = last_label_id;
@@ -278,12 +272,13 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value ? 1 : 0));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value, -1));
             first_jmp = false;
           }
           else {
             jit_base_label++;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, left.value.int_value ? 0 : 1));
+            const bool jump_taken = left.value.int_value;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
@@ -306,12 +301,13 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, !left.value.int_value ? 1 : 0));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, !left.value.int_value, -1));
             first_jmp = false;
           }
           else {
             jit_base_label++;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !left.value.int_value ? 0 : 1));
+            const bool jump_taken = !left.value.int_value;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }

@@ -1149,7 +1149,7 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 
 			// add guard code if not jumping to the end-of-lopp
 			if(instr->GetOperand() != block_instrs.back()->GetOperand()) {
-				Epilog(instr->GetOperand());
+				Epilog(instr->GetOperand3() < 0 ? instr->GetOperand() : instr->GetOperand3());
 			}
     }    
   }
@@ -1529,7 +1529,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
 
 		// add guard code if not jumping to the end-of-lopp
 		if(next_instr->GetOperand() != block_instrs.back()->GetOperand()) {
-			Epilog(next_instr->GetOperand());
+			Epilog(next_instr->GetOperand3() < 0 ? next_instr->GetOperand() : next_instr->GetOperand3());
 		}
     
     return true;
