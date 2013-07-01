@@ -1,11 +1,12 @@
 {
   i = 0;
   a = false;
-  b = 1;
-  c = 3;
+  b = 5;
+  c = 3.5;
   g = 0;
   while(i < 15) {    
     i += 1;   
+#    a = true & b > c & true;
     a = true & b > c & true;
     g = i / 2;
   };

@@ -679,6 +679,7 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
 		working_stack.push_front(left);
 		ProcessFloatToInt();
 		left = working_stack.front();
+    working_stack.pop_front();
 		break;
 
 	default:
@@ -695,6 +696,7 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
 		working_stack.push_front(right);
 		ProcessFloatToInt();
 		right = working_stack.front();
+    working_stack.pop_front();
 		break;
 
 	default:
@@ -844,6 +846,7 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 		working_stack.push_front(left);
 		ProcessIntToFloat();
 		left = working_stack.front();
+    working_stack.pop_front();
 		break;
 
 	default:
@@ -860,6 +863,7 @@ void JitCompiler::ProcessFloatCalculation(JitInstruction* instruction) {
 		working_stack.push_front(right);
 		ProcessIntToFloat();
 		right = working_stack.front();
+    working_stack.pop_front();
 		break;
 
 	default:
