@@ -1333,7 +1333,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
     //
     // jump if true
     //
-    if(!next_instr->GetOperand2()) {
+    if(next_instr->GetOperand2()) {
       switch(type) {
       case LES_INT:	
 #ifdef _DEBUG
