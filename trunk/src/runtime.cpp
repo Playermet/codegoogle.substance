@@ -153,6 +153,7 @@ void Runtime::Run()
       // record JIT instructions
       if(is_recording) {
         switch(left.type) {
+        case BOOL_VALUE:
         case INT_VALUE:
           jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
           break;
@@ -178,6 +179,7 @@ void Runtime::Run()
         // ensure the type hasn't changed
         if(frame[instruction->operand1].type == left.type) {
           switch(right.type) {
+          case BOOL_VALUE:
           case INT_VALUE:
             jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_VAR, instruction->operand1, jit::LOCL));
             break;
@@ -277,8 +279,8 @@ void Runtime::Run()
           }
           else {
             jit_base_label++;
-            const bool jump_taken = left.value.int_value;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, ip));
+            const bool jump_taken = left.value.int_value ? true : false;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, (long)ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
@@ -306,8 +308,8 @@ void Runtime::Run()
           }
           else {
             jit_base_label++;
-            const bool jump_taken = !left.value.int_value;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, ip));
+            const bool jump_taken = !left.value.int_value ? true : false;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, (long)ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
