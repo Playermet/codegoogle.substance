@@ -278,7 +278,7 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value ? 0 : 1));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value ? 1 : 0));
             first_jmp = false;
           }
           else {
@@ -306,7 +306,7 @@ void Runtime::Run()
         // record JIT instructions
         if(is_recording) {
           if(first_jmp) {
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, !left.value.int_value ? 0 : 1));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, !left.value.int_value ? 1 : 0));
             first_jmp = false;
           }
           else {
