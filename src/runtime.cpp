@@ -411,10 +411,7 @@ void Runtime::Run()
       case FLOAT_VALUE:
         wcout << L"type=float, value=" << left.value.float_value << endl;
         break;
-
-      case RTRN:
-        break;
-        
+				
       default:
         wcerr << L"Invalid dump value" << endl;
         exit(1);

@@ -1100,50 +1100,46 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			AddImm(0);
     }
     else {
-      RegInstr* left = working_stack.front();
-      working_stack.pop_front(); 
+			RegInstr* left = working_stack.front();
+      working_stack.pop_front();
 
       switch(left->GetType()) {
-      RegInstr* left = working_stack.front();
-      working_stack.pop_front(); 
-
-      switch(left->GetType()) {
-      case IMM_INT:{
-        RegisterHolder* holder = GetRegister();
-        move_imm_reg(left->GetOperand(), holder->GetRegister());
-        cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
-        ReleaseRegister(holder);
-      }
-        break;
+			case IMM_INT:{
+				RegisterHolder* holder = GetRegister();
+				move_imm_reg(left->GetOperand(), holder->GetRegister());
+				cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
+				ReleaseRegister(holder);
+			}
+				break;
         
-      case REG_INT:
-        cmp_imm_reg(!instr->GetOperand2(), left->GetRegister()->GetRegister());
-        ReleaseRegister(left->GetRegister());
-        break;
+			case REG_INT:
+				cmp_imm_reg(!instr->GetOperand2(), left->GetRegister()->GetRegister());
+				ReleaseRegister(left->GetRegister());
+				break;
 
-      case MEM_INT: {
+			case MEM_INT: {
 				RegisterHolder* holder = GetRegister();
 				move_mem_reg(FRAME, RBP, holder->GetRegister());
 				add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
 				move_mem_reg(0, holder->GetRegister(), holder->GetRegister());				
-        cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
-        ReleaseRegister(holder);
-      }
-        break;
+				cmp_imm_reg(!instr->GetOperand2(), holder->GetRegister());
+				ReleaseRegister(holder);
+			}
+				break;
         
-      default:
-        wcerr << L">>> Should never occur (compiler bug?) type=" << left->GetType() << L" <<<" << endl;
-        exit(1);
-        break;
-      }
+			default:
+				wcerr << L">>> Should never occur (compiler bug?) type=" << left->GetType() << L" <<<" << endl;
+				exit(1);
+				break;
+			}
 			
-      // 1 byte compare with register
-      AddMachineCode(0x0f);
-      AddMachineCode(0x84);
+			// 1 byte compare with register
+			AddMachineCode(0x0f);
+			AddMachineCode(0x84);
       
-      // clean up
-      delete left;
-      left = NULL;
+			// clean up
+			delete left;
+			left = NULL;
 
 			// store update index
 			native_jump_table.insert(pair<long, JitInstruction*>(code_index, instr));
@@ -1154,8 +1150,9 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			if(instr->GetOperand() != block_instrs.back()->GetOperand()) {
 				Epilog(instr->GetOperand());
 			}
-    }    
-  }
+		}    
+	}
+		
 	else {
 		skip_jump = false;
 	}
