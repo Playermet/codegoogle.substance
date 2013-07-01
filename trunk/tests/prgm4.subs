@@ -1,0 +1,23 @@
+{
+  candidate = 2;
+  while(candidate <= topCandidate) {
+    trialDivisor = 2;
+    prime = 1;
+				
+    found = true;
+    while(trialDivisor * trialDivisor <= candidate & found) {
+      if(candidate % trialDivisor = 0) {
+        prime = 0;
+        found = false;
+      }
+      else {
+        trialDivisor = trialDivisor + 1;
+      };
+    };
+    
+    if(found) {
+      dump candidate;
+    };
+    candidate += 1;
+  };
+}
