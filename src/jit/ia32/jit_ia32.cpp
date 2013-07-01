@@ -1354,7 +1354,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case EQL_INT:
-			case EQL_FLOAT:
+      case EQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [je]" << std::endl;
 #endif
@@ -1362,7 +1362,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case NEQL_INT:
-			case NEQL_FLOAT:
+      case NEQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jne]" << std::endl;
 #endif
@@ -1375,7 +1375,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
 #endif
         AddMachineCode(0x8e);
         break;
-        
+
       case GTR_EQL_INT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jge]" << std::endl;
@@ -1383,24 +1383,24 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         AddMachineCode(0x8d);
         break;
 
-			case LES_FLOAT:
-				AddMachineCode(0x87);
-				break;
-				
-			case GTR_FLOAT:
-				AddMachineCode(0x87);
-				break;
+      case LES_FLOAT:
+        AddMachineCode(0x87);
+        break;
 
-			case LES_EQL_FLOAT:
-				AddMachineCode(0x83);
-				break;
-				
-			case GTR_EQL_FLOAT:
-				AddMachineCode(0x83);
-				break;
-				
+      case GTR_FLOAT:
+        AddMachineCode(0x87);
+        break;
+
+      case LES_EQL_FLOAT:
+        AddMachineCode(0x83);
+        break;
+
+      case GTR_EQL_FLOAT:
+        AddMachineCode(0x83);
+        break;
+
       default:
-				break;
+        break;
       }  
     }
     //
@@ -1423,7 +1423,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case EQL_INT:
-			case EQL_FLOAT:
+      case EQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jne]" << std::endl;
 #endif
@@ -1431,7 +1431,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         break;
 
       case NEQL_INT:
-			case NEQL_FLOAT:
+      case NEQL_FLOAT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [je]" << std::endl;
 #endif
@@ -1444,7 +1444,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
 #endif
         AddMachineCode(0x8f);
         break;
-        
+
       case GTR_EQL_INT:
 #ifdef _DEBUG
         std::wcout << L"  " << (++instr_count) << L": [jl]" << std::endl;
@@ -1452,23 +1452,24 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
         AddMachineCode(0x8c);
         break;
 
-			case LES_FLOAT:
-				AddMachineCode(0x86);
-				break;
-				
-			case GTR_FLOAT:
-				AddMachineCode(0x86);
-				break;
+      case LES_FLOAT:
+        AddMachineCode(0x86);
+        break;
 
-			case LES_EQL_FLOAT:
-				AddMachineCode(0x82);
-				break;
-				
-			case GTR_EQL_FLOAT:
-				AddMachineCode(0x82);
-				
+      case GTR_FLOAT:
+        AddMachineCode(0x86);
+        break;
+
+      case LES_EQL_FLOAT:
+        AddMachineCode(0x82);
+        break;
+
+      case GTR_EQL_FLOAT:
+        AddMachineCode(0x82);
+        break;
+
       default:
-				break;
+        break;
       }  
     }    
     // store update index
@@ -1477,11 +1478,11 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
     AddImm(0);
     skip_jump = true;
 
-		// add guard code if not jumping to the end-of-lopp
-		if(next_instr->GetOperand() != block_instrs.back()->GetOperand()) {
-			Epilog(next_instr->GetOperand3() < 0 ? next_instr->GetOperand() : next_instr->GetOperand3());
-		}
-    
+    // add guard code if not jumping to the end-of-lopp
+    if(next_instr->GetOperand() != end_label) {
+      Epilog(next_instr->GetOperand3() < 0 ? next_instr->GetOperand() : next_instr->GetOperand3());
+    }
+
     return true;
   }
 

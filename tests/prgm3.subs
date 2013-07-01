@@ -1,28 +1,13 @@
 {
+  j = 0;
   i = 0;
-  a = false;
-  b = 5;
-  c = 3.5;
-  g = 0;
-  while(i < 15) {    
-    i += 1;   
-#    a = true & b > c & true;
-    a = true & b > c & true;
-    g = i / 2;
-  };
-  dump i;
-  dump a;
-  dump g;
-
-  
-  x = 12;
-  i = 0;
-  while(i < 15) {
-    x = x % 7;
+  while(i < 25) {
     i += 1;
+    j = 0;
+    while(j < 100) {
+      j += i + 33;
+    };
   };
-  dump x;
-  
-  r = x <= 5;
-  dump r;
+  dump j;
+  dump i;
 }
