@@ -742,7 +742,13 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
     case REG_INT: {
       RegisterHolder* lhs = right->GetRegister();
       RegisterHolder* rhs = GetRegister();
-      move_mem_reg(left->GetOperand(), EBP, rhs->GetRegister());
+
+      // move_mem_reg(left->GetOperand(), EBP, rhs->GetRegister());
+			// RegisterHolder* holder = GetRegister();
+      move_mem_reg(FRAME, EBP, rhs->GetRegister());
+      add_imm_reg(left->GetOperand() + VALUE_OFFSET, rhs->GetRegister());
+      move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());
+			
       math_reg_reg(lhs->GetRegister(), rhs->GetRegister(), instruction->GetType());
       ReleaseRegister(lhs);
       working_stack.push_front(new RegInstr(rhs));
