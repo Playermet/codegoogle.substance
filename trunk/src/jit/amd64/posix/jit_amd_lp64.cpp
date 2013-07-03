@@ -1514,6 +1514,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
 		
 	  case GTR_EQL_FLOAT:
 		AddMachineCode(0x82);
+    break;
 		
       default:
 	    break;
