@@ -1,5 +1,7 @@
 # ARGS=-O3 -pthread -Wall -Wno-unused-function
-ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+# ARGS=-O3 -D_NO_JIT -pthread -Wall -Wno-unused-function
+# ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+ARGS=-g -D_DEBUG -D_NO_JIT -Wall -Wall -Wno-unused-function
 
 CC=g++
 SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 

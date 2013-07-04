@@ -56,6 +56,7 @@ namespace runtime {
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
 		// JIT recording
+		INT_T current_jit_label;
 		bool is_recording;
 		bool is_jump;
 		INT_T jump_dest;

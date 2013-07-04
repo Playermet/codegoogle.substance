@@ -112,12 +112,21 @@ enum InstructionType {
   RTRN
 };
 
-typedef struct _Instruction {
+class Instruction {
+ public:
+	Instruction() {
+		native_code = false;
+	}
+
+	~Instruction() {
+	}
+
   InstructionType type;
   INT_T operand1;
   INT_T operand2;
   FLOAT_T operand3;
-} Instruction;
+	bool native_code;
+};
 
 /****************************
  * Runtime types and values
