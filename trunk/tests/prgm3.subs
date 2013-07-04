@@ -1,10 +1,13 @@
 {
   j = 0;
   i = 0;
-  while(i < 25) {
+  while(i < 100) {
     i += 1;
     j = 0;
-    while(j < 100) {
+    while(j < 3) {
+			if(i < j & false) {
+				i = i;
+			};
       j += i + 33;
     };
   };
