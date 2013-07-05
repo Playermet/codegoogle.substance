@@ -255,8 +255,7 @@ Statement* Parser::ParseStatement(int depth)
 }
 
 /****************************
- * Parses an 'if/else' 
- * statement.
+ * Parses a declaration
  ****************************/
 Statement* Parser::ParseDeclaration(int depth)
 {
