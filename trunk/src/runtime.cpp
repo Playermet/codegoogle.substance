@@ -137,7 +137,7 @@ void Runtime::Run()
     case LOAD_FLOAT_LIT:
       left.type = FLOAT_VALUE;
       left.klass = FloatClass::Instance();
-      left.value.float_value = instruction->operand3;
+      left.value.float_value = instruction->operand4;
 #ifdef _DEBUG
       wcout << L"LOAD_FLOAT_LIT: value=" << left.value.float_value << endl;
 #endif
@@ -214,7 +214,7 @@ void Runtime::Run()
 				instruction->operand2++;
 			}
 			// if threshold is reached start recording
-			if(instruction->operand2 >= HIT_THRESHOLD) {
+			if(!is_recording && instruction->operand2 >= HIT_THRESHOLD) {
 				if(instruction->native_code) {
 #ifdef _DEBUG	
 					wcout << L"========== NATIVE CODE: id=" << instruction->operand1 << L"==========" << endl;
@@ -222,7 +222,8 @@ void Runtime::Run()
 					jit::jit_fun_ptr jit_fun = instruction->native_code;
 					const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
 					// TODO: manage error codes
-					ip = guard_label == -1 ? instruction->operand2 : guard_label;
+					ip = guard_label == -1 ? instruction->operand3 : guard_label;
+					is_jump = false;
 				}
 				else {
 #ifdef _DEBUG
@@ -266,7 +267,7 @@ void Runtime::Run()
 							exit(1);
 						}
 						jit_start_label->native_code = jit_fun;	
-						jit_start_label->operand2 = ip + 1;
+						jit_start_label->operand3 = ip + 1;
 						// reset
 						is_recording = first_jmp = false;
 						jit_base_label = last_label_id;
@@ -275,15 +276,19 @@ void Runtime::Run()
 				}
 				else {
 					is_jump = jump_table[instruction->operand1] < ip;
-				}
+				}				
 #endif
         ip = jump_table[instruction->operand1];
         break;
 				
         // jump true
       case JMP_TRUE:
+				is_jump = false;
 #ifdef _DEBUG
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
+				if(instruction->operand1 == -2147483646) {
+					wcout << L"Foo" << endl;
+				}
 #endif
         left = PopValue();
         if(left.type != BOOL_VALUE) {
@@ -316,8 +321,12 @@ void Runtime::Run()
 
         // jump false
       case JMP_FALSE:
+				is_jump = false;
 #ifdef _DEBUG
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
+				if(instruction->operand1 == -2147483646) {
+					wcout << L"Foo" << endl;
+				}
 #endif
         left = PopValue();
         if(left.type != BOOL_VALUE) {

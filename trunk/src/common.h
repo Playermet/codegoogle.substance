@@ -130,7 +130,8 @@ class Instruction {
   InstructionType type;
   INT_T operand1;
   INT_T operand2;
-  FLOAT_T operand3;
+	INT_T operand3;
+  FLOAT_T operand4;
 	jit::jit_fun_ptr native_code;
 };
 
