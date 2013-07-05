@@ -262,9 +262,18 @@ Statement* Parser::ParseDeclaration(int depth)
 {
 	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
+
+#ifdef _DEBUG
+	Show(L"Var", depth);
+#endif
 	
 	NextToken();
 
+	// variable assignment
+	if(Match(TOKEN_IDENT) && Match(TOKEN_ASSIGN, SECOND_INDEX)) {
+		return ParseAssignment(depth + 1);
+	}
+	
 	if(!Match(TOKEN_IDENT)) {
 		ProcessError(TOKEN_IDENT);
 		return NULL;
