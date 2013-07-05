@@ -222,7 +222,12 @@ Statement* Parser::ParseStatement(int depth)
   case TOKEN_WHILE_ID:
     statement = ParseWhile(depth + 1);
     break;
-    
+
+		// var
+	case TOKEN_VAR_ID:
+		statement = ParseDeclaration(depth + 1);
+		break;
+		    
     // value dump
   case TOKEN_DUMP_ID: {
 #ifdef _DEBUG
@@ -247,6 +252,33 @@ Statement* Parser::ParseStatement(int depth)
   NextToken();
   
   return statement;
+}
+
+/****************************
+ * Parses an 'if/else' 
+ * statement.
+ ****************************/
+Statement* Parser::ParseDeclaration(int depth)
+{
+	const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+	
+	NextToken();
+
+	if(!Match(TOKEN_IDENT)) {
+		ProcessError(TOKEN_IDENT);
+		return NULL;
+	}
+	const wstring identifier = scanner->GetToken()->GetIdentifier();
+	NextToken(); 
+		
+	if(symbol_table.HasEntry(identifier)) {
+		ProcessError(L"Variable already declared in this scope");
+		return NULL;
+	}	
+	symbol_table.AddEntry(identifier); 
+	
+	return TreeFactory::Instance()->MakeDeclarationStatement(file_name, line_num, identifier);
 }
 
 /****************************

@@ -80,6 +80,7 @@ Scanner::~Scanner()
  ****************************/
 void Scanner::LoadKeywords()
 {
+	ident_map[L"var"] = TOKEN_VAR_ID;
 	ident_map[L"if"] = TOKEN_IF_ID;
   ident_map[L"else"] = TOKEN_ELSE_ID;
 	ident_map[L"while"] = TOKEN_WHILE_ID;
@@ -105,6 +106,7 @@ void Scanner::CheckIdentifier(int index)
   switch(ident_type) {
   case TOKEN_TRUE_LIT:
   case TOKEN_FALSE_LIT:
+	case TOKEN_VAR_ID:
 	case TOKEN_IF_ID:
   case TOKEN_ELSE_ID:
 	case TOKEN_WHILE_ID:

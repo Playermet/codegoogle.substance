@@ -446,6 +446,7 @@ namespace compiler {
 	  IF_ELSE_STATEMENT,
 	  WHILE_STATEMENT,
     FOR_STATEMENT,
+		DECLARATION_STATEMENT,
     DUMP_STATEMENT
   };
 
@@ -487,7 +488,25 @@ namespace compiler {
       statements.push_back(s);
     }
   };
-
+	
+	/****************************
+   * Declaration statement
+   ****************************/
+  class Declaration : public Statement {
+    friend class TreeFactory;
+		wstring identifier;
+		
+   public:
+		Declaration(const wstring &file_name, const unsigned int line_num, const wstring &identifier) 
+			: Statement(file_name, line_num) {
+			this->identifier = identifier;
+    }
+		
+    const StatementType GetStatementType() {
+      return DECLARATION_STATEMENT;
+    }
+  };
+		
   /****************************
    * Dump statement
    ****************************/
@@ -758,9 +777,16 @@ namespace compiler {
       statements.push_back(tmp);
       return tmp;
     }
-  
+
+		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, 
+																					const wstring &variable) {
+      Declaration* tmp = new Declaration(file_name, line_num, variable);
+      statements.push_back(tmp);
+      return tmp;
+    }
+		
     CalculatedExpression* MakeCalculatedExpression(const wstring &file_name, const unsigned int line_num, 
-																								   ExpressionType type) {
+																									 ExpressionType type) {
       CalculatedExpression* tmp = new CalculatedExpression(file_name, line_num, type);
       expressions.push_back(tmp);
       return tmp;
