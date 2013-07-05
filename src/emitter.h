@@ -104,7 +104,7 @@ namespace compiler {
     static Instruction* MakeInstruction(InstructionType type, double operand) {
       Instruction* instruction = new Instruction;
       instruction->type = type;
-      instruction->operand3 = operand;
+      instruction->operand4 = operand;
       instruction_factory.push_back(instruction);
     
       return instruction;
