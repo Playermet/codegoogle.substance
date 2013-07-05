@@ -1,24 +1,10 @@
 {
-#~
-  i = 0;
-  while(i < 400) {
-    i += 1;
-    if(i == 14) {
-      i += 1100;
-    };
-  };
+	i = 0;
+	count = 0;
+	while(i < 13) {
+		i += 0.5;
+		count += 1;
+	};
   dump i;
-~#
-  a = 13;
-  b = 7;  
-  i = 0;
-  while(i < 15) {
-    b += a * a + i;
-    if(b != 176) {
-      x = 2;
-      b = 10 + x + i;
-    };
-    i += 1;
-  }; 
-  dump b + 3;
+  dump count;
 }

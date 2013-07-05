@@ -198,14 +198,16 @@ void Runtime::Run()
             exit(1);
           }
         }
+#ifndef _NO_JIT
         // TODO: proper reset
         else {
 #ifdef _DEBUG
-          // wcout << L"=== TERMINATED RECORDING: label=" << recording_start_instruction->operand1 << L" ===" << endl;
+					wcout << L"=== TERMINATED RECORDING: label=" << jit_jump_labels.top()->operand1 << L" ===" << endl;
 #endif
           is_recording = first_jmp = is_jump = false;
           ClearJitInstructions();          
         }
+#endif
       }
       break;
 

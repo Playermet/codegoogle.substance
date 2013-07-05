@@ -1,6 +1,6 @@
 {
 #    topCandidate = 1000000;
-  topCandidate = 30;
+  topCandidate = 900000;
   
   candidate = 2;
   while(candidate <= topCandidate) {
