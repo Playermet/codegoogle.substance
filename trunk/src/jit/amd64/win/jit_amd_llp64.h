@@ -1076,8 +1076,6 @@ namespace jit {
       for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
         JitInstruction* instr = iter->second;
         long src_offset = iter->first;
-        // long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
-        // long dest_offset = block_instrs[dest_index]->GetOffset();
         long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
         long offset = dest_offset - src_offset - 4;
         memcpy(&code[src_offset], &offset, 4); 

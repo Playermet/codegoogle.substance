@@ -94,9 +94,7 @@ void Parser::ProcessError(const wstring &msg, ScannerTokenType sync)
 #endif
 
   const wstring &str_line_num = ToString(GetLineNumber());
-  errors.insert(pair<int, wstring>(GetLineNumber(),
-				   GetFileName() + L":" + str_line_num +
-				   L": " + msg));
+  errors.insert(pair<int, wstring>(GetLineNumber(), GetFileName() + L":" + str_line_num + L": " + msg));
   ScannerTokenType token = GetToken();
   while(token != sync && token != TOKEN_END_OF_STREAM) {
     NextToken();
@@ -152,6 +150,54 @@ StatementList* Parser::Parse()
     return block;
   }
   
+  return NULL;
+}
+
+/****************************
+ * Parses a function
+ ****************************/
+Function* Parser::ParseFunction(int depth)
+{
+  if(!Match(TOKEN_IDENT )) {
+		ProcessError(TOKEN_IDENT);
+		return NULL;
+	}
+  const wstring &function_name = scanner->GetToken()->GetIdentifier();
+	NextToken();
+
+
+  return NULL;
+}
+
+/****************************
+ * Parses a parameter list
+ ****************************/
+ExpressionList* Parser::ParseParameters(int depth)
+{
+  if(!Match(TOKEN_OPEN_PAREN)) {
+		ProcessError(TOKEN_OPEN_PAREN);
+		return NULL;
+	}
+  NextToken();
+
+  while(Match(TOKEN_IDENT)) {
+    const wstring identifier = scanner->GetToken()->GetIdentifier();
+	  NextToken(); 
+
+    if(Match(TOKEN_COMMA)) {
+      NextToken();
+      if(Match(TOKEN_CLOSED_PAREN)) {
+        ProcessError(TOKEN_CLOSED_PAREN);
+      }
+    }
+  }
+
+  if(!Match(TOKEN_CLOSED_PAREN)) {
+		ProcessError(TOKEN_CLOSED_PAREN);
+		return NULL;
+	}
+  NextToken();
+
   return NULL;
 }
 
@@ -754,7 +800,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
     NextToken();
     expression = ParseReference(identifier, depth + 1);
   }
-  else if(Match(TOKEN_THIS_ID)) {
+  else if(Match(TOKEN_SELF_ID)) {
     NextToken();
     expression = ParseReference(depth + 1);
   }

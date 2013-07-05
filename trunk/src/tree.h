@@ -112,6 +112,19 @@ namespace compiler {
   };
 
   /****************************
+   * Function class
+   ****************************/
+  class Function : public ParseNode {
+
+  public:
+    Function(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
+    }
+
+    ~Function() {
+    }
+  };
+
+  /****************************
    * CharacterString class
    ****************************/
   class CharacterString : public Expression {
