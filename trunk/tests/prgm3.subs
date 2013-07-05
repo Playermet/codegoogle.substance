@@ -5,7 +5,7 @@
     i += 1;
     j = 0;
     while(j < 3) {
-      if(i < j & false) {
+      if(i < 50 & false) {
         i = i;
       };
       j += 2;
