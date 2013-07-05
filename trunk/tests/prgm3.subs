@@ -8,7 +8,7 @@
 			if(i < j & false) {
 				i = i;
 			};
-      j += i + 33;
+      j += 2;
     };
   };
   dump j;

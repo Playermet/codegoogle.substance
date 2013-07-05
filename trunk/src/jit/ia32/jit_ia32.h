@@ -634,92 +634,7 @@ namespace jit {
       aval_xregs.push_back(h);
       used_xregs.remove(h);
     }
-
-		// Compiles byte code into machine code
-		jit_fun_ptr Compile() {
-      compile_success = false;
-      code_buf_max = PAGE_SIZE;
-#ifdef _WIN32
-      code = (unsigned char*)malloc(code_buf_max);
-      floats = new double[MAX_DBLS];
-#else
-      if(posix_memalign((void**)&code, PAGE_SIZE, code_buf_max)) {
-        wcerr << L"Unable to allocate JIT memory!" << endl;
-        exit(1);
-      }
-
-      if(posix_memalign((void**)&floats, PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
-        wcerr << L"Unable to allocate JIT memory!" << endl;
-        exit(1);
-      }
-#endif
-
-      floats_index = instr_index = code_index = instr_count = 0;
-      // general use registers
-      aval_regs.push_back(new RegisterHolder(EDX));
-      aval_regs.push_back(new RegisterHolder(ECX));
-      aval_regs.push_back(new RegisterHolder(EBX));
-      aval_regs.push_back(new RegisterHolder(EAX));
-      // aux general use registers
-      aux_regs.push(new RegisterHolder(EDI));
-      aux_regs.push(new RegisterHolder(ESI));
-      // floating point registers
-      aval_xregs.push_back(new RegisterHolder(XMM7));
-      aval_xregs.push_back(new RegisterHolder(XMM6));
-      aval_xregs.push_back(new RegisterHolder(XMM5));
-      aval_xregs.push_back(new RegisterHolder(XMM4)); 
-      aval_xregs.push_back(new RegisterHolder(XMM3));
-      aval_xregs.push_back(new RegisterHolder(XMM2)); 
-      aval_xregs.push_back(new RegisterHolder(XMM1));
-      aval_xregs.push_back(new RegisterHolder(XMM0));   
-#ifdef _DEBUG
-			wcout << L"========================================" << endl;
-      wcout << L"==== Compiling block for IA-32 host ====" << endl;
-			wcout << L"========================================" << endl;
-#endif
-      // TODO: map referenced variables to stack references; impact memory manager
-      ProcessIndices();
-      Prolog();
-      ProcessInstructions();
-      if(!compile_success) {
-        return NULL;
-      }
-			Epilog(-1);
-
-			// show content
-			unordered_map<int32_t, JitInstruction*>::iterator iter;
-			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
-				JitInstruction* instr = iter->second;
-				int32_t src_offset = iter->first;
-				// int32_t dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
-				// int32_t dest_offset = block_instrs[dest_index]->GetOffset();
-				int32_t dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
-				int32_t offset = dest_offset - src_offset - 4;
-				memcpy(&code[src_offset], &offset, 4); 
-#ifdef _DEBUG
-				wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset 
-							<< L"; dest=" << dest_offset << endl;
-#endif
-			}
-#ifdef _DEBUG
-			wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" 
-						<< code_buf_max << L" byte(s)" << endl;
-#endif
-
-#ifndef _WIN32
-			if(mprotect(code, code_index, PROT_EXEC | PROT_WRITE)) {
-				perror("Couldn't mprotect");
-				exit(errno);
-			}
-#endif
-
-#ifdef _DEBUG
-			wcout << L"--------------------------" << endl;
-#endif
-			
-      return (jit_fun_ptr)code;
-    }
-
+		
     // move instructions
     void move_reg_mem8(Register src, int32_t offset, Register dest);
     void move_mem8_reg(int32_t offset, Register src, Register dest);
@@ -836,7 +751,7 @@ namespace jit {
 
     // generates a conditional jump
     bool cond_jmp(JitInstructionType type);
-
+		
   public:
     JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T end_label) {
       this->block_instrs = block_instrs;
@@ -889,7 +804,93 @@ namespace jit {
 				tmp = NULL;
 			}
     }
-		
+
+		// Compiles byte code into machine code
+		jit_fun_ptr Compile() {
+      compile_success = false;
+      code_buf_max = PAGE_SIZE;
+#ifdef _WIN32
+      code = (unsigned char*)malloc(code_buf_max);
+      floats = new double[MAX_DBLS];
+#else
+      if(posix_memalign((void**)&code, PAGE_SIZE, code_buf_max)) {
+        wcerr << L"Unable to allocate JIT memory!" << endl;
+        exit(1);
+      }
+
+      if(posix_memalign((void**)&floats, PAGE_SIZE, sizeof(double) * MAX_DBLS)) {
+        wcerr << L"Unable to allocate JIT memory!" << endl;
+        exit(1);
+      }
+#endif
+
+      floats_index = instr_index = code_index = instr_count = 0;
+      // general use registers
+      aval_regs.push_back(new RegisterHolder(EDX));
+      aval_regs.push_back(new RegisterHolder(ECX));
+      aval_regs.push_back(new RegisterHolder(EBX));
+      aval_regs.push_back(new RegisterHolder(EAX));
+      // aux general use registers
+      aux_regs.push(new RegisterHolder(EDI));
+      aux_regs.push(new RegisterHolder(ESI));
+      // floating point registers
+      aval_xregs.push_back(new RegisterHolder(XMM7));
+      aval_xregs.push_back(new RegisterHolder(XMM6));
+      aval_xregs.push_back(new RegisterHolder(XMM5));
+      aval_xregs.push_back(new RegisterHolder(XMM4)); 
+      aval_xregs.push_back(new RegisterHolder(XMM3));
+      aval_xregs.push_back(new RegisterHolder(XMM2)); 
+      aval_xregs.push_back(new RegisterHolder(XMM1));
+      aval_xregs.push_back(new RegisterHolder(XMM0));   
+#ifdef _DEBUG
+			wcout << L"========================================" << endl;
+      wcout << L"==== Compiling block for IA-32 host ====" << endl;
+			wcout << L"========================================" << endl;
+#endif
+      // TODO: map referenced variables to stack references; impact memory manager
+      ProcessIndices();
+      Prolog();
+      ProcessInstructions();
+      if(!compile_success) {
+        return NULL;
+      }
+			Epilog(-1);
+
+			// show content
+			unordered_map<int32_t, JitInstruction*>::iterator iter;
+			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
+				JitInstruction* instr = iter->second;
+				int32_t src_offset = iter->first;
+				// int32_t dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
+				// int32_t dest_offset = block_instrs[dest_index]->GetOffset();
+				int32_t dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
+				int32_t offset = dest_offset - src_offset - 4;
+				memcpy(&code[src_offset], &offset, 4); 
+#ifdef _DEBUG
+				wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset 
+							<< L"; dest=" << dest_offset << endl;
+#endif
+			}
+#ifdef _DEBUG
+			wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" 
+						<< code_buf_max << L" byte(s)" << endl;
+#endif
+
+#ifndef _WIN32
+			if(mprotect(code, code_index, PROT_EXEC | PROT_WRITE)) {
+				perror("Couldn't mprotect");
+				exit(errno);
+			}
+#endif
+
+#ifdef _DEBUG
+			wcout << L"--------------------------" << endl;
+#endif
+			
+      return (jit_fun_ptr)code;
+    }
+
+		/*		
 		// Compiles and executes machine code
 		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
 			jit_fun_ptr jit_fun = Compile();
@@ -901,7 +902,8 @@ namespace jit {
 			}
 
 			return -1;
-		}		
+		}	
+		*/	
   };
 }
 

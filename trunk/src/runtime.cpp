@@ -74,12 +74,17 @@ void Runtime::Run()
   // runtime variables
   Value* frame = new Value[8];
   Value left, right;
-
-	// tracing JIT variables
-	const INT_T base_jit_label = last_label_id;
+	
+// tracing jit variables
+#ifndef _NO_JIT
 	stack<Instruction*> jit_jump_labels;
+  INT_T base_jit_label = last_label_id;
+	INT_T INT_T jit_end_label;
+	is_jump = false;
+#endif
 	
   // execute code
+	is_recording = false;
   size_t ip = 0;  
   Instruction* instruction = instructions[ip++];
   while(instruction->type != RTRN) {   
@@ -173,6 +178,7 @@ void Runtime::Run()
       wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
+      frame[instruction->operand1] = left;
       // record JIT instructions
       if(is_recording) {
         // ensure the type hasn't changed
@@ -193,19 +199,20 @@ void Runtime::Run()
           }
         }
       }
-      frame[instruction->operand1] = left;
       break;
 
     case LBL:			
 #ifdef _DEBUG
       wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" << instruction->operand2 
 						<< L", loop_pos=" << loop_iterations.size() <<  endl;
-#endif      
+#endif 
+			
+			// tracing jit code
+#ifndef _NO_JIT
 			// count hits to label
 			if(is_jump && instruction->operand2 < HIT_THRESHOLD) {
 				instruction->operand2++;
 			}
-
 			// if threshold is reached start recording
 			if(instruction->operand2 >= HIT_THRESHOLD) {
 				is_recording = true;
@@ -215,6 +222,7 @@ void Runtime::Run()
         wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
 #endif
 			}
+#endif
       break;
 
     case JMP:
@@ -224,20 +232,48 @@ void Runtime::Run()
 #ifdef _DEBUG
         wcout << L"JMP: unconditional, to=" << instruction->operand1 << endl;
 #endif
+
+				// tracing jit code
+#ifndef _NO_JIT
 				if(jit_jump_labels.size() > 0 && jit_jump_labels.top()->operand1 == instruction->operand1) {
 					Instruction* jit_start_label = jit_jump_labels.top();
-					if(jit_start_label->native_code) {	
-						wcout << L"========== COMPILED CODE: id=" << jit_start_label->operand1 << L"==========" << endl;
+					jit_jump_labels.pop();
+					
+					if(jit_start_label->native_code) {
+#ifdef _DEBUG	
+						wcout << L"========== NATIVE CODE: id=" << jit_start_label->operand1 << L"==========" << endl;
+#endif					
+						jit::jit_fun_ptr jit_fun = jit_start_label->native_code;
+						const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
+						// TODO: manage error codes
+						ip = guard_label == -1 ? ip + 1 : guard_label;
 					}
 					else {
 #ifdef _DEBUG
-					wcout << L"========== JIT END LABEL: id=" << jit_start_label->operand1 << L"==========" << endl;
+						wcout << L"========== JIT END LABEL: id=" << jit_start_label->operand1 << L"==========" << endl;
 #endif
+						// add ending code for JIT compiler
+						jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_start_label->operand1, JMP_UNCND));
+						jit_instrs.push_back(new jit::JitInstruction(jit::LBL, (INT_T)jit_end_label));
+						// compile into native code and execute
+						jit::JitCompiler compiler(jit_instrs, jump_table, jit_end_label);
+						jit::jit_fun_ptr jit_fun = compiler.Compile();
+						if(!jit_fun) {
+							wcerr << L">>> Unable to JIT compile trace <<<" << endl;
+							exit(1);
+						}
+						jit_start_label->native_code = jit_fun;
+						const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
+						// TODO: manage error codes
+						ip = guard_label == -1 ? ip + 1 : guard_label;
+						// reset
+						is_recording = first_jmp = false;
+						base_jit_label = last_label_id;
+						ClearJitInstructions();
 					}
-					jit_start_label->native_code = true;
-					jit_jump_labels.pop();
 				}
 				is_jump = jump_table[instruction->operand1] < ip;
+#endif
         ip = jump_table[instruction->operand1];
         break;
 				
@@ -255,6 +291,24 @@ void Runtime::Run()
         if(left.value.int_value) {
           ip = jump_table[instruction->operand1];
         }
+
+				// tracing jit code
+#ifndef _NO_JIT
+				// record JIT instructions
+        if(is_recording) {
+          if(first_jmp) {
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value, -1));
+            jit_end_label = instruction->operand1;
+            first_jmp = false;
+          }
+          else {
+            base_jit_label++;
+            const bool jump_taken = left.value.int_value ? true : false;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, base_jit_label, !jump_taken, (long)ip));
+            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, base_jit_label));            
+          }
+				}
+#endif
         break;
 
         // jump false
@@ -271,6 +325,24 @@ void Runtime::Run()
         if(!left.value.int_value) {
           ip = jump_table[instruction->operand1];
         }
+				
+				// tracing jit code
+#ifndef _NO_JIT
+				// record JIT instructions
+        if(is_recording) {
+          if(first_jmp) {
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, instruction->operand1, left.value.int_value, -1));
+            jit_end_label = instruction->operand1;
+            first_jmp = false;
+          }
+          else {
+            base_jit_label++;
+            const bool jump_taken = left.value.int_value ? true : false;
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, base_jit_label, !jump_taken, (long)ip));
+            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, base_jit_label));            
+          }
+				}
+#endif
         break;
       }
       break;
