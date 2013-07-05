@@ -64,6 +64,12 @@ namespace std {
 using namespace std;
 
 class RuntimeClass;
+class Value;
+
+// prototype for JIT function
+namespace jit {
+  typedef long (*jit_fun_ptr)(Value* frame, void* inst_mem, void* cls_mem);
+}
 
 // basic datatypes
 #define INT_T long
@@ -115,17 +121,17 @@ enum InstructionType {
 class Instruction {
  public:
 	Instruction() {
-		native_code = false;
+		native_code = NULL;
 	}
 
 	~Instruction() {
 	}
-
+	
   InstructionType type;
   INT_T operand1;
   INT_T operand2;
   FLOAT_T operand3;
-	bool native_code;
+	jit::jit_fun_ptr native_code;
 };
 
 /****************************
