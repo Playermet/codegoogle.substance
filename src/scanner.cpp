@@ -85,9 +85,9 @@ void Scanner::LoadKeywords()
   ident_map[L"else"] = TOKEN_ELSE_ID;
 	ident_map[L"while"] = TOKEN_WHILE_ID;
   ident_map[L"dump"] = TOKEN_DUMP_ID;
-  ident_map[L"this"] = TOKEN_THIS_ID;
+  ident_map[L"self"] = TOKEN_SELF_ID;
   ident_map[L"class"] = TOKEN_CLASS_ID;
-  ident_map[L"method"] = TOKEN_METHOD_ID;
+  ident_map[L"return"] = TOKEN_RETURN_ID;
   ident_map[L"true"] = TOKEN_TRUE_LIT;
   ident_map[L"false"] = TOKEN_FALSE_LIT;
 }
@@ -111,9 +111,9 @@ void Scanner::CheckIdentifier(int index)
   case TOKEN_ELSE_ID:
 	case TOKEN_WHILE_ID:
   case TOKEN_DUMP_ID:
-  case TOKEN_THIS_ID:
+  case TOKEN_SELF_ID:
   case TOKEN_CLASS_ID:
-  case TOKEN_METHOD_ID:
+  case TOKEN_RETURN_ID:
     tokens[index]->SetType(ident_type);
 		tokens[index]->SetLineNbr(line_num);
 		tokens[index]->SetFileName(file_name);

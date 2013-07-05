@@ -99,9 +99,9 @@ namespace compiler {
     TOKEN_ELSE_ID,
 	  TOKEN_WHILE_ID,
     TOKEN_DUMP_ID,
-    TOKEN_THIS_ID,
+    TOKEN_SELF_ID,
     TOKEN_CLASS_ID,
-    TOKEN_METHOD_ID,
+    TOKEN_RETURN_ID,
   };
 
   /****************************
