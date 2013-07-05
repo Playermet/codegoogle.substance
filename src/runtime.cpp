@@ -224,12 +224,17 @@ void Runtime::Run()
 #ifdef _DEBUG
         wcout << L"JMP: unconditional, to=" << instruction->operand1 << endl;
 #endif
-				if(jit_jump_labels.size() > 0 && 
-					 jit_jump_labels.top()->operand1 == instruction->operand1) {					
+				if(jit_jump_labels.size() > 0 && jit_jump_labels.top()->operand1 == instruction->operand1) {
+					Instruction* jit_start_label = jit_jump_labels.top();
+					if(jit_start_label->native_code) {	
+						wcout << L"========== COMPILED CODE: id=" << jit_start_label->operand1 << L"==========" << endl;
+					}
+					else {
 #ifdef _DEBUG
-					wcout << L"========== JIT END LABEL: id=" << jit_jump_labels.top()->operand1 
-								<< L"==========" << endl;
+					wcout << L"========== JIT END LABEL: id=" << jit_start_label->operand1 << L"==========" << endl;
 #endif
+					}
+					jit_start_label->native_code = true;
 					jit_jump_labels.pop();
 				}
 				is_jump = jump_table[instruction->operand1] < ip;
