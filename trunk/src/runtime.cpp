@@ -198,6 +198,14 @@ void Runtime::Run()
             exit(1);
           }
         }
+				// TODO: proper reset
+        else {
+#ifdef _DEBUG
+          // wcout << L"=== TERMINATED RECORDING: label=" << recording_start_instruction->operand1 << L" ===" << endl;
+#endif
+          is_recording = first_jmp = is_jump = false;
+          ClearJitInstructions();          
+        }
       }
       break;
 
@@ -212,6 +220,7 @@ void Runtime::Run()
 			// count hits to label
 			if(is_jump && instruction->operand2 < HIT_THRESHOLD) {
 				instruction->operand2++;
+				is_jump = false;
 			}
 			// if threshold is reached start recording
 			if(!is_recording && instruction->operand2 >= HIT_THRESHOLD) {
@@ -223,7 +232,7 @@ void Runtime::Run()
 					const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
 					// TODO: manage error codes
 					ip = guard_label == -1 ? instruction->operand3 : guard_label;
-					is_jump = false;
+
 				}
 				else {
 #ifdef _DEBUG
@@ -234,6 +243,7 @@ void Runtime::Run()
 					current_jit_label = jit_base_label;
 					jit_jump_labels.push(instruction);
 				}
+				is_jump = false;
 			}
 #endif
       break;
@@ -283,7 +293,6 @@ void Runtime::Run()
 				
         // jump true
       case JMP_TRUE:
-				is_jump = false;
 #ifdef _DEBUG
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 				if(instruction->operand1 == -2147483646) {
@@ -321,7 +330,6 @@ void Runtime::Run()
 
         // jump false
       case JMP_FALSE:
-				is_jump = false;
 #ifdef _DEBUG
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
 				if(instruction->operand1 == -2147483646) {
