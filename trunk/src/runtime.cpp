@@ -201,7 +201,7 @@ void Runtime::Run()
 				// TODO: proper reset
         else {
 #ifdef _DEBUG
-          // wcout << L"=== TERMINATED RECORDING: label=" << recording_start_instruction->operand1 << L" ===" << endl;
+          wcout << L"=== TERMINATED RECORDING: label=" << recording_start_instruction->operand1 << L" ===" << endl;
 #endif
           is_recording = first_jmp = is_jump = false;
           ClearJitInstructions();          
@@ -295,9 +295,6 @@ void Runtime::Run()
       case JMP_TRUE:
 #ifdef _DEBUG
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
-				if(instruction->operand1 == -2147483646) {
-					wcout << L"Foo" << endl;
-				}
 #endif
         left = PopValue();
         if(left.type != BOOL_VALUE) {
