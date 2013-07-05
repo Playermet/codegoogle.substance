@@ -5,9 +5,9 @@
     i += 1;
     j = 0;
     while(j < 3) {
-			if(i < j & false) {
-				i = i;
-			};
+      if(i < j & false) {
+        i = i;
+      };
       j += 2;
     };
   };
