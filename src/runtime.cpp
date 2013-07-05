@@ -203,6 +203,7 @@ void Runtime::Run()
 
     case LBL:			
 #ifdef _DEBUG
+			wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
       wcout << L"LBL: id=" << instruction->operand1 << L", hit_count=" << instruction->operand2 
 						<< L", loop_pos=" << loop_iterations.size() <<  endl;
 #endif 
@@ -215,12 +216,9 @@ void Runtime::Run()
 			}
 			// if threshold is reached start recording
 			if(instruction->operand2 >= HIT_THRESHOLD) {
-				is_recording = true;
+				is_recording = first_jmp = true;
 				current_jit_label = base_jit_label;
 				jit_jump_labels.push(instruction);
-#ifdef _DEBUG
-        wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
-#endif
 			}
 #endif
       break;
