@@ -843,91 +843,6 @@ namespace jit {
       used_xregs.remove(h);
     }
 
-    //
-    // Compiles stack code into AMD64 machine code
-    //
-    jit_fun_ptr Compile() {
-      compile_success = true;
-      
-      // get page size
-      SYSTEM_INFO sys_info;
-      GetSystemInfo(&sys_info);
-      code_buf_max = PAGE_SIZE = sys_info.dwPageSize;
-
-      // allocate executable memory
-      code = (unsigned char*)VirtualAlloc(NULL, code_buf_max, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-      code_index = PAGE_OFFSET;
-      floats = (double*)VirtualAlloc(NULL, MAX_DBLS, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-      floats_index = instr_index = instr_count = 0;
-
-      // general use registers
-      // aval_regs.push_back(new RegisterHolder(RDX));
-      //	aval_regs.push_back(new RegisterHolder(RCX));
-      aval_regs.push_back(new RegisterHolder(RBX));
-      aval_regs.push_back(new RegisterHolder(RAX));
-      // aux general use registers
-      aux_regs.push(new RegisterHolder(RDI));
-      aux_regs.push(new RegisterHolder(RSI));
-      aux_regs.push(new RegisterHolder(R15));
-      aux_regs.push(new RegisterHolder(R14));
-      aux_regs.push(new RegisterHolder(R13));
-      aux_regs.push(new RegisterHolder(R12));
-      aux_regs.push(new RegisterHolder(R11));
-      aux_regs.push(new RegisterHolder(R10));
-      // aux_regs.push(new RegisterHolder(R9));
-      // aux_regs.push(new RegisterHolder(R8));
-      // floating point registers
-      aval_xregs.push_back(new RegisterHolder(XMM15));
-      aval_xregs.push_back(new RegisterHolder(XMM14)); 
-      aval_xregs.push_back(new RegisterHolder(XMM13));
-      aval_xregs.push_back(new RegisterHolder(XMM12)); 
-      aval_xregs.push_back(new RegisterHolder(XMM11));
-      aval_xregs.push_back(new RegisterHolder(XMM10));   
-#ifdef _DEBUG
-      wcout << L"============================================" << endl;
-      wcout << L"=== Compiling block for AMD64 (LLP) host ===" << endl;
-      wcout << L"============================================" << endl;
-#endif
-
-      // process offsets
-      ProcessIndices();
-      // setup
-      Prolog();
-
-      move_reg_mem(RCX, FRAME, RBP);
-
-      // tranlsate program
-      ProcessInstructions();
-      if(!compile_success) {
-        return NULL;
-      }
-      Epilog(-1);
-
-      // show content
-      unordered_map<long, JitInstruction*>::iterator iter;
-      for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
-        JitInstruction* instr = iter->second;
-        long src_offset = iter->first;
-        // long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
-        // long dest_offset = block_instrs[dest_index]->GetOffset();
-        long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
-        long offset = dest_offset - src_offset - 4;
-        memcpy(&code[src_offset], &offset, 4); 
-#ifdef _DEBUG
-        wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset << L"; dest=" << dest_offset << endl;
-#endif
-      }
-#ifdef _DEBUG
-      wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" << code_buf_max << L" byte(s)" << endl;
-#endif
-
-#ifdef _DEBUG
-			wcout << L"--------------------------" << endl;
-#endif
-
-      return (jit_fun_ptr)(code + PAGE_OFFSET);
-    }
-
     // move instructions
     void move_reg_mem8(Register src, long offset, Register dest);
     void move_mem8_reg(long offset, Register src, Register dest);
@@ -1096,18 +1011,90 @@ namespace jit {
       }
     }
 
-    // Compiles and executes machine code
-    long Execute(Value* frame, void* inst_mem, void* cls_mem) {
-      jit_fun_ptr jit_fun = Compile();
-      if(jit_fun) {
-#ifdef _DEBUG
-        wcout << L"(Executing machine code...)" << endl;
-#endif
-        return (*jit_fun)(frame, NULL, NULL);
-      }
+        //
+    // Compiles stack code into AMD64 machine code
+    //
+    jit_fun_ptr Compile() {
+      compile_success = true;
+      
+      // get page size
+      SYSTEM_INFO sys_info;
+      GetSystemInfo(&sys_info);
+      code_buf_max = PAGE_SIZE = sys_info.dwPageSize;
 
-      return -1;
-    }		
+      // allocate executable memory
+      code = (unsigned char*)VirtualAlloc(NULL, code_buf_max, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+      code_index = PAGE_OFFSET;
+      floats = (double*)VirtualAlloc(NULL, MAX_DBLS, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+      floats_index = instr_index = instr_count = 0;
+
+      // general use registers
+      // aval_regs.push_back(new RegisterHolder(RDX));
+      //	aval_regs.push_back(new RegisterHolder(RCX));
+      aval_regs.push_back(new RegisterHolder(RBX));
+      aval_regs.push_back(new RegisterHolder(RAX));
+      // aux general use registers
+      aux_regs.push(new RegisterHolder(RDI));
+      aux_regs.push(new RegisterHolder(RSI));
+      aux_regs.push(new RegisterHolder(R15));
+      aux_regs.push(new RegisterHolder(R14));
+      aux_regs.push(new RegisterHolder(R13));
+      aux_regs.push(new RegisterHolder(R12));
+      aux_regs.push(new RegisterHolder(R11));
+      aux_regs.push(new RegisterHolder(R10));
+      // aux_regs.push(new RegisterHolder(R9));
+      // aux_regs.push(new RegisterHolder(R8));
+      // floating point registers
+      aval_xregs.push_back(new RegisterHolder(XMM15));
+      aval_xregs.push_back(new RegisterHolder(XMM14)); 
+      aval_xregs.push_back(new RegisterHolder(XMM13));
+      aval_xregs.push_back(new RegisterHolder(XMM12)); 
+      aval_xregs.push_back(new RegisterHolder(XMM11));
+      aval_xregs.push_back(new RegisterHolder(XMM10));   
+#ifdef _DEBUG
+      wcout << L"============================================" << endl;
+      wcout << L"=== Compiling block for AMD64 (LLP) host ===" << endl;
+      wcout << L"============================================" << endl;
+#endif
+
+      // process offsets
+      ProcessIndices();
+      // setup
+      Prolog();
+
+      move_reg_mem(RCX, FRAME, RBP);
+
+      // tranlsate program
+      ProcessInstructions();
+      if(!compile_success) {
+        return NULL;
+      }
+      Epilog(-1);
+
+      // show content
+      unordered_map<long, JitInstruction*>::iterator iter;
+      for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
+        JitInstruction* instr = iter->second;
+        long src_offset = iter->first;
+        // long dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
+        // long dest_offset = block_instrs[dest_index]->GetOffset();
+        long dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
+        long offset = dest_offset - src_offset - 4;
+        memcpy(&code[src_offset], &offset, 4); 
+#ifdef _DEBUG
+        wcout << L"jump update: id=" << instr->GetOperand() << L"; src=" << src_offset << L"; dest=" << dest_offset << endl;
+#endif
+      }
+#ifdef _DEBUG
+      wcout << L"JIT code: actual_size=" << code_index << L", buffer_size=" << code_buf_max << L" byte(s)" << endl;
+#endif
+
+#ifdef _DEBUG
+			wcout << L"--------------------------" << endl;
+#endif
+
+      return (jit_fun_ptr)(code + PAGE_OFFSET);
+    }
   };
 }
 

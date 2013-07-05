@@ -891,21 +891,6 @@ namespace jit {
 			
       return (jit_fun_ptr)code;
     }
-
-		/*		
-		// Compiles and executes machine code
-		long Execute(Value* frame, void* inst_mem, void* cls_mem) {
-			jit_fun_ptr jit_fun = Compile();
-			if(jit_fun) {
-#ifdef _DEBUG
-        wcout << L"(Executing machine code...)" << endl;
-#endif
-				return (*jit_fun)(frame, NULL, NULL);
-			}
-
-			return -1;
-		}	
-		*/	
   };
 }
 
