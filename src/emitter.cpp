@@ -96,6 +96,9 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions, jump_table);
       break;
 			
+		case DECLARATION_STATEMENT:
+			break;
+			
     case IF_ELSE_STATEMENT:
       EmitIfElse(static_cast<IfElse*>(statement), block_instructions, jump_table);
       break;

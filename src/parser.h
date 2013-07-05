@@ -190,6 +190,7 @@ namespace compiler {
 	
     // parsing operations
     StatementList* ParseBlock(bool new_scope, int depth);
+		Statement* ParseDeclaration(int depth);
 	  Statement* ParseStatement(int depth);
     Statement* ParseIfElse(int depth);
 	  Statement* ParseWhile(int depth);
