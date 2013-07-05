@@ -7,4 +7,10 @@
 	};
   dump i;
   dump count;
+
+	var a = 113;
+	if(i > 101) {
+		a = 100;
+	};
+	dump a;
 }
