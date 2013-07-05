@@ -145,9 +145,9 @@ StatementList* Parser::Parse()
   NextToken();
   
   // parse input
-  StatementList* block = ParseBlock(true, 0);
+  Function* block = ParseFunction(0);
   if(CheckErrors()) {
-    return block;
+    return NULL;
   }
   
   return NULL;
@@ -165,6 +165,9 @@ Function* Parser::ParseFunction(int depth)
   const wstring &function_name = scanner->GetToken()->GetIdentifier();
 	NextToken();
 
+  ParseParameters(depth + 1);
+
+  ParseBlock(true, 0);
 
   return NULL;
 }
