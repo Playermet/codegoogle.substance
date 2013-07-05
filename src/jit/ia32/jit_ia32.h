@@ -761,6 +761,7 @@ namespace jit {
     }
 
     ~JitCompiler() {
+			/*
 			if(code) {
 				free(code);
 				code = NULL;
@@ -770,6 +771,7 @@ namespace jit {
 				delete[] floats;
 				floats = NULL;
 			}
+			*/
 			
 			for(size_t i = 0; i < aval_regs.size(); i++) {
 				RegisterHolder* tmp = aval_regs[i];

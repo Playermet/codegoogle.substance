@@ -215,17 +215,28 @@ void Runtime::Run()
 			}
 			// if threshold is reached start recording
 			if(instruction->operand2 >= HIT_THRESHOLD) {
+				if(instruction->native_code) {
+#ifdef _DEBUG	
+					wcout << L"========== NATIVE CODE: id=" << instruction->operand1 << L"==========" << endl;
+#endif					
+					jit::jit_fun_ptr jit_fun = instruction->native_code;
+					const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
+					// TODO: manage error codes
+					ip = guard_label == -1 ? instruction->operand2 : guard_label;
+				}
+				else {
 #ifdef _DEBUG
-				wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
+					wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
 #endif
-				is_recording = first_jmp = true;
-				jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
-				current_jit_label = jit_base_label;
-				jit_jump_labels.push(instruction);
+					is_recording = first_jmp = true;
+					jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
+					current_jit_label = jit_base_label;
+					jit_jump_labels.push(instruction);
+				}
 			}
 #endif
       break;
-
+			
     case JMP:
       switch(instruction->operand2) {
         // unconditional jump
@@ -240,16 +251,7 @@ void Runtime::Run()
 					Instruction* jit_start_label = jit_jump_labels.top();
 					jit_jump_labels.pop();
 					
-					if(jit_start_label->native_code) {
-#ifdef _DEBUG	
-						wcout << L"========== NATIVE CODE: id=" << jit_start_label->operand1 << L"==========" << endl;
-#endif					
-						jit::jit_fun_ptr jit_fun = jit_start_label->native_code;
-						const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
-						// TODO: manage error codes
-						ip = guard_label == -1 ? ip + 1 : guard_label;
-					}
-					else {
+					if(!jit_start_label->native_code) {
 #ifdef _DEBUG
 						wcout << L"========== JIT END LABEL: id=" << jit_start_label->operand1 << L"==========" << endl;
 #endif
@@ -263,17 +265,17 @@ void Runtime::Run()
 							wcerr << L">>> Unable to JIT compile trace <<<" << endl;
 							exit(1);
 						}
-						jit_start_label->native_code = jit_fun;
-						const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
-						// TODO: manage error codes
-						ip = guard_label == -1 ? ip + 1 : guard_label;
+						jit_start_label->native_code = jit_fun;	
+						jit_start_label->operand2 = ip + 1;
 						// reset
 						is_recording = first_jmp = false;
 						jit_base_label = last_label_id;
 						ClearJitInstructions();
 					}
 				}
-				is_jump = jump_table[instruction->operand1] < ip;
+				else {
+					is_jump = jump_table[instruction->operand1] < ip;
+				}
 #endif
         ip = jump_table[instruction->operand1];
         break;
