@@ -91,8 +91,9 @@ void Runtime::Run()
     switch(instruction->type) {
     case RTRN:
       break;
-
+			
 		case FUNC_CALL:
+			FunctionCall(instruction, frame);
 			wcout << L"FUN_CALL: name=" << instruction->operand5 << endl;
 			break;
 
@@ -478,4 +479,9 @@ void Runtime::Run()
   wcout << L"==========================" << endl;
   wcout << L"ending stack pos=" << execution_stack_pos << endl;
 #endif
+}
+
+void Runtime::FunctionCall(Instruction* instruction, Value* frame)
+{
+	
 }

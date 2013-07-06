@@ -11,11 +11,10 @@
   function : Add(a,b) {
     dump a + b;
   }
-  
-  #~
+
+	i *= 10;  
 	var a := 113;
 	if(i > 101) {
 		a := 100;
 	};
 	dump a;
-  ~#

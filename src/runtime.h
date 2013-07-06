@@ -173,8 +173,8 @@ namespace runtime {
   #endif
 		
     // member operations
-    void Add();
-	
+		void FunctionCall(Instruction* instruction, Value* frame);
+			
    public:
 	  Runtime(ExecutableProgram *p, INT_T last_label_id) {
 			program = p;
