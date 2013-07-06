@@ -92,6 +92,10 @@ void Runtime::Run()
     case RTRN:
       break;
 
+		case FUNC_CALL:
+			wcout << L"FUN_CALL: name=" << instruction->operand5 << endl;
+			break;
+
     case LOAD_TRUE_LIT:
       left.type = BOOL_VALUE;
       left.klass = BooleanClass::Instance();
