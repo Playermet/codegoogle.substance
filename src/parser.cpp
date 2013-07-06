@@ -118,9 +118,10 @@ void Parser::ProcessError(const wstring &msg, ParseNode* node)
 }
 
 /****************************
- * Checks for parsing errors.
+ * Checks for parsing errors
+ * returns false if errors
  ****************************/
-bool Parser::CheckErrors()
+bool Parser::NoErrors()
 {
   // check and process errors
   if(errors.size()) {
@@ -137,7 +138,7 @@ bool Parser::CheckErrors()
 /****************************
  * Starts the parsing process.
  ****************************/
-StatementList* Parser::Parse()
+Function* Parser::Parse()
 {
 #ifdef _DEBUG
   wcout << L"\n========== Scanning/Parsing =========" << endl;
@@ -145,9 +146,9 @@ StatementList* Parser::Parse()
   NextToken();
   
   // parse input
-  Function* block = ParseFunction(0);
-  if(CheckErrors()) {
-    return NULL;
+  Function* function = ParseFunction(0);
+  if(NoErrors()) {
+    return function;
   }
   
   return NULL;
@@ -158,6 +159,9 @@ StatementList* Parser::Parse()
  ****************************/
 Function* Parser::ParseFunction(int depth)
 {
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
   if(!Match(TOKEN_IDENT )) {
 		ProcessError(TOKEN_IDENT);
 		return NULL;
@@ -165,18 +169,28 @@ Function* Parser::ParseFunction(int depth)
   const wstring &function_name = scanner->GetToken()->GetIdentifier();
 	NextToken();
 
-  ParseParameters(depth + 1);
+  symbol_table.NewScope();
 
-  ParseBlock(true, 0);
+  ExpressionList* parameters = ParseDeclarationParameters(depth + 1);
+  StatementList* statements = ParseBlock(false, 0);
+  if(!parameters || !statements) {
+    return NULL;
+  }
 
-  return NULL;
+  symbol_table.PreviousScope();
+
+  return TreeFactory::Instance()->MakeFunction(file_name, line_num, parameters, statements);
 }
 
 /****************************
  * Parses a parameter list
  ****************************/
-ExpressionList* Parser::ParseParameters(int depth)
+ExpressionList* Parser::ParseDeclarationParameters(int depth)
 {
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
+  ExpressionList* parameters = TreeFactory::Instance()->MakeExpressionList(file_name, line_num);
   if(!Match(TOKEN_OPEN_PAREN)) {
 		ProcessError(TOKEN_OPEN_PAREN);
 		return NULL;
@@ -185,6 +199,16 @@ ExpressionList* Parser::ParseParameters(int depth)
 
   while(Match(TOKEN_IDENT)) {
     const wstring identifier = scanner->GetToken()->GetIdentifier();
+    if(symbol_table.HasEntry(identifier)) {
+		  ProcessError(L"Variable already declared in this scope");
+		  return NULL;
+	  }	
+    symbol_table.AddEntry(identifier);
+    Reference* parameter = ParseReference(identifier, depth + 1);
+    if(!parameter) {
+      return NULL;
+    }
+    parameters->AddExpression(parameter);
 	  NextToken(); 
 
     if(Match(TOKEN_COMMA)) {
@@ -201,7 +225,7 @@ ExpressionList* Parser::ParseParameters(int depth)
 	}
   NextToken();
 
-  return NULL;
+  return parameters;
 }
 
 /****************************

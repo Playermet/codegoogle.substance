@@ -186,11 +186,11 @@ namespace compiler {
     void ProcessError(const wstring &msg);
     void ProcessError(const wstring &msg, ParseNode* node);
     void ProcessError(const wstring &msg, const ScannerTokenType sync);
-    bool CheckErrors();
+    bool NoErrors();
 	
     // parsing operations
-    ExpressionList* ParseParameters(int depth);
-    Function* ParseFunction(int depth);
+    Function* ParseFunction(int depth);    
+    ExpressionList* ParseDeclarationParameters(int depth);
     StatementList* ParseBlock(bool new_scope, int depth);
 		Statement* ParseDeclaration(int depth);
 	  Statement* ParseStatement(int depth);
@@ -222,7 +222,7 @@ namespace compiler {
 		  }
     }
   
-    StatementList* Parse();
+    Function* Parse();
   };
 }
 

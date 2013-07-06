@@ -110,20 +110,7 @@ namespace compiler {
    public:
     virtual const ExpressionType GetExpressionType() = 0;
   };
-
-  /****************************
-   * Function class
-   ****************************/
-  class Function : public ParseNode {
-
-  public:
-    Function(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
-    }
-
-    ~Function() {
-    }
-  };
-
+  
   /****************************
    * CharacterString class
    ****************************/
@@ -678,6 +665,33 @@ namespace compiler {
   };
 
   /****************************
+   * Function class
+   ****************************/
+  class Function : public ParseNode {
+    ExpressionList* parameters;
+    StatementList* statements;
+
+  public:
+    Function(const wstring &file_name, const unsigned int line_num, ExpressionList* parameters, StatementList* statements) 
+       : ParseNode(file_name, line_num) {
+      this->parameters = parameters;
+      this->statements = statements;
+    }
+
+    ~Function() {
+    }
+
+
+    inline ExpressionList* GetParameters() {
+      return parameters;
+    }
+
+    inline StatementList* GetStatements() {
+      return statements;
+    }
+  };
+
+  /****************************
    * TreeFactory class
    ****************************/
   class TreeFactory {
@@ -788,6 +802,12 @@ namespace compiler {
     Dump* MakeDumpStatement(const wstring &file_name, const unsigned int line_num, Expression* expression) {
       Dump* tmp = new Dump(file_name, line_num, expression);
       statements.push_back(tmp);
+      return tmp;
+    }
+
+    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, ExpressionList* parameters, StatementList* statements) {
+      Function* tmp = new Function(file_name, line_num, parameters, statements);
+      nodes.push_back(tmp);
       return tmp;
     }
 
