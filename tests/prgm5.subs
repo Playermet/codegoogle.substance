@@ -1,8 +1,10 @@
-a := 1;
+a := 1 + 7;
 b := 2;
 
 foo99(a,b);
 
+#~
 function : foo(a,b) {
 	dump a + b;
 }
+~#

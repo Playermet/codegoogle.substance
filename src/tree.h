@@ -375,17 +375,29 @@ namespace compiler {
       is_self = true;
       reference	= NULL;
       indices = NULL;
+			calling_parameters = NULL;
     }
 	
     Reference(const wstring &file_name, const unsigned int line_num, const wstring &n, int v) 
-		  : Expression(file_name, line_num) {
+		 : Expression(file_name, line_num) {
       name = n;
 		  id = v;
       is_self = false;
       reference	= NULL;
       indices = NULL;
+			calling_parameters = NULL;
     }
-	
+		
+	  Reference(const wstring &file_name, const unsigned int line_num, const wstring &n)
+		 : Expression(file_name, line_num) {
+			name = n;
+			id = -1;
+			is_self = false;
+			reference	= NULL;
+			indices = NULL;
+			calling_parameters = NULL;
+		}
+		
     ~Reference() {
     }
 
@@ -425,7 +437,11 @@ namespace compiler {
     bool IsSelf() {
       return is_self;
     }
-	
+
+		bool IsFunctionReference() {
+			return id < 0 && calling_parameters;
+		}
+		
 	  int GetId() {
 		  return id;
 	  }
@@ -452,6 +468,7 @@ namespace compiler {
    ****************************/
   enum StatementType {
     ASSIGNMENT_STATEMENT = -200,
+		FUNCTION_CALL_STATEMENT,
 	  IF_ELSE_STATEMENT,
 	  WHILE_STATEMENT,
     FOR_STATEMENT,
@@ -515,7 +532,29 @@ namespace compiler {
       return DECLARATION_STATEMENT;
     }
   };
+
+	/****************************
+   * Function call statement
+   ****************************/
+  class FunctionCall : public Statement {
+    friend class TreeFactory;
+		Reference* reference;
 		
+   public:
+		FunctionCall(const wstring &file_name, const unsigned int line_num, Reference* reference) 
+		 : Statement(file_name, line_num) {
+			this->reference = reference;
+    }
+
+		Reference* GetReference() {
+			return reference;
+		}
+		
+    const StatementType GetStatementType() {
+      return FUNCTION_CALL_STATEMENT;
+    }
+  };
+	
   /****************************
    * Dump statement
    ****************************/
@@ -841,7 +880,8 @@ namespace compiler {
       return tmp;
     }
 
-    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, ExpressionList* parameters, StatementList* statements) {
+    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, 
+													 ExpressionList* parameters, StatementList* statements) {
       Function* tmp = new Function(file_name, line_num, parameters, statements);
       nodes.push_back(tmp);
       return tmp;
@@ -908,6 +948,18 @@ namespace compiler {
 													   const wstring &name, int id) {
       Reference* tmp = new Reference(file_name, line_num, name, id);
       references.push_back(tmp);
+      return tmp;
+    }
+		
+		Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
+      Reference* tmp = new Reference(file_name, line_num, name);
+      references.push_back(tmp);
+      return tmp;
+    }
+		
+		FunctionCall* MakeFunctionCall(const wstring &file_name, const unsigned int line_num, Reference* reference) {
+      FunctionCall* tmp = new FunctionCall(file_name, line_num, reference);
+      statements.push_back(tmp);
       return tmp;
     }
   };
