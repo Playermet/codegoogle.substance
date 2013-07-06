@@ -197,7 +197,7 @@ namespace compiler {
 	  Statement* ParseStatement(int depth);
     Statement* ParseIfElse(int depth);
 	  Statement* ParseWhile(int depth);
-    Statement* ParseAssignment(int depth);
+    Statement* ParseAssignment(Reference* reference, ScannerTokenType type, int depth);
 	  ExpressionList* ParseIndices(int depth);
     Expression* ParseExpression(int depth);
     Expression* ParseLogic(int depth);

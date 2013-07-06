@@ -114,7 +114,7 @@ void Parser::ProcessError(const wstring &msg, ParseNode* node)
 
   const wstring &str_line_num = ToString(node->GetLineNumber());
   errors.insert(pair<int, wstring>(node->GetLineNumber(), node->GetFileName() +
-				   L":" + str_line_num + L": " + msg));
+																	 L":" + str_line_num + L": " + msg));
 }
 
 /****************************
@@ -318,19 +318,37 @@ Statement* Parser::ParseStatement(int depth)
 
   Statement* statement;
   switch(scanner->GetToken()->GetType()) {
-    // assignment
+    // reference type
   case TOKEN_IDENT: {
-		const wstring identifier = scanner->GetToken()->GetIdentifier();
-		Reference* reference = ParseReference(identifier, depth + 1);
+		Reference* reference = ParseReference(scanner->GetToken()->GetIdentifier(), depth + 1);
 		if(!reference) {
-			statement = NULL;
+			return NULL;
+		}		
+		// function call
+		if(reference->IsFunctionReference()) {
+			statement = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, reference);
 		}
+		// assignment type
 		else {
-			statement = ParseAssignment(reference, depth + 1);
+			ScannerTokenType type = TOKEN_UNKNOWN;
+			switch(GetToken()) {
+			case TOKEN_ASSIGN:
+			case TOKEN_ADD_EQL:
+			case TOKEN_SUB_EQL:
+			case TOKEN_MUL_EQL:
+			case TOKEN_DIV_EQL:
+				type = GetToken();
+				break;				
+			default:
+				ProcessError(TOKEN_ASSIGN);
+				return NULL;
+			} 
+			NextToken(); 			
+			statement = ParseAssignment(reference, type, depth + 1);
 		}
 	}
     break;
-
+		
 		// if
   case TOKEN_IF_ID:
     statement = ParseIfElse(depth + 1);
@@ -357,9 +375,8 @@ Statement* Parser::ParseStatement(int depth)
     break;
 
   default:
-    statement = NULL;
     ProcessError(L"Invalid statement");
-    break;
+		return NULL;
   }
   
   // statement end
@@ -385,10 +402,17 @@ Statement* Parser::ParseDeclaration(int depth)
 #endif
 	
 	NextToken();
-
+	
 	// variable assignment
 	if(Match(TOKEN_IDENT) && Match(TOKEN_ASSIGN, SECOND_INDEX)) {
-		return ParseAssignment(depth + 1);
+		Reference* reference = ParseReference(scanner->GetToken()->GetIdentifier(), depth + 1);
+		if(!reference) {
+			return NULL;
+		}
+		else if(!reference->IsFunctionReference()) {
+			NextToken();
+			return ParseAssignment(reference, TOKEN_ASSIGN, depth + 1);
+		}
 	}
 	
 	if(!Match(TOKEN_IDENT)) {
@@ -534,7 +558,7 @@ Statement* Parser::ParseWhile(int depth)
  * Parses an assignment 
  * statement.
  ****************************/
-Statement* Parser::ParseAssignment(int depth)
+Statement* Parser::ParseAssignment(Reference* reference, ScannerTokenType type, int depth)
 {
 	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
@@ -542,24 +566,6 @@ Statement* Parser::ParseAssignment(int depth)
 #ifdef _DEBUG
   Show(L"Assignment", depth);
 #endif
-  
-  
-  
-  
-  ScannerTokenType type = TOKEN_UNKNOWN;
-  switch(GetToken()) {
-  case TOKEN_ASSIGN:
-  case TOKEN_ADD_EQL:
-  case TOKEN_SUB_EQL:
-  case TOKEN_MUL_EQL:
-  case TOKEN_DIV_EQL:
-    type = GetToken();
-    break;
-  default:
-    ProcessError(TOKEN_ASSIGN);
-    return NULL;
-  } 
-  NextToken();  
   
   Expression* expression = ParseExpression(depth + 1);
   if(reference && expression) {
@@ -994,22 +1000,39 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
-  Show(L"Reference", depth);
+  Show(L"Reference: name=" + identifier, depth);
 #endif
+
+	NextToken();
 	
-	// reference
-	int entry_id = symbol_table.GetEntry(identifier);
-	if(entry_id < 0) {
-		ProcessError(L"Unknown reference '" + identifier + L"'");
-		return NULL;
+	// scalar or array reference
+	bool is_function_call = false;
+	Reference* reference;
+	if(!Match(TOKEN_OPEN_PAREN)) {
+		// add reference to table if it doesn't exist
+		if(!symbol_table.HasEntry(identifier)) {
+			symbol_table.AddEntry(identifier);
+	  }	
+		int entry_id = symbol_table.GetEntry(identifier);
+		// sanity check (could be eliminated)
+		if(entry_id < 0) {
+			ProcessError(L"Unknown reference '" + identifier + L"'");
+			return NULL;
+		}
+		reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+	}
+	else {
+		reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+		is_function_call = true;
 	}
 	
-  Reference* reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+	// array reference
   if(Match(TOKEN_OPEN_BRACKET)) {
     reference->SetIndices(ParseIndices(depth + 1));
   }
 	
-	if(Match(TOKEN_OPEN_PAREN)) {
+	// function call
+	if(is_function_call) {
     reference->SetCallingParameters(ParseCallingParameters(depth + 1));
   }
 	
