@@ -1,6 +1,8 @@
-class Foo {
-   function : foo(a,b) {
-    a := 1 + 1;
-    dump a;
-  }
+a := 1;
+b := 2;
+
+foo99(a,b);
+
+function : foo(a,b) {
+	dump a + b;
 }

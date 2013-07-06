@@ -208,6 +208,7 @@ namespace compiler {
     Reference* ParseReference(int depth);
     Reference* ParseReference(const wstring &ident, int depth);
     void ParseReference(Reference* reference, int depth);
+		ExpressionList* ParseCallingParameters(int depth);
   
    public:
     Parser(const wstring &input) {
