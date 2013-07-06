@@ -57,7 +57,7 @@ namespace compiler {
   
     void EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
-		void EmitFunctionCall(FunctionCall* call, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+		void EmitFunctionCall(Reference* reference, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);    
 	  void EmitWhile(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
@@ -111,10 +111,19 @@ namespace compiler {
       return instruction;
     }
 
-    INT_T GetLastLabelId() {
-      return 0; // return label_id;
+		static Instruction* MakeInstruction(InstructionType type, const wstring &name) {
+      Instruction* instruction = new Instruction;
+      instruction->type = type;
+      instruction->operand5 = name;
+      instruction_factory.push_back(instruction);
+			
+      return instruction;
     }
-  
+		
+    INT_T GetLastLabelId() {
+      return 0;
+    }
+		
     static void ClearInstructions();
   
     ExecutableProgram* Emit();
