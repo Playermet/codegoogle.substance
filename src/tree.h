@@ -716,20 +716,25 @@ namespace compiler {
    * Function class
    ****************************/
   class Function : public ParseNode {
+		wstring name;
     ExpressionList* parameters;
     StatementList* statements;
-
+		
   public:
-    Function(const wstring &file_name, const unsigned int line_num, ExpressionList* parameters, StatementList* statements) 
-       : ParseNode(file_name, line_num) {
+	  Function(const wstring &file_name, const unsigned int line_num, const wstring &name,
+						 ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
+			this->name = name;
       this->parameters = parameters;
       this->statements = statements;
     }
-
+		
     ~Function() {
     }
 
-
+		inline wstring GetName() {
+			return name;
+		}
+		
     inline ExpressionList* GetParameters() {
       return parameters;
     }
@@ -743,9 +748,9 @@ namespace compiler {
    * Parsed program class
    ****************************/
   class ParsedProgram {
-    vector<Function*> functions;
+		unordered_map<wstring, Function*> functions;
     StatementList* statements;
-
+		
   public:
     ParsedProgram() {
     }
@@ -753,8 +758,15 @@ namespace compiler {
     ~ParsedProgram() {
     }
 
-    void AddFunction(Function* function) {
-      functions.push_back(function);
+		bool AddFunction(Function* function) {
+			wstring name = function->GetName();
+			unordered_map<wstring, Function*>::iterator result = functions.find(name);
+			if(result == functions.end()) {
+				functions.insert(pair<wstring, Function*>(name, function));
+				return true;
+			}
+			
+			return false;
     }
 
     void SetStatements(StatementList* statements) {
@@ -880,15 +892,14 @@ namespace compiler {
       return tmp;
     }
 
-    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, 
+    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
 													 ExpressionList* parameters, StatementList* statements) {
-      Function* tmp = new Function(file_name, line_num, parameters, statements);
+      Function* tmp = new Function(file_name, line_num, name, parameters, statements);
       nodes.push_back(tmp);
       return tmp;
     }
 
-		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, 
-																					const wstring &variable) {
+		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, const wstring &variable) {
       Declaration* tmp = new Declaration(file_name, line_num, variable);
       statements.push_back(tmp);
       return tmp;

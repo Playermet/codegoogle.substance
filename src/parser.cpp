@@ -161,7 +161,10 @@ ParsedProgram* Parser::Parse()
         DeleteProgram();
         return NULL;
       }
-      program->AddFunction(function);
+      // add function
+			if(!program->AddFunction(function)) {
+				ProcessError(L"Function with the same name already exists", function);
+			}
     }
     else {
       Statement* statement = ParseStatement(0);
@@ -204,7 +207,7 @@ Function* Parser::ParseFunction(int depth)
 		ProcessError(TOKEN_IDENT);
 		return NULL;
 	}
-  const wstring &function_name = scanner->GetToken()->GetIdentifier();
+  const wstring &name = scanner->GetToken()->GetIdentifier();
 	NextToken();
 
   symbol_table.NewScope();
@@ -217,7 +220,7 @@ Function* Parser::ParseFunction(int depth)
 
   symbol_table.PreviousScope();
 
-  return TreeFactory::Instance()->MakeFunction(file_name, line_num, parameters, statements);
+  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements);
 }
 
 /****************************
@@ -328,7 +331,7 @@ Statement* Parser::ParseStatement(int depth)
 		if(reference->IsFunctionReference()) {
 			statement = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, reference);
 		}
-		// assignment type
+		// assignment
 		else {
 			ScannerTokenType type = TOKEN_UNKNOWN;
 			switch(GetToken()) {
@@ -347,6 +350,10 @@ Statement* Parser::ParseStatement(int depth)
 			statement = ParseAssignment(reference, type, depth + 1);
 		}
 	}
+    break;
+		
+		// return
+  case TOKEN_RETURN_ID:
     break;
 		
 		// if

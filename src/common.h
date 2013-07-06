@@ -113,9 +113,11 @@ enum InstructionType {
 	// jumps
 	JMP,
 	LBL,
+	// functions
+	FUNC_CALL,
+	RTRN,
 	// misc
-  DUMP_VALUE,
-  RTRN
+  DUMP_VALUE
 };
 
 class Instruction {
@@ -132,6 +134,7 @@ class Instruction {
   INT_T operand2;
 	INT_T operand3;
   FLOAT_T operand4;
+	wstring operand5;
 	jit::jit_fun_ptr native_code;
 };
 

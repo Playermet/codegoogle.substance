@@ -36,7 +36,7 @@ using namespace compiler;
 vector<Instruction*> Emitter::instruction_factory;
 
 /****************************
- * TODO: doc
+ * Emit program instructions
  ****************************/
 ExecutableProgram* Emitter::Emit()
 {
@@ -55,7 +55,7 @@ ExecutableProgram* Emitter::Emit()
 }
 
 /****************************
- * TODO: doc
+ * Emit code for a function
  ****************************/
 void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions,
 													 unordered_map<long, size_t> &jump_table, set<size_t> &leaders)
@@ -83,7 +83,7 @@ void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*>
 }
 
 /****************************
- * TODO: doc
+ * Emit code for a statement block
  ****************************/
 void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
 												unordered_map<long, size_t> &jump_table)
@@ -100,7 +100,7 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 			break;
 			
 		case FUNCTION_CALL_STATEMENT:
-			EmitFunctionCall(static_cast<FunctionCall*>(statement), block_instructions, jump_table);
+			EmitFunctionCall(static_cast<FunctionCall*>(statement)->GetReference(), block_instructions, jump_table);
 			break;
 			
     case IF_ELSE_STATEMENT:
@@ -127,16 +127,21 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 }
 
 /****************************
- * TODO: doc
+ * Emit code for a function call
  ****************************/
-void Emitter::EmitFunctionCall(FunctionCall* call, vector<Instruction*> &block_instructions, 
+void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*> &block_instructions, 
 															 unordered_map<long, size_t> &jump_table)
 {
-	
+	// emit parameters
+	vector<Expression*> parameters = reference->GetCallingParameters()->GetExpressions();	
+	for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
+		EmitExpression(*iter, block_instructions, jump_table);		
+	}
+	block_instructions.push_back(MakeInstruction(FUNC_CALL, reference->GetName()));
 }
 
 /****************************
- * TODO: doc
+ * Emit 'if/else' code
  ****************************/
 void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, 
                          unordered_map<long, size_t> &jump_table)
@@ -268,7 +273,7 @@ void Emitter::EmitWhile(While* if_while, vector<Instruction*> &block_instruction
 }
 
 /****************************
- * TODO: doc
+ * Emit assignment code
  ****************************/
 void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
 														 unordered_map<long, size_t> &jump_table)
@@ -318,10 +323,9 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block
 }
 
 /****************************
- * TODO: doc
+ * Emit variable reference
  ****************************/
-void Emitter::EmitReference(Reference* reference, bool is_store, 
-														vector<Instruction*> &block_instructions, 
+void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions, 
 														unordered_map<long, size_t> &jump_table)
 {
   wstring name = reference->GetName();
@@ -342,7 +346,7 @@ void Emitter::EmitReference(Reference* reference, bool is_store,
 }
 
 /****************************
- * TODO: doc
+ * Emit expression
  ****************************/
 void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
 														 unordered_map<long, size_t> &jump_table)
@@ -574,7 +578,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
 }
 
 /****************************
- * TODO: doc
+ * Clear parse tree nodes
  ****************************/
 void Emitter::ClearInstructions() {
   while(!instruction_factory.empty()) {
