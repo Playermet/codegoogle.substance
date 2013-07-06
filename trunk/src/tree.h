@@ -362,6 +362,7 @@ namespace compiler {
     wstring name;
 	  int id;
     ExpressionList* indices;
+		ExpressionList* calling_parameters;
     Reference* reference;
     bool is_self;
     int array_size;
@@ -408,6 +409,14 @@ namespace compiler {
     ExpressionList* GetIndices() {
       return indices;
     }
+
+		void SetCallingParameters(ExpressionList* p) {
+			calling_parameters = p;
+		}
+
+		ExpressionList* GetCallingParameters() {
+			return calling_parameters;
+		}
 
     const ExpressionType GetExpressionType() {
       return REF_EXPR;

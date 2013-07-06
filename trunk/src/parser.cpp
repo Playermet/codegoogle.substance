@@ -48,7 +48,7 @@ void Parser::LoadErrorCodes()
   error_msgs[TOKEN_CLOSED_BRACE] = L"Expected '}'";
   error_msgs[TOKEN_COLON] = L"Expected ':'";
   error_msgs[TOKEN_COMMA] = L"Expected ','";
-  error_msgs[TOKEN_ASSIGN] = L"Expected '='";
+  error_msgs[TOKEN_ASSIGN] = L"Expected ':='";
   error_msgs[TOKEN_SEMI_COLON] = L"Expected ';'";
   error_msgs[TOKEN_ASSESSOR] = L"Expected '->'";
 }
@@ -319,8 +319,16 @@ Statement* Parser::ParseStatement(int depth)
   Statement* statement;
   switch(scanner->GetToken()->GetType()) {
     // assignment
-  case TOKEN_IDENT:
-    statement = ParseAssignment(depth + 1);
+  case TOKEN_IDENT: {
+		const wstring identifier = scanner->GetToken()->GetIdentifier();
+		Reference* reference = ParseReference(identifier, depth + 1);
+		if(!reference) {
+			statement = NULL;
+		}
+		else {
+			statement = ParseAssignment(reference, depth + 1);
+		}
+	}
     break;
 
 		// if
@@ -535,17 +543,8 @@ Statement* Parser::ParseAssignment(int depth)
   Show(L"Assignment", depth);
 #endif
   
-  if(!Match(TOKEN_IDENT)) {
-    ProcessError(TOKEN_IDENT);
-    return NULL;
-  }
-  const wstring identifier = scanner->GetToken()->GetIdentifier();
-  NextToken(); 
-	
-	if(!symbol_table.HasEntry(identifier)) {
-		symbol_table.AddEntry(identifier); 
-	}
-  Reference* reference = ParseReference(identifier, depth + 1);
+  
+  
   
   ScannerTokenType type = TOKEN_UNKNOWN;
   switch(GetToken()) {
@@ -998,24 +997,28 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
   Show(L"Reference", depth);
 #endif
 	
-	// self reference
+	// reference
 	int entry_id = symbol_table.GetEntry(identifier);
 	if(entry_id < 0) {
 		ProcessError(L"Unknown reference '" + identifier + L"'");
 		return NULL;
 	}
 	
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+  Reference* reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
   if(Match(TOKEN_OPEN_BRACKET)) {
-    inst_ref->SetIndices(ParseIndices(depth + 1));
+    reference->SetIndices(ParseIndices(depth + 1));
   }
-
+	
+	if(Match(TOKEN_OPEN_PAREN)) {
+    reference->SetCallingParameters(ParseCallingParameters(depth + 1));
+  }
+	
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
-    ParseReference(inst_ref, depth + 1);
+    ParseReference(reference, depth + 1);
   }
 
-  return inst_ref;
+  return reference;
 }
 
 /****************************
@@ -1042,4 +1045,47 @@ void Parser::ParseReference(Reference* reference, int depth)
       ParseReference(reference->GetReference(), depth + 1);
     }
   }
+}
+
+/****************************
+ * Parses a function call
+ ****************************/
+ExpressionList* Parser::ParseCallingParameters(int depth)
+{
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
+  ExpressionList* parameters = TreeFactory::Instance()->MakeExpressionList(file_name, line_num);
+  if(!Match(TOKEN_OPEN_PAREN)) {
+		ProcessError(TOKEN_OPEN_PAREN);
+		return NULL;
+	}
+  NextToken();
+
+  while(Match(TOKEN_IDENT)) {
+    const wstring identifier = scanner->GetToken()->GetIdentifier();
+		int entry_id = symbol_table.GetEntry(identifier);
+		if(entry_id < 0) {
+			ProcessError(L"Unknown reference '" + identifier + L"'");
+			return NULL;
+		}
+		Reference* parameter = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+    parameters->AddExpression(parameter);
+	  NextToken(); 
+
+    if(Match(TOKEN_COMMA)) {
+      NextToken();
+      if(Match(TOKEN_CLOSED_PAREN)) {
+        ProcessError(TOKEN_CLOSED_PAREN);
+      }
+    }
+  }
+
+  if(!Match(TOKEN_CLOSED_PAREN)) {
+		ProcessError(TOKEN_CLOSED_PAREN);
+		return NULL;
+	}
+  NextToken();
+
+  return parameters;
 }
