@@ -55,8 +55,9 @@ namespace compiler {
       return start_label_id++;
     }
   
-    void EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
+    void EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
+		void EmitFunctionCall(FunctionCall* call, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);    
 	  void EmitWhile(While* if_while, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
     void EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
