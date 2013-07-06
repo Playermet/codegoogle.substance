@@ -37,7 +37,7 @@ int main(int argc, const char* argv[]) {
 	if(argc == 2) {
     // parse program
 		compiler::Parser parser(BytesToUnicode(argv[1]));
-		compiler::StatementList* parsed_program = parser.Parse();    
+		compiler::Function* parsed_program = parser.Parse();    
     // emit code
     if(parsed_program) {
 			// emit and run code

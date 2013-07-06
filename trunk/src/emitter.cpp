@@ -48,7 +48,7 @@ ExecutableProgram* Emitter::Emit()
 	unordered_map<long, size_t> jump_table;
   set<size_t> leaders;
 	
-	EmitFunctionMethod(parsed_program, block_instructions, jump_table, leaders);
+  EmitFunctionMethod(parsed_program->GetStatements(), block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));
 
 	return new ExecutableProgram(block_instructions, jump_table, leaders);
@@ -60,7 +60,7 @@ ExecutableProgram* Emitter::Emit()
 void Emitter::EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
                                  unordered_map<long, size_t> &jump_table, set<size_t> &leaders)
 {
-  EmitBlock(parsed_program, block_instructions, jump_table);
+  EmitBlock(block_statements, block_instructions, jump_table);
 
   // create CFG
   leaders.insert(0);
