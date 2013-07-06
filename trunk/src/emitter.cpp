@@ -48,7 +48,7 @@ ExecutableProgram* Emitter::Emit()
 	unordered_map<long, size_t> jump_table;
   set<size_t> leaders;
 	
-  EmitFunctionMethod(parsed_program->GetStatements(), block_instructions, jump_table, leaders);
+  EmitFunction(parsed_program->GetStatements(), block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));
 
 	return new ExecutableProgram(block_instructions, jump_table, leaders);
@@ -57,8 +57,8 @@ ExecutableProgram* Emitter::Emit()
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitFunctionMethod(StatementList* block_statements, vector<Instruction*> &block_instructions,
-                                 unordered_map<long, size_t> &jump_table, set<size_t> &leaders)
+void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions,
+													 unordered_map<long, size_t> &jump_table, set<size_t> &leaders)
 {
   EmitBlock(block_statements, block_instructions, jump_table);
 
@@ -99,6 +99,10 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 		case DECLARATION_STATEMENT:
 			break;
 			
+		case FUNCTION_CALL_STATEMENT:
+			EmitFunctionCall(static_cast<FunctionCall*>(statement), block_instructions, jump_table);
+			break;
+			
     case IF_ELSE_STATEMENT:
       EmitIfElse(static_cast<IfElse*>(statement), block_instructions, jump_table);
       break;
@@ -120,6 +124,15 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
       break;
     }
   }
+}
+
+/****************************
+ * TODO: doc
+ ****************************/
+void Emitter::EmitFunctionCall(FunctionCall* call, vector<Instruction*> &block_instructions, 
+															 unordered_map<long, size_t> &jump_table)
+{
+	
 }
 
 /****************************
