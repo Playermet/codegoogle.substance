@@ -3,8 +3,6 @@ b := 2;
 
 foo99(a,b);
 
-#~
 function : foo(a,b) {
 	dump a + b;
 }
-~#

@@ -34,7 +34,7 @@
 using namespace compiler;
 
 /****************************
- * Loads parsing error codes.
+ * Loads parsing error codes
  ****************************/
 void Parser::LoadErrorCodes()
 {
@@ -54,7 +54,7 @@ void Parser::LoadErrorCodes()
 }
 
 /****************************
- * Emits parsing error.
+ * Emits parsing error
  ****************************/
 void Parser::ProcessError(ScannerTokenType type)
 {
@@ -69,22 +69,20 @@ void Parser::ProcessError(ScannerTokenType type)
 }
 
 /****************************
- * Emits parsing error.
+ * Emits parsing error
  ****************************/
 void Parser::ProcessError(const wstring &msg)
 {
 #ifdef _DEBUG
-  wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
-	<< msg << endl;
+  wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": " << msg << endl;
 #endif
 
   const wstring &str_line_num = ToString(GetLineNumber());
-  errors.insert(pair<int, wstring>(GetLineNumber(), GetFileName() + L":" + 
-				   str_line_num + L": " + msg));
+  errors.insert(pair<int, wstring>(GetLineNumber(), GetFileName() + L":" + str_line_num + L": " + msg));
 }
 
 /****************************
- * Emits parsing error.
+ * Emits parsing error
  ****************************/
 void Parser::ProcessError(const wstring &msg, ScannerTokenType sync)
 {
@@ -103,7 +101,7 @@ void Parser::ProcessError(const wstring &msg, ScannerTokenType sync)
 }
 
 /****************************
- * Emits parsing error.
+ * Emits parsing error
  ****************************/
 void Parser::ProcessError(const wstring &msg, ParseNode* node)
 {
@@ -150,13 +148,23 @@ ParsedProgram* Parser::Parse()
   NextToken();
   
   program = new ParsedProgram;
+	symbol_table = new SymbolTable;
+	SymbolTable* prev_symbol_table;
+	
   StatementList* statements = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
-
-  symbol_table.NewScope();
-
+	
+	// scope for global statements
+  symbol_table->NewScope();
+	
   while(!Match(TOKEN_END_OF_STREAM)) {
+		// parse function
     if(Match(TOKEN_FUNCTION_ID)) {
+			// new scope for function level statements
+			prev_symbol_table = symbol_table;			
+			symbol_table = new SymbolTable;			
       Function* function = ParseFunction(0);
+			delete symbol_table;
+			symbol_table = prev_symbol_table;			
       if(!function) {
         DeleteProgram();
         return NULL;
@@ -166,6 +174,7 @@ ParsedProgram* Parser::Parse()
 				ProcessError(L"Function with the same name already exists", function);
 			}
     }
+		// parse global statement
     else {
       Statement* statement = ParseStatement(0);
       if(!statement) {
@@ -176,9 +185,12 @@ ParsedProgram* Parser::Parse()
     }
   }
   program->SetStatements(statements);
-
-  symbol_table.PreviousScope();
-
+	
+	// clean up symbol table
+  symbol_table->PreviousScope();
+	delete symbol_table;
+	symbol_table = NULL;
+	
   if(NoErrors()) {
     return program;
   }
@@ -195,22 +207,26 @@ Function* Parser::ParseFunction(int depth)
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
-  NextToken();
-
-  if(!Match(TOKEN_COLON )) {
+#ifdef _DEBUG
+	Show(L"Function", depth);
+#endif
+	
+	NextToken();
+	
+  if(!Match(TOKEN_COLON)) {
 		ProcessError(TOKEN_COLON);
 		return NULL;
 	}
   NextToken();
 
-  if(!Match(TOKEN_IDENT )) {
+  if(!Match(TOKEN_IDENT)) {
 		ProcessError(TOKEN_IDENT);
 		return NULL;
 	}
   const wstring &name = scanner->GetToken()->GetIdentifier();
 	NextToken();
 
-  symbol_table.NewScope();
+  symbol_table->NewScope();
 
   ExpressionList* parameters = ParseDeclarationParameters(depth + 1);
   StatementList* statements = ParseBlock(false, 0);
@@ -218,7 +234,7 @@ Function* Parser::ParseFunction(int depth)
     return NULL;
   }
 
-  symbol_table.PreviousScope();
+  symbol_table->PreviousScope();
 
   return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements);
 }
@@ -240,17 +256,16 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
 
   while(Match(TOKEN_IDENT)) {
     const wstring identifier = scanner->GetToken()->GetIdentifier();
-    if(symbol_table.HasEntry(identifier)) {
+    if(symbol_table->HasEntry(identifier)) {
 		  ProcessError(L"Variable already declared in this scope");
 		  return NULL;
 	  }	
-    symbol_table.AddEntry(identifier);
+    symbol_table->AddEntry(identifier);
     Reference* parameter = ParseReference(identifier, depth + 1);
     if(!parameter) {
       return NULL;
     }
     parameters->AddExpression(parameter);
-	  NextToken(); 
 
     if(Match(TOKEN_COMMA)) {
       NextToken();
@@ -278,7 +293,7 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
   const wstring &file_name = GetFileName();
 
 	if(new_scope) {
-		symbol_table.NewScope();
+		symbol_table->NewScope();
 	}
 
   StatementList* block = TreeFactory::Instance()->MakeStatementList(file_name, line_num);  
@@ -305,7 +320,7 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
   NextToken();
 	
 	if(new_scope) {
-		symbol_table.PreviousScope();
+		symbol_table->PreviousScope();
 	}
 
   return block;
@@ -429,11 +444,11 @@ Statement* Parser::ParseDeclaration(int depth)
 	const wstring identifier = scanner->GetToken()->GetIdentifier();
 	NextToken(); 
 		
-	if(symbol_table.HasEntry(identifier)) {
+	if(symbol_table->HasEntry(identifier)) {
 		ProcessError(L"Variable already declared in this scope");
 		return NULL;
 	}	
-	symbol_table.AddEntry(identifier); 
+	symbol_table->AddEntry(identifier); 
 	
 	return TreeFactory::Instance()->MakeDeclarationStatement(file_name, line_num, identifier);
 }
@@ -873,7 +888,6 @@ Expression* Parser::ParseSimpleExpression(int depth)
 
   if(Match(TOKEN_IDENT)) {
     const wstring &identifier = scanner->GetToken()->GetIdentifier();
-    NextToken();
     expression = ParseReference(identifier, depth + 1);
   }
   else if(Match(TOKEN_SELF_ID)) {
@@ -982,7 +996,7 @@ Reference* Parser::ParseReference(int depth)
 
 	// self reference
 	const wstring identifier = L"@self";
-	int entry_id = symbol_table.GetEntry(identifier);
+	int entry_id = symbol_table->GetEntry(identifier);
 	if(entry_id < 0) {
 		ProcessError(L"Unknown reference '" + identifier + L"'");
 		return NULL;
@@ -1017,10 +1031,10 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
 	Reference* reference;
 	if(!Match(TOKEN_OPEN_PAREN)) {
 		// add reference to table if it doesn't exist
-		if(!symbol_table.HasEntry(identifier)) {
-			symbol_table.AddEntry(identifier);
+		if(!symbol_table->HasEntry(identifier)) {
+			symbol_table->AddEntry(identifier);
 	  }	
-		int entry_id = symbol_table.GetEntry(identifier);
+		int entry_id = symbol_table->GetEntry(identifier);
 		// sanity check (could be eliminated)
 		if(entry_id < 0) {
 			ProcessError(L"Unknown reference '" + identifier + L"'");
@@ -1094,7 +1108,7 @@ ExpressionList* Parser::ParseCallingParameters(int depth)
 
   while(Match(TOKEN_IDENT)) {
     const wstring identifier = scanner->GetToken()->GetIdentifier();
-		int entry_id = symbol_table.GetEntry(identifier);
+		int entry_id = symbol_table->GetEntry(identifier);
 		if(entry_id < 0) {
 			ProcessError(L"Unknown reference '" + identifier + L"'");
 			return NULL;

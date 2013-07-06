@@ -144,7 +144,7 @@ namespace compiler {
     ParsedProgram* program;
 	  wstring input;
     Scanner* scanner;
-	  SymbolTable symbol_table;
+	  SymbolTable* symbol_table;
 	  map<ScannerTokenType, wstring> error_msgs;
     map<size_t, wstring> errors;
 	
