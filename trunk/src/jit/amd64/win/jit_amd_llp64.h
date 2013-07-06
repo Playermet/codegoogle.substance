@@ -967,6 +967,7 @@ namespace jit {
     }
 
     ~JitCompiler() {
+      /*
       if(code) {
         VirtualFree(code, code_buf_max, MEM_RELEASE);
         code = NULL;
@@ -976,6 +977,7 @@ namespace jit {
         VirtualFree(floats, code_buf_max, MEM_RELEASE);
         floats = NULL;
       }
+      */
 
       for(size_t i = 0; i < aval_regs.size(); i++) {
         RegisterHolder* tmp = aval_regs[i];

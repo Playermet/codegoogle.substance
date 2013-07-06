@@ -1,6 +1,6 @@
-{
-	i = 0;
-	count = 0;
+
+	i := 0;
+	count := 0;
 	while(i < 13) {
 		i += 0.5;
 		count += 1;
@@ -8,9 +8,10 @@
   dump i;
   dump count;
 
-	var a = 113;
+  #~
+	var a := 113;
 	if(i > 101) {
-		a = 100;
+		a := 100;
 	};
 	dump a;
-}
+  ~#

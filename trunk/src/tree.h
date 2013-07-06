@@ -692,6 +692,33 @@ namespace compiler {
   };
 
   /****************************
+   * Parsed program class
+   ****************************/
+  class ParsedProgram {
+    vector<Function*> functions;
+    StatementList* statements;
+
+  public:
+    ParsedProgram() {
+    }
+
+    ~ParsedProgram() {
+    }
+
+    void AddFunction(Function* function) {
+      functions.push_back(function);
+    }
+
+    void SetStatements(StatementList* statements) {
+      this->statements = statements;
+    }
+
+    StatementList* GetStatements() {
+      return statements;
+    }
+  };
+
+  /****************************
    * TreeFactory class
    ****************************/
   class TreeFactory {

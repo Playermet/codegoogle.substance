@@ -1,17 +1,17 @@
 {
-#    topCandidate = 1000000;
-  topCandidate = 900000;
+#    topCandidate := 1000000;
+  topCandidate := 900000;
   
-  candidate = 2;
+  candidate := 2;
   while(candidate <= topCandidate) {
-    trialDivisor = 2;
-    prime = 1;
+    trialDivisor := 2;
+    prime := 1;
 				
-    found = true;
+    found := true;
     while(trialDivisor * trialDivisor <= candidate & found) {
       if(candidate % trialDivisor == 0) {
-        prime = 0;
-        found = false;
+        prime := 0;
+        found := false;
       }
       else {
         trialDivisor += 1;
