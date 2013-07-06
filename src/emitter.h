@@ -42,7 +42,7 @@
 
 namespace compiler {
   class Emitter {
-    Function* parsed_program;
+    ParsedProgram* parsed_program;
     static vector<Instruction*> instruction_factory;
 	  INT_T start_label_id;
     INT_T end_label_id;
@@ -64,7 +64,7 @@ namespace compiler {
     void EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
   
    public:
-    Emitter(Function* parsed_program) {
+    Emitter(ParsedProgram* parsed_program) {
       this->parsed_program = parsed_program;
 		  start_label_id = 0;
       end_label_id = INT_MIN;

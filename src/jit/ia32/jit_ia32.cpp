@@ -1,3 +1,34 @@
+/***************************************************************************
+ * JIT compiler for the IA-32 architecture.
+ *
+ * Copyright (c) 2008-2013 Randy Hollines
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright 
+ * notice, this lis  of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright 
+ * notice, this list of conditions and the following disclaimer in 
+ * the documentation and/or other materials provided with the distribution.
+ * - Neither the name of the Objeck Team nor the names of its 
+ * contributors may be used to endorse or promote products derived 
+ * from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+ * "AS IS" AND ANY EXPRESS OR IPLIED WARRANTIES, INCLUDING, BUT NOT 
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ***************************************************************************/
+
 #include "jit_ia32.h"
 
 using namespace jit;
@@ -742,13 +773,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
     case REG_INT: {
       RegisterHolder* lhs = right->GetRegister();
       RegisterHolder* rhs = GetRegister();
-
-      // move_mem_reg(left->GetOperand(), EBP, rhs->GetRegister());
-			// RegisterHolder* holder = GetRegister();
       move_mem_reg(FRAME, EBP, rhs->GetRegister());
       add_imm_reg(left->GetOperand() + VALUE_OFFSET, rhs->GetRegister());
-      move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());
-			
+      move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());			
       math_reg_reg(lhs->GetRegister(), rhs->GetRegister(), instruction->GetType());
       ReleaseRegister(lhs);
       working_stack.push_front(new RegInstr(rhs));
@@ -1719,7 +1746,6 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, jit::JitInstructi
     div_imm_xreg(instr, reg);
     break;
     
-		// TODO: add look optimization
   case LES_FLOAT:
   case LES_EQL_FLOAT:
   case GTR_FLOAT:
@@ -1766,7 +1792,6 @@ void JitCompiler::math_xreg_xreg(Register src, Register dest, jit::JitInstructio
     div_xreg_xreg(src, dest);
     break;
     
-		// TODO: add look optimization
   case LES_FLOAT:
   case LES_EQL_FLOAT:
   case GTR_FLOAT:

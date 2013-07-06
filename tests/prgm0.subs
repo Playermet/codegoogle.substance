@@ -1,35 +1,35 @@
 {
-	a = 3;
-	b = 0;
+	a := 3;
+	b := 0;
 	while(a < 12) {
-		b = 5 + a;
-		a = a + 1;
+		b := 5 + a;
+		a := a + 1;
 	};
 	dump b;
 		 
-	a = 0;
-	b = 0;
+	a := 0;
+	b := 0;
 	while(a < 12) {
-		b = a + 5;
-		a = a + 1;
+		b := a + 5;
+		a := a + 1;
 	};
 	dump b;
 	
-	a = 0;
-	b = 0;
+	a := 0;
+	b := 0;
 	while(a < 12) {
-		b = a + 5;
-		b = a * b;
-		a = a + 1;
+		b := a + 5;
+		b := a * b;
+		a := a + 1;
 	};
 	dump b;
 	
-	a = 0;
-	b = 0;
+	a := 0;
+	b := 0;
 	while(a < 12) {
-		b = a + 5;
-		b = a * b * a;
-		a = a + 1;
+		b := a + 5;
+		b := a * b * a;
+		a := a + 1;
 	};
 	dump b;
 }

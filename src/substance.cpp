@@ -37,14 +37,16 @@ int main(int argc, const char* argv[]) {
 	if(argc == 2) {
     // parse program
 		compiler::Parser parser(BytesToUnicode(argv[1]));
-		compiler::Function* parsed_program = parser.Parse();    
+    compiler::ParsedProgram* parsed_program = parser.Parse();    
     // emit code
     if(parsed_program) {
 			// emit and run code
-      compiler::Emitter emitter(parsed_program);
+      compiler::Emitter emitter(parsed_program);      
       runtime::Runtime runtime(emitter.Emit(), emitter.GetLastLabelId());
-			runtime.Run();        
-			// clean up and exit
+      // free parsed program
+      parser.DeleteProgram();
+			runtime.Run();        			
+      // clean up and exit
 			compiler::Emitter::ClearInstructions();
 			return 0;
     }

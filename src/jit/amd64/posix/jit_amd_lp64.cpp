@@ -801,7 +801,9 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
     case REG_INT: {
       RegisterHolder* lhs = right->GetRegister();
       RegisterHolder* rhs = GetRegister();
-      move_mem_reg(left->GetOperand(), RBP, rhs->GetRegister());
+      move_mem_reg(FRAME, RBP, rhs->GetRegister());
+      add_imm_reg(left->GetOperand() + VALUE_OFFSET, rhs->GetRegister());
+      move_mem_reg(0, rhs->GetRegister(), rhs->GetRegister());
       math_reg_reg(lhs->GetRegister(), rhs->GetRegister(), instruction->GetType());
       ReleaseRegister(lhs);
       working_stack.push_front(new RegInstr(rhs));
@@ -1151,12 +1153,11 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 			AddImm(0);
 
 			// add guard code if not jumping to the end-of-lopp
-			if(instr->GetOperand() != end_label) {
+			if(instr->GetOperand() != block_instrs.back()->GetOperand()) {
 				Epilog(instr->GetOperand3() < 0 ? instr->GetOperand() : instr->GetOperand3());
 			}
 		}    
-	}
-		
+	}		
 	else {
 		skip_jump = false;
 	}
@@ -1406,6 +1407,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
         break;
 
       case EQL_INT:
+      case EQL_FLOAT:
 #ifdef _DEBUG
         wcout << L"  " << (++instr_count) << L": [je]" << endl;
 #endif
@@ -1413,6 +1415,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
         break;
 
       case NEQL_INT:
+      case NEQL_FLOAT:
 #ifdef _DEBUG
         wcout << L"  " << (++instr_count) << L": [jne]" << endl;
 #endif
@@ -1473,6 +1476,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
         break;
 
       case EQL_INT:
+      case EQL_FLOAT:
 #ifdef _DEBUG
         wcout << L"  " << (++instr_count) << L": [jne]" << endl;
 #endif
@@ -1480,6 +1484,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
         break;
 
       case NEQL_INT:
+      case NEQL_FLOAT:
 #ifdef _DEBUG
         wcout << L"  " << (++instr_count) << L": [je]" << endl;
 #endif
@@ -1527,7 +1532,7 @@ bool JitCompiler::cond_jmp(JitInstructionType type) {
     skip_jump = true;
 
 		// add guard code if not jumping to the end-of-lopp
-		if(next_instr->GetOperand() != block_instrs.back()->GetOperand()) {
+		if(next_instr->GetOperand() != end_label) {
 			Epilog(next_instr->GetOperand3() < 0 ? next_instr->GetOperand() : next_instr->GetOperand3());
 		}
     
@@ -1613,6 +1618,7 @@ void JitCompiler::math_reg_reg(Register src, Register dest, JitInstructionType t
   case SHR_INT:
     shr_reg_reg(src, dest);
     break;
+
   case AND_INT:
     and_reg_reg(src, dest);
     break;
@@ -1778,9 +1784,13 @@ void JitCompiler::math_imm_xreg(RegInstr* instr, Register reg, JitInstructionTyp
 }
 
 void JitCompiler::math_mem_xreg(long offset, Register dest, JitInstructionType type) {
+  RegisterHolder* base_holder = GetRegister();
+  move_mem_reg(FRAME, RBP, base_holder->GetRegister());
+  add_imm_reg(offset + VALUE_OFFSET, base_holder->GetRegister());
   RegisterHolder* holder = GetXmmRegister();
-  move_mem_xreg(offset, RBP, holder->GetRegister());
+  move_mem_xreg(offset, base_holder->GetRegister(), holder->GetRegister());
   math_xreg_xreg(holder->GetRegister(), dest, type);
+  ReleaseRegister(base_holder);
   ReleaseXmmRegister(holder);
 }
 

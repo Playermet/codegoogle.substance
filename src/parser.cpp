@@ -138,19 +138,45 @@ bool Parser::NoErrors()
 /****************************
  * Starts the parsing process.
  ****************************/
-Function* Parser::Parse()
+ParsedProgram* Parser::Parse()
 {
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
 #ifdef _DEBUG
   wcout << L"\n========== Scanning/Parsing =========" << endl;
 #endif
+
   NextToken();
   
-  // parse input
-  Function* function = ParseFunction(0);
+  program = new ParsedProgram;
+  StatementList* statements = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
+
+  symbol_table.NewScope();
+
+  while(!Match(TOKEN_END_OF_STREAM)) {
+    if(Match(TOKEN_FUNCTION_ID)) {
+      Function* function = ParseFunction(0);
+      if(function) {
+        program->AddFunction(function);
+      }
+    }
+    else {
+      Statement* statement = ParseStatement(0);
+      if(statement) {
+        statements->AddStatement(statement);
+      }
+    }
+  }
+  program->SetStatements(statements);
+
+  symbol_table.PreviousScope();
+
   if(NoErrors()) {
-    return function;
+    return program;
   }
   
+  DeleteProgram();
   return NULL;
 }
 
@@ -161,6 +187,14 @@ Function* Parser::ParseFunction(int depth)
 {
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
+
+  NextToken();
+
+  if(!Match(TOKEN_COLON )) {
+		ProcessError(TOKEN_COLON);
+		return NULL;
+	}
+  NextToken();
 
   if(!Match(TOKEN_IDENT )) {
 		ProcessError(TOKEN_IDENT);
@@ -240,8 +274,7 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
 		symbol_table.NewScope();
 	}
 
-  StatementList* block = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
-  
+  StatementList* block = TreeFactory::Instance()->MakeStatementList(file_name, line_num);  
   if(!Match(TOKEN_OPEN_BRACE)) {
     ProcessError(TOKEN_OPEN_BRACE);
     return NULL;
@@ -249,7 +282,7 @@ StatementList* Parser::ParseBlock(bool new_scope, int depth)
   NextToken();
 
   while(!Match(TOKEN_CLOSED_BRACE) && !Match(TOKEN_END_OF_STREAM)) {
-		Statement* statement = ParseStatement(0);
+		Statement* statement = ParseStatement(depth + 1);
 		if(statement) {
 			block->AddStatement(statement);
 		}

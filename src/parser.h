@@ -141,6 +141,7 @@ namespace compiler {
    * Parsers source files.
    ****************************/
   class Parser {
+    ParsedProgram* program;
 	  wstring input;
     Scanner* scanner;
 	  SymbolTable symbol_table;
@@ -221,8 +222,15 @@ namespace compiler {
 			  scanner = NULL;
 		  }
     }
+
+    void DeleteProgram() {
+      if(program) {
+        delete program;
+        program = NULL;
+      }
+    }
   
-    Function* Parse();
+    ParsedProgram* Parse();
   };
 }
 
