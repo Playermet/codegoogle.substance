@@ -8,6 +8,10 @@
   dump i;
   dump count;
 
+  function : Add(a,b) {
+    dump a + b;
+  }
+  
   #~
 	var a := 113;
 	if(i > 101) {

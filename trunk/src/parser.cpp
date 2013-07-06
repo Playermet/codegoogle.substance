@@ -157,15 +157,19 @@ ParsedProgram* Parser::Parse()
   while(!Match(TOKEN_END_OF_STREAM)) {
     if(Match(TOKEN_FUNCTION_ID)) {
       Function* function = ParseFunction(0);
-      if(function) {
-        program->AddFunction(function);
+      if(!function) {
+        DeleteProgram();
+        return NULL;
       }
+      program->AddFunction(function);
     }
     else {
       Statement* statement = ParseStatement(0);
-      if(statement) {
-        statements->AddStatement(statement);
+      if(!statement) {
+        DeleteProgram();
+        return NULL;
       }
+      statements->AddStatement(statement);
     }
   }
   program->SetStatements(statements);
