@@ -722,7 +722,7 @@ namespace compiler {
 		
   public:
 	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-						 ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
+                   ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
 			this->name = name;
       this->parameters = parameters;
       this->statements = statements;
@@ -908,7 +908,7 @@ namespace compiler {
     }
 
     ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-													 ExpressionList* parameters, StatementList* statements) {
+                                 ExpressionList* parameters, StatementList* statements) {
       ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements);
       nodes.push_back(tmp);
       return tmp;

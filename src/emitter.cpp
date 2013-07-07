@@ -51,7 +51,7 @@ ExecutableProgram* Emitter::Emit()
   set<size_t> leaders;
   EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));    
-  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", block_instructions, jump_table, leaders);
+  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders);
   executable_program->SetGlobal(global);
   
   // emit functions
@@ -75,11 +75,15 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   unordered_map<long, size_t> jump_table;
   set<size_t> leaders;
   
+  vector<Expression*> parameters = parsed_function->GetParameters()->GetExpressions();
+  //
+  
   // emit function
   EmitFunction(parsed_function->GetStatements(), block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));
-    
-  return new ExecutableFunction(parsed_function->GetName(), block_instructions, jump_table, leaders);
+  
+  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
+                                block_instructions, jump_table, leaders);
 }
 
 /****************************
@@ -165,7 +169,7 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*> &block
 	for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
 		EmitExpression(*iter, block_instructions, jump_table);		
 	}
-	block_instructions.push_back(MakeInstruction(FUNC_CALL, reference->GetName()));
+	block_instructions.push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
 }
 
 /****************************
