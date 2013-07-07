@@ -40,7 +40,15 @@ namespace runtime {
    ****************************/
   // size of execution stack
   #define EXECUTION_STACK_SIZE 128
-
+  
+  /****************************
+   * Call stack frame
+   ****************************/
+  typedef struct _Frame {
+    Value* locals;
+    size_t ip;
+  } Frame;
+  
   /****************************
    * Execution engine
    ****************************/
@@ -55,6 +63,8 @@ namespace runtime {
 	  unordered_map<INT_T, size_t> jump_table;
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
+    // call stack
+    
 
 		// tracing jit variables
 #ifndef _NO_JIT

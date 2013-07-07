@@ -72,7 +72,7 @@ void Runtime::Run()
 #endif
 
   // runtime variables
-  Value* frame = new Value[8];
+  Value* locals = new Value[8];
   Value left, right;
 
   // tracing jit variables
@@ -93,7 +93,7 @@ void Runtime::Run()
       break;
 			
 		case FUNC_CALL:
-			FunctionCall(instruction, frame);
+			FunctionCall(instruction, locals);
 			wcout << L"FUN_CALL: name=" << instruction->operand5 << endl;
 			break;
 
@@ -157,7 +157,7 @@ void Runtime::Run()
 #ifdef _DEBUG
       wcout << L"LOAD_VAR: id=" << instruction->operand1 << endl;
 #endif
-      left = frame[instruction->operand1];
+      left = locals[instruction->operand1];
       PushValue(left);
       // record JIT instructions
       if(is_recording) {
@@ -183,11 +183,11 @@ void Runtime::Run()
       wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-      frame[instruction->operand1] = left;
+      locals[instruction->operand1] = left;
       // record JIT instructions
       if(is_recording) {
         // ensure the type hasn't changed
-        if(frame[instruction->operand1].type == left.type) {
+        if(locals[instruction->operand1].type == left.type) {
           switch(right.type) {
           case BOOL_VALUE:
           case INT_VALUE:
@@ -226,7 +226,7 @@ void Runtime::Run()
           wcout << L"========== NATIVE CODE: id=" << instruction->operand1 << L"==========" << endl;
 #endif					
           jit::jit_fun_ptr jit_fun = instruction->native_code;
-          const INT_T guard_label = (*jit_fun)(frame, NULL, NULL);
+          const INT_T guard_label = (*jit_fun)(locals, NULL, NULL);
           // TODO: manage error codes
           ip = guard_label == -1 ? instruction->operand3 : guard_label;
 
@@ -472,8 +472,8 @@ void Runtime::Run()
     instruction = instructions[ip++];
   } 
 
-  delete[] frame;
-  frame = NULL;
+  delete[] locals;
+  locals = NULL;
 
 #ifdef _DEBUG
   wcout << L"==========================" << endl;
@@ -481,7 +481,7 @@ void Runtime::Run()
 #endif
 }
 
-void Runtime::FunctionCall(Instruction* instruction, Value* frame)
+void Runtime::FunctionCall(Instruction* instruction, Value* locals)
 {
   ExecutableFunction* function = program->GetFunction(instruction->operand5);
   if(!function) {
@@ -494,5 +494,5 @@ void Runtime::FunctionCall(Instruction* instruction, Value* frame)
     exit(1);
   }
 
-  // TODO: frame with ip and local variables
+  // TODO: locals with ip and local variables
 }
