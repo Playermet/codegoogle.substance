@@ -179,8 +179,8 @@ namespace runtime {
 	  Runtime(ExecutableProgram *p, INT_T last_label_id) {
 			program = p;
       this->last_label_id = last_label_id;
-      this->instructions = p->GetInstructions();
-		  this->jump_table = p->GetJumpTable();			
+      this->instructions = p->GetGlobal()->GetInstructions();
+		  this->jump_table = p->GetGlobal()->GetJumpTable();			
 			execution_stack = new Value[EXECUTION_STACK_SIZE];
 			execution_stack_pos = 0;
     }

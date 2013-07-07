@@ -54,7 +54,8 @@ namespace compiler {
     INT_T NextStartId() {
       return start_label_id++;
     }
-  
+    
+    ExecutableFunction* EmitFunction(ParsedFunction* parsed_function);
     void EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);
 		void EmitFunctionCall(Reference* reference, vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table);

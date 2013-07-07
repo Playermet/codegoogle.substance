@@ -41,17 +41,45 @@ vector<Instruction*> Emitter::instruction_factory;
 ExecutableProgram* Emitter::Emit()
 {
 #ifdef _DEBUG
-  wcout << L"\n---------- Emitting Instructions ---------" << endl;
+  wcout << L"\n---------- Emitting Program ---------" << endl;
+#endif
+  ExecutableProgram* executable_program = new ExecutableProgram;
+  
+  // emit global statements
+  vector<Instruction*> block_instructions;
+  unordered_map<long, size_t> jump_table;
+  set<size_t> leaders;
+  EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
+  block_instructions.push_back(MakeInstruction(RTRN));    
+  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", block_instructions, jump_table, leaders);
+  executable_program->SetGlobal(global);
+  
+  // emit functions
+  vector<ParsedFunction*> functions = parsed_program->GetFunctions();
+  for(size_t i = 0; i < functions.size(); i++) {
+    ExecutableFunction* executable_function = EmitFunction(functions[i]);
+    executable_program->AddFunction(executable_function);
+  }
+  
+  return executable_program;
+}
+
+ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
+{
+#ifdef _DEBUG
+  wcout << L"\n---------- Emitting Program ---------" << endl;
 #endif
   
-	vector<Instruction*> block_instructions;
-	unordered_map<long, size_t> jump_table;
+  // create holders
+  vector<Instruction*> block_instructions;
+  unordered_map<long, size_t> jump_table;
   set<size_t> leaders;
-	
-  EmitFunction(parsed_program->GetStatements(), block_instructions, jump_table, leaders);
+  
+  // emit function
+  EmitFunction(parsed_function->GetStatements(), block_instructions, jump_table, leaders);
   block_instructions.push_back(MakeInstruction(RTRN));
-
-	return new ExecutableProgram(block_instructions, jump_table, leaders);
+    
+  return new ExecutableFunction(parsed_function->GetName(), block_instructions, jump_table, leaders);
 }
 
 /****************************

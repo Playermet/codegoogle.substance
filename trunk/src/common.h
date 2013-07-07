@@ -187,21 +187,28 @@ class Value {
 /****************************
  * Holder for runtime program
  ****************************/
-class ExecutableProgram {
+class ExecutableFunction {
+  wstring name;
 	vector<Instruction*> block_instructions; 
 	unordered_map<long, size_t> jump_table;
   set<size_t> leaders;
 	
  public:
-	ExecutableProgram(vector<Instruction*> &block_instructions, unordered_map<long, size_t> &jump_table, set<size_t> &leaders) {
+	ExecutableFunction(const wstring &name, vector<Instruction*> &block_instructions, 
+                    unordered_map<long, size_t> &jump_table, set<size_t> &leaders) {
+    this->name = name;
 		this->block_instructions = block_instructions;
 		this->jump_table = jump_table;
     this->leaders = leaders;
 	}
 	
-	~ExecutableProgram() {
+	~ExecutableFunction() {
 	}
 	
+  const wstring GetName() {
+    return name;
+  }
+  
 	vector<Instruction*> &GetInstructions() {
 		return block_instructions; 
 	}
@@ -209,6 +216,42 @@ class ExecutableProgram {
 	unordered_map<long, size_t> &GetJumpTable() {
 		return jump_table;
 	}
+};
+
+/****************************
+ * Holder for runtime program
+ ****************************/
+class ExecutableProgram {
+  ExecutableFunction* global_function;
+  unordered_map<wstring, ExecutableFunction*> functions;
+  
+ public:
+  ExecutableProgram() {
+  }
+
+  ~ExecutableProgram() {
+  }
+
+  void AddFunction(ExecutableFunction* function) {
+    functions.insert(pair<wstring, ExecutableFunction*>(function->GetName(), function));
+  }
+
+  ExecutableFunction* GetFunction(const wstring &name) {
+    unordered_map<wstring, ExecutableFunction*>::iterator result = functions.find(name);
+    if(result != functions.end()) {
+      return result->second;
+    }
+    
+    return NULL;
+  }
+  
+  void SetGlobal(ExecutableFunction* global_function) {
+    this->global_function = global_function;
+  }
+  
+  ExecutableFunction* GetGlobal() {
+    return global_function;
+  }
 };
 
 /****************************
