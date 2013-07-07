@@ -4,5 +4,10 @@ b := 2;
 foo(a,b);
 
 function : foo(a,b) {
-	dump a + b;
+	i := 0; c := 100;
+	while(i < 13) {
+		c += 3;
+		i += 1;
+	};
+	dump a + b * c;
 }
