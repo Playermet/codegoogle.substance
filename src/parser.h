@@ -190,7 +190,7 @@ namespace compiler {
     bool NoErrors();
 	
     // parsing operations
-    Function* ParseFunction(int depth);    
+    ParsedFunction* ParseFunction(int depth);    
     ExpressionList* ParseDeclarationParameters(int depth);
     StatementList* ParseBlock(bool new_scope, int depth);
 		Statement* ParseDeclaration(int depth);

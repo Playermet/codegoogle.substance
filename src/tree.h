@@ -713,22 +713,22 @@ namespace compiler {
   };
 
   /****************************
-   * Function class
+   * ParsedFunction class
    ****************************/
-  class Function : public ParseNode {
+  class ParsedFunction : public ParseNode {
 		wstring name;
     ExpressionList* parameters;
     StatementList* statements;
 		
   public:
-	  Function(const wstring &file_name, const unsigned int line_num, const wstring &name,
+	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
 						 ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
 			this->name = name;
       this->parameters = parameters;
       this->statements = statements;
     }
 		
-    ~Function() {
+    ~ParsedFunction() {
     }
 
 		inline wstring GetName() {
@@ -748,7 +748,8 @@ namespace compiler {
    * Parsed program class
    ****************************/
   class ParsedProgram {
-		unordered_map<wstring, Function*> functions;
+		unordered_map<wstring, ParsedFunction*> function_table;
+    vector<ParsedFunction*> functions;
     StatementList* statements;
 		
   public:
@@ -758,22 +759,36 @@ namespace compiler {
     ~ParsedProgram() {
     }
 
-		bool AddFunction(Function* function) {
+		bool AddFunction(ParsedFunction* function) {
 			wstring name = function->GetName();
-			unordered_map<wstring, Function*>::iterator result = functions.find(name);
-			if(result == functions.end()) {
-				functions.insert(pair<wstring, Function*>(name, function));
+			unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
+			if(result == function_table.end()) {
+				function_table.insert(pair<wstring, ParsedFunction*>(name, function));
+        functions.push_back(function);
 				return true;
 			}
 			
 			return false;
     }
 
-    void SetStatements(StatementList* statements) {
+    ParsedFunction* GetFunction(const wstring &name) {
+      unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
+      if(result != function_table.end()) {
+        return result->second;
+      }
+      
+      return NULL;
+    }
+    
+    vector<ParsedFunction*> GetFunctions() {
+      return functions;
+    }
+    
+    void SetGlobal(StatementList* statements) {
       this->statements = statements;
     }
 
-    StatementList* GetStatements() {
+    StatementList* GetGlobal() {
       return statements;
     }
   };
@@ -892,9 +907,9 @@ namespace compiler {
       return tmp;
     }
 
-    Function* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
+    ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
 													 ExpressionList* parameters, StatementList* statements) {
-      Function* tmp = new Function(file_name, line_num, name, parameters, statements);
+      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements);
       nodes.push_back(tmp);
       return tmp;
     }

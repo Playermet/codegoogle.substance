@@ -61,7 +61,7 @@ void Parser::ProcessError(ScannerTokenType type)
   wstring msg = error_msgs[type];
 #ifdef _DEBUG
   wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
-	<< msg << endl;
+        << msg << endl;
 #endif
 
   const wstring &str_line_num = ToString(GetLineNumber());
@@ -88,7 +88,7 @@ void Parser::ProcessError(const wstring &msg, ScannerTokenType sync)
 {
 #ifdef _DEBUG
   wcout << L"\tError: " << GetFileName() << L":" << GetLineNumber() << L": "
-	<< msg << endl;
+        << msg << endl;
 #endif
 
   const wstring &str_line_num = ToString(GetLineNumber());
@@ -107,7 +107,7 @@ void Parser::ProcessError(const wstring &msg, ParseNode* node)
 {
 #ifdef _DEBUG
   wcout << L"\tError: " << node->GetFileName() << L":" << node->GetLineNumber()
-	<< L": " << msg << endl;
+        << L": " << msg << endl;
 #endif
 
   const wstring &str_line_num = ToString(node->GetLineNumber());
@@ -162,7 +162,7 @@ ParsedProgram* Parser::Parse()
 			// new scope for function level statements
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
-      Function* function = ParseFunction(0);
+      ParsedFunction* function = ParseFunction(0);
 			delete symbol_table;
 			symbol_table = prev_symbol_table;			
       if(!function) {
@@ -184,7 +184,7 @@ ParsedProgram* Parser::Parse()
       statements->AddStatement(statement);
     }
   }
-  program->SetStatements(statements);
+  program->SetGlobal(statements);
 	
 	// clean up symbol table
   symbol_table->PreviousScope();
@@ -202,7 +202,7 @@ ParsedProgram* Parser::Parse()
 /****************************
  * Parses a function
  ****************************/
-Function* Parser::ParseFunction(int depth)
+ParsedFunction* Parser::ParseFunction(int depth)
 {
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
