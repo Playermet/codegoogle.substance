@@ -89,11 +89,21 @@ void Runtime::Run()
   Instruction* instruction = instructions[ip++];
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
-    case RTRN:
+    case RTRN: {
+      Frame* frame = call_stack.top();
+      call_stack.pop();
+      ip = frame->ip;
+      instructions = frame->instructions;
+      locals = frame->locals;
+      jump_table = frame->jump_table;
+
+      delete frame;
+      frame = NULL;
+    }
       break;
 			
 		case FUNC_CALL:
-			FunctionCall(instruction, locals);
+			FunctionCall(instruction, ip, locals);
 			wcout << L"FUN_CALL: name=" << instruction->operand5 << endl;
 			break;
 
@@ -282,7 +292,15 @@ void Runtime::Run()
           }
         }
         else {
-          is_jump = jump_table[instruction->operand1] < ip;
+          unordered_map<INT_T, size_t>::iterator result = jump_table.find(instruction->operand1);
+          if(result != jump_table.end()) {
+            is_jump = result->second < ip;
+          }
+          else {
+            wcerr << ">>> PANIC <<<" << endl;
+            exit(1);
+          }
+          // is_jump = jump_table[instruction->operand1] < ip;
         }				
 #endif
         ip = jump_table[instruction->operand1];
@@ -481,7 +499,7 @@ void Runtime::Run()
 #endif
 }
 
-void Runtime::FunctionCall(Instruction* instruction, Value* locals)
+void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
   ExecutableFunction* function = program->GetFunction(instruction->operand5);
   if(!function) {
@@ -494,5 +512,17 @@ void Runtime::FunctionCall(Instruction* instruction, Value* locals)
     exit(1);
   }
 
-  // TODO: locals with ip and local variables
+  // push stack frame
+  Frame* frame = new Frame;
+  frame->ip = ip;
+  frame->instructions = instructions;
+  frame->locals = locals;
+  frame->jump_table = jump_table;
+  call_stack.push(frame);
+
+  // initialize new frame
+  ip = 0;
+  instructions = function->GetInstructions();
+  locals = new Value[8];
+  jump_table = frame->jump_table;
 }

@@ -42,11 +42,13 @@ namespace runtime {
   #define EXECUTION_STACK_SIZE 128
   
   /****************************
-   * Call stack frame
-   ****************************/
+ * Call stack frame
+ ****************************/
   typedef struct _Frame {
-    Value* locals;
+    vector<Instruction*> instructions;
     size_t ip;
+    Value* locals;
+    unordered_map<INT_T, size_t> jump_table;
   } Frame;
   
   /****************************
@@ -64,7 +66,7 @@ namespace runtime {
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
     // call stack
-    
+    stack<Frame*> call_stack;
 
 		// tracing jit variables
 #ifndef _NO_JIT
@@ -183,16 +185,17 @@ namespace runtime {
   #endif
 		
     // member operations
-		void FunctionCall(Instruction* instruction, Value* frame);
+		void FunctionCall(Instruction* instruction, size_t &ip, Value* frame);
 			
    public:
 	  Runtime(ExecutableProgram *p, INT_T last_label_id) {
 			program = p;
       this->last_label_id = last_label_id;
+      execution_stack = new Value[EXECUTION_STACK_SIZE];
+			execution_stack_pos = 0;      
+      // this should be part of a frame
       this->instructions = p->GetGlobal()->GetInstructions();
-		  this->jump_table = p->GetGlobal()->GetJumpTable();			
-			execution_stack = new Value[EXECUTION_STACK_SIZE];
-			execution_stack_pos = 0;
+		  this->jump_table = p->GetGlobal()->GetJumpTable();
     }
   
     ~Runtime() {
