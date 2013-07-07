@@ -483,5 +483,16 @@ void Runtime::Run()
 
 void Runtime::FunctionCall(Instruction* instruction, Value* frame)
 {
+  ExecutableFunction* function = program->GetFunction(instruction->operand5);
+  if(!function) {
+    wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
+    exit(1);
+  }
   
+  if(function->GetParameterCount() != instruction->operand1) {
+    wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
+    exit(1);
+  }
+
+  // TODO: frame with ip and local variables
 }

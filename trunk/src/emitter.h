@@ -112,10 +112,11 @@ namespace compiler {
       return instruction;
     }
 
-		static Instruction* MakeInstruction(InstructionType type, const wstring &name) {
+		static Instruction* MakeInstruction(InstructionType type, int operand1, const wstring &operand5) {
       Instruction* instruction = new Instruction;
       instruction->type = type;
-      instruction->operand5 = name;
+      instruction->operand1 = operand1;
+      instruction->operand5 = operand5;
       instruction_factory.push_back(instruction);
 			
       return instruction;
