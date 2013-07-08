@@ -190,12 +190,12 @@ class Value {
 class ExecutableFunction {
   wstring name;
   int parameter_count;
-	vector<Instruction*> block_instructions; 
+	vector<Instruction*>* block_instructions; 
 	unordered_map<long, size_t>* jump_table;
   set<size_t> leaders;
 	
  public:
-	ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*> &block_instructions, 
+	ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*>* block_instructions, 
                      unordered_map<long, size_t>* jump_table, set<size_t> &leaders) {
     this->name = name;
     this->parameter_count = parameter_count;
@@ -209,6 +209,11 @@ class ExecutableFunction {
       delete jump_table;
       jump_table = NULL;
     }
+
+    if(block_instructions) {
+      delete block_instructions;
+      block_instructions = NULL;
+    }
 	}
 	
   const wstring GetName() {
@@ -219,7 +224,7 @@ class ExecutableFunction {
     return parameter_count;
   }
   
-	vector<Instruction*> &GetInstructions() {
+	vector<Instruction*>* GetInstructions() {
 		return block_instructions; 
 	}
 	

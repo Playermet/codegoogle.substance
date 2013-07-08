@@ -86,7 +86,7 @@ void Runtime::Run()
   // execute code
   is_recording = false;
   size_t ip = 0;  
-  Instruction* instruction = instructions[ip++];
+  Instruction* instruction = instructions->at(ip++);
   while(instruction->type != RTRN) {   
     switch(instruction->type) {
     case RTRN: {
@@ -479,7 +479,7 @@ void Runtime::Run()
       break;
     }
     // update
-    instruction = instructions[ip++];
+    instruction = instructions->at(ip++);
   } 
 
   delete[] locals;
