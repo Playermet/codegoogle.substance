@@ -270,7 +270,7 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
     if(Match(TOKEN_COMMA)) {
       NextToken();
       if(Match(TOKEN_CLOSED_PAREN)) {
-        ProcessError(TOKEN_CLOSED_PAREN);
+        ProcessError(TOKEN_IDENT);
       }
     }
   }
@@ -1106,21 +1106,16 @@ ExpressionList* Parser::ParseCallingParameters(int depth)
 	}
   NextToken();
 
-  while(Match(TOKEN_IDENT)) {
-    const wstring identifier = scanner->GetToken()->GetIdentifier();
-		int entry_id = symbol_table->GetEntry(identifier);
-		if(entry_id < 0) {
-			ProcessError(L"Unknown reference '" + identifier + L"'");
-			return NULL;
-		}
-		Reference* parameter = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+  while(!Match(TOKEN_CLOSED_PAREN) && !Match(TOKEN_END_OF_STREAM)) {
+    Expression* parameter = ParseExpression(depth + 1);
+    if(!parameter) {
+      return NULL;
+    }
     parameters->AddExpression(parameter);
-	  NextToken(); 
-
     if(Match(TOKEN_COMMA)) {
       NextToken();
       if(Match(TOKEN_CLOSED_PAREN)) {
-        ProcessError(TOKEN_CLOSED_PAREN);
+        ProcessError(L"Expected expression", parameters);
       }
     }
   }

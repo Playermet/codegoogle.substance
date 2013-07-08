@@ -1,7 +1,7 @@
 a := 1 + 7;
 b := 2;
 
-foo(a,b);
+foo(13,b);
 
 function : foo(a,b) {
 	i := 0; c := 100;
