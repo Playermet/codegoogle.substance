@@ -652,17 +652,33 @@ void Scanner::ParseToken(int index)
       break;
 
     case L'=':
-      tokens[index]->SetType(TOKEN_EQL);
-			tokens[index]->SetLineNbr(line_num);
-			tokens[index]->SetFileName(file_name);
-      NextChar(); 
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_EQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } else {
+        tokens[index]->SetType(TOKEN_ASSIGN);
+        tokens[index]->SetLineNbr(line_num);
+        tokens[index]->SetFileName(file_name);
+        NextChar();
+      } 
       break;
       
     case L'!':
-      tokens[index]->SetType(TOKEN_NOT);
-			tokens[index]->SetLineNbr(line_num);
-			tokens[index]->SetFileName(file_name);
-      NextChar();
+      if(nxt_char == L'=') {
+        NextChar();
+        tokens[index]->SetType(TOKEN_NEQL);
+				tokens[index]->SetLineNbr(line_num);
+				tokens[index]->SetFileName(file_name);
+        NextChar();
+      } else {
+        tokens[index]->SetType(TOKEN_NOT);
+        tokens[index]->SetLineNbr(line_num);
+        tokens[index]->SetFileName(file_name);
+        NextChar();
+      }
       break;
       
     case L'<':
