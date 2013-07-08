@@ -45,7 +45,7 @@ namespace runtime {
  * Call stack frame
  ****************************/
   typedef struct _Frame {
-    vector<Instruction*> instructions; // TODO: pass as a pointer?
+    vector<Instruction*>* instructions; // TODO: pass as a pointer?
     size_t ip;
     Value* locals;
     unordered_map<INT_T, size_t>* jump_table;
@@ -61,7 +61,7 @@ namespace runtime {
     Value* execution_stack;
 		size_t execution_stack_pos;
 		// program instructions and jump table
-    vector<Instruction*> instructions;
+    vector<Instruction*>* instructions;
 	  unordered_map<INT_T, size_t>* jump_table;
 		// loop iteration counts
 		stack<INT_T> loop_iterations;

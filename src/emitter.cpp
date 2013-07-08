@@ -46,12 +46,11 @@ ExecutableProgram* Emitter::Emit()
   ExecutableProgram* executable_program = new ExecutableProgram;
   
   // emit global statements
-  vector<Instruction*> block_instructions;
-  // TODO: free this memory
+  vector<Instruction*>* block_instructions = new vector<Instruction*>;
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
   EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
-  block_instructions.push_back(MakeInstruction(RTRN));    
+  block_instructions->push_back(MakeInstruction(RTRN));    
   ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders);
   executable_program->SetGlobal(global);
   
@@ -72,26 +71,24 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
 #endif
   
   // create holders
-  vector<Instruction*> block_instructions;
+  vector<Instruction*>* block_instructions = new vector<Instruction*>;
   // TODO: free this memory
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
-
-  wcout << L"@@@: 0 " << jump_table << L" @@@" << endl;
   
   vector<Expression*> parameters = parsed_function->GetParameters()->GetExpressions();
   for(size_t i = 0; i < parameters.size(); ++i) {
     Reference* reference = static_cast<Reference*>(parameters[i]);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"store: name='" << reference->GetName() 
+    wcout << block_instructions->size() << L": " << L"store: name='" << reference->GetName() 
 					<< L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetId())); 
+    block_instructions->push_back(MakeInstruction(STOR_VAR, reference->GetId())); 
   }
   
   // emit function
   EmitFunction(parsed_function->GetStatements(), block_instructions, jump_table, leaders);
-  block_instructions.push_back(MakeInstruction(RTRN));
+  block_instructions->push_back(MakeInstruction(RTRN));
 
   return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
                                 block_instructions, jump_table, leaders);
@@ -100,18 +97,18 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
 /****************************
  * Emit code for a function
  ****************************/
-void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*> &block_instructions,
+void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*>* block_instructions,
 													 unordered_map<long, size_t>* jump_table, set<size_t> &leaders)
 {
   EmitBlock(block_statements, block_instructions, jump_table);
 
   // create CFG
   leaders.insert(0);
-  for(size_t i = 0; i < block_instructions.size(); ++i) {
-    if(block_instructions[i]->type == LBL) {
+  for(size_t i = 0; i < block_instructions->size(); ++i) {
+    if(block_instructions->at(i)->type == LBL) {
       leaders.insert(i);      
     }
-    else if(block_instructions[i]->type == JMP) {
+    else if(block_instructions->at(i)->type == JMP) {
       leaders.insert(i + 1);
     }
   }
@@ -128,7 +125,7 @@ void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*>
 /****************************
  * Emit code for a statement block
  ****************************/
-void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &block_instructions,
+void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* block_instructions,
 												unordered_map<long, size_t>* jump_table)
 {
   vector<Statement*> statements = block_statements->GetStatements();
@@ -156,10 +153,10 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 
     case DUMP_STATEMENT:
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"dump value" << endl;
+    wcout << block_instructions->size() << L": " << L"dump value" << endl;
 #endif
       EmitExpression(static_cast<Dump*>(statement)->GetExpression(), block_instructions, jump_table);
-      block_instructions.push_back(MakeInstruction(DUMP_VALUE));
+      block_instructions->push_back(MakeInstruction(DUMP_VALUE));
       break;
       
     default:
@@ -172,11 +169,11 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*> &b
 /****************************
  * Emit code for a function call
  ****************************/
-void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*> &block_instructions, 
+void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block_instructions, 
 															 unordered_map<long, size_t>* jump_table)
 {
 #ifdef _DEBUG
-  wcout << block_instructions.size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
+  wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
 #endif
 	// emit parameters
 	vector<Expression*> parameters = reference->GetCallingParameters()->GetExpressions();	
@@ -184,13 +181,13 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*> &block
 		EmitExpression(*iter, block_instructions, jump_table);		
 	}
   // emit function
-	block_instructions.push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
+	block_instructions->push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
 }
 
 /****************************
  * Emit 'if/else' code
  ****************************/
-void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructions, 
+void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*>* block_instructions, 
                          unordered_map<long, size_t>* jump_table)
 {
   const long end_label = NextEndId();
@@ -204,58 +201,58 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructio
   StatementList* else_block = if_else->GetElseBlock();
   if(else_ifs.size() == 0 && !else_block) {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump false: id=" << end_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump false: id=" << end_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, JMP_FALSE));
+    block_instructions->push_back(MakeInstruction(JMP, (int)end_label, JMP_FALSE));
     // emit 'if' block
     EmitBlock(if_else->GetIfBlock(), block_instructions, jump_table);
   }
   else {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump false: id=" << next_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump false: id=" << next_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, JMP_FALSE));
+    block_instructions->push_back(MakeInstruction(JMP, (int)next_label, JMP_FALSE));
     // emit 'if' block
     EmitBlock(if_else->GetIfBlock(), block_instructions, jump_table);    
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump: id=" << end_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
+    block_instructions->push_back(MakeInstruction(JMP, (int)end_label, -1));
   }
   
   // 'if-else' blocks
   if(else_ifs.size() > 0) {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << next_label 
-          << L", pos=" << block_instructions.size() << endl;
+    wcout << block_instructions->size() << L": " << L"label: id=" << next_label 
+          << L", pos=" << block_instructions->size() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
-    jump_table->insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+    block_instructions->push_back(MakeInstruction(LBL, (int)next_label, 0));
+    jump_table->insert(pair<long, size_t>(next_label, block_instructions->size() - 1));
     
     for(size_t i = 0; i < else_ifs.size(); i++) {
       IfElse* else_if = else_ifs[i];
       // emit test
       EmitExpression(else_if->GetExpression(), block_instructions, jump_table);  
 #ifdef _DEBUG
-      wcout << block_instructions.size() << L": " << L"jump false: id=" << (next_label + 1) << endl;
+      wcout << block_instructions->size() << L": " << L"jump false: id=" << (next_label + 1) << endl;
 #endif
-      block_instructions.push_back(MakeInstruction(JMP, (int)next_label + 1, JMP_FALSE));
+      block_instructions->push_back(MakeInstruction(JMP, (int)next_label + 1, JMP_FALSE));
       
       // emit 'if' block
       EmitBlock(else_if->GetIfBlock(), block_instructions, jump_table);    
 #ifdef _DEBUG
-      wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+      wcout << block_instructions->size() << L": " << L"jump: id=" << end_label << endl;
 #endif
       // jump to end
-      block_instructions.push_back(MakeInstruction(JMP, (int)end_label, -1));
+      block_instructions->push_back(MakeInstruction(JMP, (int)end_label, -1));
       
       next_label = NextStartId();
 #ifdef _DEBUG
-      wcout << block_instructions.size() << L": " << L"label: id=" << next_label 
-            << L", pos=" << block_instructions.size() << endl;
+      wcout << block_instructions->size() << L": " << L"label: id=" << next_label 
+            << L", pos=" << block_instructions->size() << endl;
 #endif
-      block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
-      jump_table->insert(pair<long, size_t>(next_label, block_instructions.size() - 1));      
+      block_instructions->push_back(MakeInstruction(LBL, (int)next_label, 0));
+      jump_table->insert(pair<long, size_t>(next_label, block_instructions->size() - 1));      
     }
   }
   
@@ -263,11 +260,11 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructio
   if(else_block) {
     if(else_ifs.size() == 0) {
 #ifdef _DEBUG
-      wcout << block_instructions.size() << L": " << L"label: id=" << next_label 
-            << L", pos=" << block_instructions.size() << endl;
+      wcout << block_instructions->size() << L": " << L"label: id=" << next_label 
+            << L", pos=" << block_instructions->size() << endl;
 #endif
-      block_instructions.push_back(MakeInstruction(LBL, (int)next_label, 0));
-      jump_table->insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+      block_instructions->push_back(MakeInstruction(LBL, (int)next_label, 0));
+      jump_table->insert(pair<long, size_t>(next_label, block_instructions->size() - 1));
     }
     // 'else' block
     EmitBlock(if_else->GetElseBlock(), block_instructions, jump_table);
@@ -275,17 +272,17 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*> &block_instructio
   
   // end label
 #ifdef _DEBUG
-  wcout << block_instructions.size() << L": " << L"label: id=" << end_label 
-        << L", pos=" << block_instructions.size() << endl;
+  wcout << block_instructions->size() << L": " << L"label: id=" << end_label 
+        << L", pos=" << block_instructions->size() << endl;
 #endif
-	block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
-	jump_table->insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+	block_instructions->push_back(MakeInstruction(LBL, (int)end_label, 0));
+	jump_table->insert(pair<long, size_t>(end_label, block_instructions->size() - 1));
 }
 
 /****************************
  * TODO: doc
  ****************************/
-void Emitter::EmitWhile(While* if_while, vector<Instruction*> &block_instructions, 
+void Emitter::EmitWhile(While* if_while, vector<Instruction*>* block_instructions, 
                         unordered_map<long, size_t>* jump_table)
 {
   const long top_label = NextStartId();
@@ -293,42 +290,42 @@ void Emitter::EmitWhile(While* if_while, vector<Instruction*> &block_instruction
 	
   // top label
 #ifdef _DEBUG
-   wcout << block_instructions.size() << L": " << L"label: id=" << top_label 
-         << L", pos=" << block_instructions.size() << endl;
+   wcout << block_instructions->size() << L": " << L"label: id=" << top_label 
+         << L", pos=" << block_instructions->size() << endl;
 #endif
-	block_instructions.push_back(MakeInstruction(LBL, (int)top_label, 0));
-	jump_table->insert(pair<long, size_t>(top_label, block_instructions.size() - 1));
+	block_instructions->push_back(MakeInstruction(LBL, (int)top_label, 0));
+	jump_table->insert(pair<long, size_t>(top_label, block_instructions->size() - 1));
 	
 	// emit test
 	EmitExpression(if_while->GetExpression(), block_instructions, jump_table);
 
 	// jump end
 #ifdef _DEBUG
-   wcout << block_instructions.size() << L": " << L"jump false: id=" << end_label << endl;
+   wcout << block_instructions->size() << L": " << L"jump false: id=" << end_label << endl;
 #endif
-	 block_instructions.push_back(MakeInstruction(JMP, (int)end_label, JMP_FALSE));
+	 block_instructions->push_back(MakeInstruction(JMP, (int)end_label, JMP_FALSE));
 	
 	// emit block
 	EmitBlock(if_while->GetBlock(), block_instructions, jump_table);
 	
 #ifdef _DEBUG
-  wcout << block_instructions.size() << L": " << L"jump: id=" << top_label << endl;
+  wcout << block_instructions->size() << L": " << L"jump: id=" << top_label << endl;
 #endif
-	block_instructions.push_back(MakeInstruction(JMP, (int)top_label, JMP_UNCND));
+	block_instructions->push_back(MakeInstruction(JMP, (int)top_label, JMP_UNCND));
 	
 	// end label
 #ifdef _DEBUG
-  wcout << block_instructions.size() << L": " << L"label: id=" << end_label 
-        << L", pos=" << block_instructions.size() << endl;
+  wcout << block_instructions->size() << L": " << L"label: id=" << end_label 
+        << L", pos=" << block_instructions->size() << endl;
 #endif
-	block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
-	jump_table->insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+	block_instructions->push_back(MakeInstruction(LBL, (int)end_label, 0));
+	jump_table->insert(pair<long, size_t>(end_label, block_instructions->size() - 1));
 }
 
 /****************************
  * Emit assignment code
  ****************************/
-void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block_instructions, 
+void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*>* block_instructions, 
 														 unordered_map<long, size_t>* jump_table)
 {
 	// emit expression
@@ -338,33 +335,33 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block
   case TOKEN_ADD_EQL:
     EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '+'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '+'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(ADD));
+    block_instructions->push_back(MakeInstruction(ADD));
     break;
 
   case TOKEN_SUB_EQL:
     EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '-'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '-'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(SUB));
+    block_instructions->push_back(MakeInstruction(SUB));
     break;
 
   case TOKEN_MUL_EQL:
     EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '*'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '*'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(MUL));
+    block_instructions->push_back(MakeInstruction(MUL));
     break;
 
   case TOKEN_DIV_EQL:
     EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '/'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '/'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(DIV));
+    block_instructions->push_back(MakeInstruction(DIV));
     break;
 
   default:
@@ -378,30 +375,30 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*> &block
 /****************************
  * Emit variable reference
  ****************************/
-void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*> &block_instructions, 
+void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*>* block_instructions, 
 														unordered_map<long, size_t>* jump_table)
 {
   wstring name = reference->GetName();
   if(is_store) {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"store: name='" << reference->GetName() 
+    wcout << block_instructions->size() << L": " << L"store: name='" << reference->GetName() 
 					<< L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(STOR_VAR, reference->GetId()));
+    block_instructions->push_back(MakeInstruction(STOR_VAR, reference->GetId()));
   }
   else {
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load: name='" << reference->GetName() 
+    wcout << block_instructions->size() << L": " << L"load: name='" << reference->GetName() 
 					<< L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
+    block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
   }
 }
 
 /****************************
  * Emit expression
  ****************************/
-void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block_instructions, 
+void Emitter::EmitExpression(Expression* expression, vector<Instruction*>* block_instructions, 
 														 unordered_map<long, size_t>* jump_table)
 {
   switch(expression->GetExpressionType()) {
@@ -411,14 +408,14 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
 
   case BOOLEAN_LIT_EXPR:
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=" 
+    wcout << block_instructions->size() << L": " << L"load literal: type=boolean, value=" 
           << (static_cast<BooleanLiteral*>(expression)->GetValue() ? L"true" : L"false") << endl;
-#endif
+#endif     
     if(static_cast<BooleanLiteral*>(expression)->GetValue()) {      
-      block_instructions.push_back(MakeInstruction(LOAD_TRUE_LIT));
+      block_instructions->push_back(MakeInstruction(LOAD_TRUE_LIT));
     }
     else {
-      block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
+      block_instructions->push_back(MakeInstruction(LOAD_FALSE_LIT));
     }
     break;
     
@@ -428,18 +425,18 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     
   case INT_LIT_EXPR:
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=integer, value=" 
+    wcout << block_instructions->size() << L": " << L"load literal: type=integer, value=" 
           << static_cast<IntegerLiteral*>(expression)->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_INT_LIT, (int)static_cast<IntegerLiteral*>(expression)->GetValue()));
+    block_instructions->push_back(MakeInstruction(LOAD_INT_LIT, (int)static_cast<IntegerLiteral*>(expression)->GetValue()));
     break;
     
   case FLOAT_LIT_EXPR:
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=float, value=" 
+    wcout << block_instructions->size() << L": " << L"load literal: type=float, value=" 
           << static_cast<FloatLiteral*>(expression)->GetValue() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_FLOAT_LIT, (FLOAT_T)static_cast<FloatLiteral*>(expression)->GetValue()));
+    block_instructions->push_back(MakeInstruction(LOAD_FLOAT_LIT, (FLOAT_T)static_cast<FloatLiteral*>(expression)->GetValue()));
     break;
     
   case AND_EXPR: {
@@ -447,35 +444,35 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     const long next_label = NextEndId();
     const long end_label = NextEndId();
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump true: id=" << next_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump true: id=" << next_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, JMP_TRUE));
+    block_instructions->push_back(MakeInstruction(JMP, (int)next_label, JMP_TRUE));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=false" << endl;
+    wcout << block_instructions->size() << L": " << L"load literal: type=boolean, value=false" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
+    block_instructions->push_back(MakeInstruction(LOAD_FALSE_LIT));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump: id=" << end_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, JMP_UNCND));
+    block_instructions->push_back(MakeInstruction(JMP, (int)end_label, JMP_UNCND));
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << next_label 
-          << L", pos=" << block_instructions.size() << endl;
+    wcout << block_instructions->size() << L": " << L"label: id=" << next_label 
+          << L", pos=" << block_instructions->size() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, JMP_FALSE));
-    jump_table->insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+    block_instructions->push_back(MakeInstruction(LBL, (int)next_label, JMP_FALSE));
+    jump_table->insert(pair<long, size_t>(next_label, block_instructions->size() - 1));
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << end_label 
-          << L", pos=" << block_instructions.size() << endl;
+    wcout << block_instructions->size() << L": " << L"label: id=" << end_label 
+          << L", pos=" << block_instructions->size() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
-    jump_table->insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+    block_instructions->push_back(MakeInstruction(LBL, (int)end_label, 0));
+    jump_table->insert(pair<long, size_t>(end_label, block_instructions->size() - 1));
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '&'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '&'" << endl;
 #endif
   }
     break;
@@ -485,35 +482,35 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     const long next_label = NextEndId();
     const long end_label = NextEndId();
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump false: id=" << next_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump false: id=" << next_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)next_label, JMP_FALSE));
+    block_instructions->push_back(MakeInstruction(JMP, (int)next_label, JMP_FALSE));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"load literal: type=boolean, value=false" << endl;
+    wcout << block_instructions->size() << L": " << L"load literal: type=boolean, value=false" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LOAD_FALSE_LIT));
+    block_instructions->push_back(MakeInstruction(LOAD_FALSE_LIT));
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"jump: id=" << end_label << endl;
+    wcout << block_instructions->size() << L": " << L"jump: id=" << end_label << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(JMP, (int)end_label, JMP_UNCND));
+    block_instructions->push_back(MakeInstruction(JMP, (int)end_label, JMP_UNCND));
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << next_label 
-          << L", pos=" << block_instructions.size() << endl;
+    wcout << block_instructions->size() << L": " << L"label: id=" << next_label 
+          << L", pos=" << block_instructions->size() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LBL, (int)next_label, JMP_FALSE));
-    jump_table->insert(pair<long, size_t>(next_label, block_instructions.size() - 1));
+    block_instructions->push_back(MakeInstruction(LBL, (int)next_label, JMP_FALSE));
+    jump_table->insert(pair<long, size_t>(next_label, block_instructions->size() - 1));
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"label: id=" << end_label 
-          << L", pos=" << block_instructions.size() << endl;
+    wcout << block_instructions->size() << L": " << L"label: id=" << end_label 
+          << L", pos=" << block_instructions->size() << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LBL, (int)end_label, 0));
-    jump_table->insert(pair<long, size_t>(end_label, block_instructions.size() - 1));
+    block_instructions->push_back(MakeInstruction(LBL, (int)end_label, 0));
+    jump_table->insert(pair<long, size_t>(end_label, block_instructions->size() - 1));
 
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '|'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '|'" << endl;
 #endif
   }
     break;
@@ -522,9 +519,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '=='" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '=='" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(EQL));
+    block_instructions->push_back(MakeInstruction(EQL));
   }
     break;
 
@@ -532,9 +529,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '!='" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '!='" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(NEQL));
+    block_instructions->push_back(MakeInstruction(NEQL));
   }
     break;
 
@@ -542,9 +539,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '<'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '<'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LES));
+    block_instructions->push_back(MakeInstruction(LES));
   }
     break;
 
@@ -552,9 +549,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '>='" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '>='" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(GTR_EQL));
+    block_instructions->push_back(MakeInstruction(GTR_EQL));
   }
     break;
 
@@ -562,9 +559,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '<='" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '<='" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(LES_EQL));
+    block_instructions->push_back(MakeInstruction(LES_EQL));
   }
     break;
     
@@ -572,9 +569,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << block_instructions.size() << L": " << L"operator: '>'" << endl;
+    wcout << block_instructions->size() << L": " << block_instructions->size() << L": " << L"operator: '>'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(GTR));
+    block_instructions->push_back(MakeInstruction(GTR));
   }
     break;
 
@@ -582,9 +579,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '+'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '+'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(ADD));
+    block_instructions->push_back(MakeInstruction(ADD));
   }
     break;
     
@@ -592,9 +589,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '-'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '-'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(SUB));
+    block_instructions->push_back(MakeInstruction(SUB));
   }
     break;
 
@@ -602,9 +599,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '*'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '*'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(MUL));
+    block_instructions->push_back(MakeInstruction(MUL));
   }
     break;
 
@@ -612,9 +609,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '/'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '/'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(DIV));
+    block_instructions->push_back(MakeInstruction(DIV));
   }
     break;
     
@@ -622,9 +619,9 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*> &block
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetRight(), block_instructions, jump_table);
     EmitExpression(static_cast<CalculatedExpression*>(expression)->GetLeft(), block_instructions, jump_table);
 #ifdef _DEBUG
-    wcout << block_instructions.size() << L": " << L"operator: '%'" << endl;
+    wcout << block_instructions->size() << L": " << L"operator: '%'" << endl;
 #endif
-    block_instructions.push_back(MakeInstruction(MOD));
+    block_instructions->push_back(MakeInstruction(MOD));
   }
     break;
     
