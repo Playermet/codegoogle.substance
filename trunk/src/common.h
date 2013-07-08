@@ -191,12 +191,12 @@ class ExecutableFunction {
   wstring name;
   int parameter_count;
 	vector<Instruction*> block_instructions; 
-	unordered_map<long, size_t> jump_table;
+	unordered_map<long, size_t>* jump_table;
   set<size_t> leaders;
 	
  public:
 	ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*> &block_instructions, 
-                     unordered_map<long, size_t> &jump_table, set<size_t> &leaders) {
+                     unordered_map<long, size_t>* jump_table, set<size_t> &leaders) {
     this->name = name;
     this->parameter_count = parameter_count;
 		this->block_instructions = block_instructions;
@@ -205,6 +205,10 @@ class ExecutableFunction {
 	}
 	
 	~ExecutableFunction() {
+    if(jump_table) {
+      delete jump_table;
+      jump_table = NULL;
+    }
 	}
 	
   const wstring GetName() {
@@ -219,7 +223,7 @@ class ExecutableFunction {
 		return block_instructions; 
 	}
 	
-	unordered_map<long, size_t> &GetJumpTable() {
+	unordered_map<long, size_t>* GetJumpTable() {
 		return jump_table;
 	}
 };
@@ -236,6 +240,18 @@ class ExecutableProgram {
   }
 
   ~ExecutableProgram() {
+    if(global_function) {
+      delete global_function;
+      global_function = NULL;
+    }
+    
+    unordered_map<wstring, ExecutableFunction*>::iterator iter;
+    for(iter = functions.begin(); iter != functions.end(); ++iter) {
+      ExecutableFunction* tmp = iter->second;
+      delete tmp;
+      tmp = NULL;
+    }
+    functions.clear();
   }
 
   void AddFunction(ExecutableFunction* function) {

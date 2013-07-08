@@ -292,18 +292,10 @@ void Runtime::Run()
           }
         }
         else {
-          unordered_map<INT_T, size_t>::iterator result = jump_table.find(instruction->operand1);
-          if(result != jump_table.end()) {
-            is_jump = result->second < ip;
-          }
-          else {
-            wcerr << ">>> PANIC <<<" << endl;
-            exit(1);
-          }
-          // is_jump = jump_table[instruction->operand1] < ip;
+          is_jump = GetLabelOffset(instruction->operand1) < ip;
         }				
 #endif
-        ip = jump_table[instruction->operand1];
+        ip = GetLabelOffset(instruction->operand1);
         break;
 
         // jump true
@@ -318,7 +310,7 @@ void Runtime::Run()
         }
         // update ip
         if(left.value.int_value) {
-          ip = jump_table[instruction->operand1];
+          ip = GetLabelOffset(instruction->operand1);
         }
 
         // tracing jit code
@@ -355,7 +347,7 @@ void Runtime::Run()
         }				
         // update ip
         if(!left.value.int_value) {
-          ip = jump_table[instruction->operand1];
+          ip = GetLabelOffset(instruction->operand1);
         }
 
         // tracing jit code
@@ -524,5 +516,5 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
   ip = 0;
   instructions = function->GetInstructions();
   locals = new Value[8];
-  jump_table = frame->jump_table;
+  jump_table = function->GetJumpTable();
 }
