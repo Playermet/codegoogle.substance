@@ -9,7 +9,8 @@ dump c;
 function : foo2(a,b) {
 	if(a == 3) {
 		return a*b;
-	} else {
+	} 
+else {
 		return 44;
 	};
 }
