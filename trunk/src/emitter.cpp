@@ -168,10 +168,10 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
       break;
 
     case DUMP_STATEMENT:
-#ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"dump value" << endl;
-#endif
       EmitExpression(static_cast<Dump*>(statement)->GetExpression(), block_instructions, jump_table);
+#ifdef _DEBUG
+      wcout << block_instructions->size() << L": " << L"dump value" << endl;
+#endif
       block_instructions->push_back(MakeInstruction(DUMP_VALUE));
       break;
       
@@ -188,15 +188,15 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block_instructions, 
 															 unordered_map<long, size_t>* jump_table)
 {
-#ifdef _DEBUG
-  wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
-#endif
 	// emit parameters
 	vector<Expression*> parameters = reference->GetCallingParameters()->GetExpressions();	
 	for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
 		EmitExpression(*iter, block_instructions, jump_table);		
 	}
   // emit function
+#ifdef _DEBUG
+  wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
+#endif
 	block_instructions->push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
 }
 
