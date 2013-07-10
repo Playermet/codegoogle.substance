@@ -74,8 +74,8 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
 #endif
   
   // create holders
+  returns_value = false;
   vector<Instruction*>* block_instructions = new vector<Instruction*>;
-  // TODO: free this memory
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
   
@@ -106,8 +106,13 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
 #endif
   
-  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
-                                block_instructions, jump_table, leaders);
+  ExecutableFunction* function = new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
+                                                        block_instructions, jump_table, leaders);
+  // ensure all paths return a value
+  if(returns_value) {
+  }
+  
+  return function;
 }
 
 /****************************
