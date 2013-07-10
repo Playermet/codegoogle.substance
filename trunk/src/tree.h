@@ -92,6 +92,7 @@ namespace compiler {
     DIV_EXPR,
     MOD_EXPR,
     CHAR_STR_EXPR,
+    FUNCTION_CALL_EXPR
   };
 
   /****************************
@@ -473,6 +474,7 @@ namespace compiler {
 	  WHILE_STATEMENT,
     FOR_STATEMENT,
 		DECLARATION_STATEMENT,
+    RETURN_STATEMENT,
     DUMP_STATEMENT
   };
 
@@ -533,25 +535,51 @@ namespace compiler {
     }
   };
 
+  /****************************
+   * Return statement
+   ****************************/
+  class Return : public Statement {
+    friend class TreeFactory;
+    Expression* expression;
+    
+   public:
+		Return(const wstring &file_name, const unsigned int line_num, Expression* expression) 
+			: Statement(file_name, line_num) {
+			this->expression = expression;
+    }
+    
+    Expression* GetExpression() {
+      return expression;
+    }
+		
+    const StatementType GetStatementType() {
+      return RETURN_STATEMENT;
+    }
+  };
+  
 	/****************************
    * Function call statement
    ****************************/
-  class FunctionCall : public Statement {
+  class FunctionCall : public Statement, public Expression {
     friend class TreeFactory;
 		Reference* reference;
 		
-   public:
-		FunctionCall(const wstring &file_name, const unsigned int line_num, Reference* reference) 
-		 : Statement(file_name, line_num) {
+  public:
+    FunctionCall(const wstring &file_name, const unsigned int line_num, Reference* reference)
+       : Statement(file_name, line_num), Expression(file_name, line_num) {
 			this->reference = reference;
     }
-
+    
 		Reference* GetReference() {
 			return reference;
 		}
 		
     const StatementType GetStatementType() {
       return FUNCTION_CALL_STATEMENT;
+    }
+    
+    const ExpressionType GetExpressionType() {
+      return FUNCTION_CALL_EXPR;
     }
   };
 	
@@ -916,6 +944,12 @@ namespace compiler {
 
 		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, const wstring &variable) {
       Declaration* tmp = new Declaration(file_name, line_num, variable);
+      statements.push_back(tmp);
+      return tmp;
+    }
+
+    Return* MakeReturnStatement(const wstring &file_name, const unsigned int line_num, Expression* expression) {
+      Return* tmp = new Return(file_name, line_num, expression);
       statements.push_back(tmp);
       return tmp;
     }

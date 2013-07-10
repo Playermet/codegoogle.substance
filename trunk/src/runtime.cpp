@@ -86,19 +86,25 @@ void Runtime::Run()
   // execute code
   is_recording = false;
   size_t ip = 0;  
-  Instruction* instruction = instructions->at(ip++);
-  while(instruction->type != RTRN) {   
+  bool halt = false;
+  do {
+    Instruction* instruction = instructions->at(ip++);
     switch(instruction->type) {
     case RTRN: {
-      Frame* frame = call_stack.top();
-      call_stack.pop();
-      ip = frame->ip;
-      instructions = frame->instructions;
-      locals = frame->locals;
-      jump_table = frame->jump_table;
+      if(call_stack.size() == 0) {
+        halt = true;
+      }
+      else {
+        Frame* frame = call_stack.top();
+        call_stack.pop();
+        ip = frame->ip;
+        instructions = frame->instructions;
+        locals = frame->locals;
+        jump_table = frame->jump_table;
 
-      delete frame;
-      frame = NULL;
+        delete frame;
+        frame = NULL;
+      }
     }
       break;
 			
@@ -477,10 +483,8 @@ void Runtime::Run()
         exit(1);
       }
       break;
-    }
-    // update
-    instruction = instructions->at(ip++);
-  } 
+    }    
+  } while(!halt);
 
   delete[] locals;
   locals = NULL;

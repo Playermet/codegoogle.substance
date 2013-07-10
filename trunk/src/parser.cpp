@@ -369,6 +369,8 @@ Statement* Parser::ParseStatement(int depth)
 		
 		// return
   case TOKEN_RETURN_ID:
+    NextToken();
+    statement = TreeFactory::Instance()->MakeReturnStatement(file_name, line_num, ParseExpression(depth + 1));
     break;
 		
 		// if
@@ -602,11 +604,21 @@ Statement* Parser::ParseAssignment(Reference* reference, ScannerTokenType type, 
  ****************************/
 Expression* Parser::ParseExpression(int depth)
 {
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+  
 #ifdef _DEBUG
   Show(L"Expression", depth);
 #endif
+  
+	Expression* expression = ParseLogic(depth + 1);
+  // check for function call
+  if(expression && expression->GetExpressionType() == REF_EXPR && 
+     static_cast<Reference*>(expression)->IsFunctionReference()) {
+    expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
+  }
 
-  return ParseLogic(depth + 1);
+  return expression;
 }
 
 /****************************

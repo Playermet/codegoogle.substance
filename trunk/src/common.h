@@ -113,9 +113,10 @@ enum InstructionType {
 	// jumps
 	JMP,
 	LBL,
-	// functions
+	// functions and traps
 	FUNC_CALL,
 	RTRN,
+  TRAP,
 	// misc
   DUMP_VALUE
 };

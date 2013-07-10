@@ -1,7 +1,18 @@
-a := 1 + 7;
-b := 2;
+# a := 1 + 7;
+# b := 2;
 
-foo(13,b);
+# foo(13,b);
+# foo2(3,7);
+c := foo2(3,7);
+dump c;
+
+function : foo2(a,b) {
+	if(a == 3) {
+		return a*b;
+	} else {
+		return 44;
+	};
+}
 
 function : foo(a,b) {
 	i := 0; c := 100;
