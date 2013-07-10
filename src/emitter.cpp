@@ -50,6 +50,9 @@ ExecutableProgram* Emitter::Emit()
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
   EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
+#ifdef _DEBUG
+  wcout << block_instructions->size() << L": " << L"return" << endl;
+#endif
   block_instructions->push_back(MakeInstruction(RTRN));    
   ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders);
   executable_program->SetGlobal(global);
@@ -88,8 +91,21 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   
   // emit function
   EmitFunction(parsed_function->GetStatements(), block_instructions, jump_table, leaders);
-  block_instructions->push_back(MakeInstruction(RTRN));
-
+  if(block_instructions->back()->type != RTRN) {
+#ifdef _DEBUG
+    wcout << block_instructions->size() << L": " << L"return" << endl;
+#endif
+    block_instructions->push_back(MakeInstruction(RTRN));
+  }
+  
+#ifdef _DEBUG
+  wcout << L"Leaders" << endl;
+  set<size_t>::iterator iter = leaders.begin(); 
+  for(;iter != leaders.end(); ++iter) {
+    wcout << L"  " << *iter << endl;
+  }
+#endif
+  
   return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
                                 block_instructions, jump_table, leaders);
 }
@@ -112,14 +128,6 @@ void Emitter::EmitFunction(StatementList* block_statements, vector<Instruction*>
       leaders.insert(i + 1);
     }
   }
-
-#ifdef _DEBUG
-  wcout << L"Leaders" << endl;
-  set<size_t>::iterator iter = leaders.begin(); 
-  for(;iter != leaders.end(); ++iter) {
-    wcout << L"  " << *iter << endl;
-  }
-#endif
 }
 
 /****************************
@@ -139,6 +147,14 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 		case DECLARATION_STATEMENT:
 			break;
 			
+    case RETURN_STATEMENT:
+      EmitExpression(static_cast<Return*>(statement)->GetExpression(), block_instructions, jump_table);
+#ifdef _DEBUG
+      wcout << block_instructions->size() << L": " << L"return" << endl;
+#endif
+      block_instructions->push_back(MakeInstruction(RTRN));
+			break;
+      
 		case FUNCTION_CALL_STATEMENT:
 			EmitFunctionCall(static_cast<FunctionCall*>(statement)->GetReference(), block_instructions, jump_table);
 			break;
@@ -406,6 +422,10 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*>* block
     EmitReference(static_cast<Reference*>(expression), false, block_instructions, jump_table);
     break;
 
+  case FUNCTION_CALL_EXPR:
+    EmitFunctionCall(static_cast<FunctionCall*>(expression)->GetReference(), block_instructions, jump_table);
+    break;
+    
   case BOOLEAN_LIT_EXPR:
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"load literal: type=boolean, value=" 
