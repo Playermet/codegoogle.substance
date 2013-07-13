@@ -106,13 +106,8 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
 #endif
   
-  ExecutableFunction* function = new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
-                                                        block_instructions, jump_table, leaders);
-  // ensure all paths return a value
-  if(returns_value) {
-  }
-  
-  return function;
+  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
+                                block_instructions, jump_table, leaders);
 }
 
 /****************************
@@ -194,10 +189,13 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block
 															 unordered_map<long, size_t>* jump_table)
 {
 	// emit parameters
-	vector<Expression*> parameters = reference->GetCallingParameters()->GetExpressions();	
-	for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
-		EmitExpression(*iter, block_instructions, jump_table);		
-	}
+  vector<Expression*> parameters;
+  if(reference->GetCallingParameters()) {
+    parameters = reference->GetCallingParameters()->GetExpressions();	
+    for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
+      EmitExpression(*iter, block_instructions, jump_table);		
+    }
+  }
   // emit function
 #ifdef _DEBUG
   wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;

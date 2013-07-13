@@ -38,13 +38,15 @@
 using namespace std;
 
 typedef void(*Operation)(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+typedef void(*Method)(Value* stack, INT_T arg_count);
 
 /****************************
 * Base class for built-in types
 ****************************/
 class RuntimeClass {
   unordered_map<wstring, Operation> operations;
-
+  unordered_map<wstring, Method> methods;
+  
 protected:
   RuntimeClass() {
   }
@@ -55,6 +57,10 @@ protected:
   void AddOperation(const wstring &name, Operation oper) {
     operations.insert(pair<wstring, Operation>(name, oper));
   }
+  
+  void AddMethod(const wstring &name, Method method) {
+    methods.insert(pair<wstring, Method>(name, method));
+  }
 
 public:
   Operation GetOperation(const wstring name) {
@@ -63,6 +69,15 @@ public:
       return result->second;
     }
 
+    return NULL;
+  }
+
+  Method GetMethod(const wstring name) {
+    unordered_map<wstring, Method>::iterator result = methods.find(name);
+    if(result != methods.end()) {
+      return result->second;
+    }
+    
     return NULL;
   }
 };
@@ -102,6 +117,7 @@ class IntegerClass : public RuntimeClass {
   static IntegerClass* instance;
 
   IntegerClass() {
+    // operations
     AddOperation(L"+", Add);
     AddOperation(L"-", Subtract);
     AddOperation(L"*", Multiply);
@@ -113,6 +129,9 @@ class IntegerClass : public RuntimeClass {
     AddOperation(L"<=", LessEqual);
     AddOperation(L">=", GreaterEqual);
     AddOperation(L"%", Modulo);
+    // methods
+    AddMethod(L"Abs", Abs);
+    AddMethod(L"ToInteger", ToInteger);
   }
 
   ~IntegerClass() {
@@ -127,6 +146,7 @@ public:
     return instance;
   }
 
+  // operations
   static void Add(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
@@ -138,6 +158,10 @@ public:
   static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  
+  // methods
+  static void Abs(Value* stack, INT_T arg_count);
+  static void ToInteger(Value* stack, INT_T arg_count);
 };
 
 /****************************
@@ -185,4 +209,33 @@ public:
   static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
 };
 
+class Classes {
+  static Classes* instance;
+  unordered_map<wstring, RuntimeClass*> classes;
+
+ public:
+  static Classes* Instance() {
+    if(!instance) {
+      instance = new Classes;
+    }
+    
+    return instance;
+  }
+
+  Classes() {
+    classes[L"Integer"] = IntegerClass::Instance();
+  }
+
+  ~Classes() {
+  }
+  
+  RuntimeClass* GetClass(const wstring &name) {
+    unordered_map<wstring, RuntimeClass*>::iterator result = classes.find(name);
+    if(result != classes.end()) {
+      return result->second;
+    }
+
+    return NULL;
+  }
+};
 #endif

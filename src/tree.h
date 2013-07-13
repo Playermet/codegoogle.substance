@@ -439,8 +439,19 @@ namespace compiler {
       return is_self;
     }
 
+    bool HasCallingParameters() {
+      bool has_calling_parameters = calling_parameters;
+      Reference* child = reference;
+      while(!has_calling_parameters && child) {
+        has_calling_parameters = child->HasCallingParameters();
+        child = child->GetReference();
+      }
+      
+      return has_calling_parameters;
+    }
+    
 		bool IsFunctionReference() {
-			return id < 0 && calling_parameters;
+			return HasCallingParameters();
 		}
 		
 	  int GetId() {
