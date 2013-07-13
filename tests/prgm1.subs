@@ -21,4 +21,4 @@
 ~#
 
 z = 1.13;
-dump z->ToInteger();
+dump g->ToInteger();

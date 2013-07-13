@@ -450,7 +450,7 @@ namespace compiler {
       return has_calling_parameters;
     }
     
-		bool IsFunctionReference() {
+		bool IsMethodReference() {
 			return HasCallingParameters();
 		}
 		

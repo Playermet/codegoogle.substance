@@ -108,11 +108,19 @@ void Runtime::Run()
     }
       break;
 			
-		case FUNC_CALL:
+		case CALL_MTHD:
+    case CALL_CLS_MTHD:
 			FunctionCall(instruction, ip, locals);
-			wcout << L"FUN_CALL: name=" << instruction->operand5 << endl;
+#ifdef _DEBUG
+      if(CALL_MTHD) {
+        wcout << L"CALL_MTHD: name=" << instruction->operand5 << endl;
+      }
+      else {
+        wcout << L"CALL_CLS_MTHD: class=" << instruction->operand5 << L", method=" << instruction->operand6 << endl;
+      }
+#endif
 			break;
-
+      
     case LOAD_TRUE_LIT:
       left.type = BOOL_VALUE;
       left.klass = BooleanClass::Instance();

@@ -343,7 +343,7 @@ Statement* Parser::ParseStatement(int depth)
 			return NULL;
 		}		
 		// function call
-		if(reference->IsFunctionReference()) {
+		if(reference->IsMethodReference()) {
 			statement = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, reference);
 		}
 		// assignment
@@ -433,7 +433,7 @@ Statement* Parser::ParseDeclaration(int depth)
 		if(!reference) {
 			return NULL;
 		}
-		else if(!reference->IsFunctionReference()) {
+		else if(!reference->IsMethodReference()) {
 			NextToken();
 			return ParseAssignment(reference, TOKEN_ASSIGN, depth + 1);
 		}
@@ -613,7 +613,7 @@ Expression* Parser::ParseExpression(int depth)
   
 	Expression* expression = ParseLogic(depth + 1);
   // check for function call
-  if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsFunctionReference()) {
+  if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsMethodReference()) {
     expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
   }
   
@@ -1041,17 +1041,17 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
 	bool is_function_call = false;
 	Reference* reference;
 	if(!Match(TOKEN_OPEN_PAREN)) {
-		// add reference to table if it doesn't exist
-		if(!symbol_table->HasEntry(identifier)) {
-			symbol_table->AddEntry(identifier);
-	  }	
-		int entry_id = symbol_table->GetEntry(identifier);
-		// sanity check (could be eliminated)
-		if(entry_id < 0) {
-			ProcessError(L"Unknown reference '" + identifier + L"'");
-			return NULL;
-		}
-		reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, entry_id);
+    // check to see if the reference is nested
+    if(!Match(TOKEN_ASSESSOR)) {
+      // add reference to table if it doesn't exist
+      if(!symbol_table->HasEntry(identifier)) {
+        symbol_table->AddEntry(identifier);
+      }	
+      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, symbol_table->GetEntry(identifier));
+    }
+    else {
+      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, -1);
+    }
 	}
 	else {
 		reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
