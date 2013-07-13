@@ -48,7 +48,7 @@ void Parser::LoadErrorCodes()
   error_msgs[TOKEN_CLOSED_BRACE] = L"Expected '}'";
   error_msgs[TOKEN_COLON] = L"Expected ':'";
   error_msgs[TOKEN_COMMA] = L"Expected ','";
-  error_msgs[TOKEN_ASSIGN] = L"Expected ':='";
+  error_msgs[TOKEN_ASSIGN] = L"Expected ':=' or '='";
   error_msgs[TOKEN_SEMI_COLON] = L"Expected ';'";
   error_msgs[TOKEN_ASSESSOR] = L"Expected '->'";
 }
@@ -613,11 +613,10 @@ Expression* Parser::ParseExpression(int depth)
   
 	Expression* expression = ParseLogic(depth + 1);
   // check for function call
-  if(expression && expression->GetExpressionType() == REF_EXPR && 
-     static_cast<Reference*>(expression)->IsFunctionReference()) {
+  if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsFunctionReference()) {
     expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
   }
-
+  
   return expression;
 }
 
@@ -1082,10 +1081,9 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
  ****************************/
 void Parser::ParseReference(Reference* reference, int depth)
 {
-#ifdef _DEBUG
-  Show(L"Nested reference", depth);
-#endif
-
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+  
   NextToken();
   if(!Match(TOKEN_IDENT)) {
     ProcessError(TOKEN_IDENT);
@@ -1094,12 +1092,24 @@ void Parser::ParseReference(Reference* reference, int depth)
   const wstring &identifier = scanner->GetToken()->GetIdentifier();
   NextToken();
 
-  if(reference) {
-    reference->SetReference(ParseReference(identifier, depth + 1));
-    // subsequent instance references
-    if(Match(TOKEN_ASSESSOR)) {
-      ParseReference(reference->GetReference(), depth + 1);
-    }
+#ifdef _DEBUG
+  Show(L"Nested reference: name=" + identifier, depth);
+#endif
+  
+  Reference* nested_reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+  reference->SetReference(nested_reference);
+  
+  // array reference
+  if(Match(TOKEN_OPEN_BRACKET)) {
+    nested_reference->SetIndices(ParseIndices(depth + 1));
+  }
+	
+	// function call
+  nested_reference->SetCallingParameters(ParseCallingParameters(depth + 1));
+  
+  // subsequent instance references
+  if(Match(TOKEN_ASSESSOR)) {
+    ParseReference(nested_reference, depth + 1);
   }
 }
 

@@ -46,8 +46,8 @@ void BooleanClass::NotEqual(Value &left, Value &right, Value &result, vector<Jit
 }
 
 /****************************
-* Integer class
-****************************/
+ * Integer class
+ ****************************/
 IntegerClass* IntegerClass::instance;
 
 void IntegerClass::Add(Value &left, Value &right, Value &result, vector<JitInstruction*> &jit_instrs, bool is_recording) {
@@ -348,6 +348,14 @@ void IntegerClass::GreaterEqual(Value &left, Value &right, Value &result, vector
   }
 }
 
+// methods
+void IntegerClass::Abs(Value* stack, INT_T arg_count) {
+  
+}
+
+void IntegerClass::ToInteger(Value* stack, INT_T arg_count) {
+  
+}
 /****************************
 * Float class
 ****************************/

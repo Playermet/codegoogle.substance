@@ -4,7 +4,8 @@
 # foo(13,b);
 # foo2(3,7);
 c := foo2(3,7);
-dump c;
+d := foo2(foo2(3,7), 9);
+dump d;
 
 function : foo2(a,b) {
 	if(a == 3) {
