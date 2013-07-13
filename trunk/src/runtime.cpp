@@ -495,30 +495,40 @@ void Runtime::Run()
 #endif
 }
 
+// TODO: handle orphan return values
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
+  // TODO: look up program class and method
   ExecutableFunction* function = program->GetFunction(instruction->operand5);
   if(!function) {
-    wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
-    exit(1);
+    // look for built-in class and method
+    Value value = PopValue(); Method method = NULL;
+    if(value.klass && (method = value.klass->GetMethod(instruction->operand5))) {
+      (*method)(value, execution_stack, execution_stack_pos, instruction->operand1);
+    }
+    else {
+      wcerr << L">>> Unknown class or function: name='" << instruction->operand5 << L"' <<<" << endl;
+      exit(1);
+    }
   }
-  
-  if(function->GetParameterCount() != instruction->operand1) {
-    wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
-    exit(1);
+  else {
+    if(function->GetParameterCount() != instruction->operand1) {
+      wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
+      exit(1);
+    }
+
+    // push stack frame
+    Frame* frame = new Frame;
+    frame->ip = ip;
+    frame->instructions = instructions;
+    frame->locals = locals;
+    frame->jump_table = jump_table;
+    call_stack.push(frame);
+
+    // initialize new frame
+    ip = 0;
+    instructions = function->GetInstructions();
+    locals = new Value[8];
+    jump_table = function->GetJumpTable();
   }
-
-  // push stack frame
-  Frame* frame = new Frame;
-  frame->ip = ip;
-  frame->instructions = instructions;
-  frame->locals = locals;
-  frame->jump_table = jump_table;
-  call_stack.push(frame);
-
-  // initialize new frame
-  ip = 0;
-  instructions = function->GetInstructions();
-  locals = new Value[8];
-  jump_table = function->GetJumpTable();
 }

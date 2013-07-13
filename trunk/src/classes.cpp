@@ -349,13 +349,14 @@ void IntegerClass::GreaterEqual(Value &left, Value &right, Value &result, vector
 }
 
 // methods
-void IntegerClass::Abs(Value* stack, INT_T arg_count) {
+void IntegerClass::Abs(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count) {
   
 }
 
-void IntegerClass::ToInteger(Value* stack, INT_T arg_count) {
+void IntegerClass::ToFloat(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count) {
   
 }
+
 /****************************
 * Float class
 ****************************/
@@ -646,4 +647,15 @@ void FloatClass::GreaterEqual(Value &left, Value &right, Value &result, vector<J
     exit(1);
     break;
   }
+}
+
+void FloatClass::ToInteger(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count) {
+  Value left;
+  left.type = INT_VALUE;
+  left.klass = IntegerClass::Instance();
+  left.value.int_value = self.value.float_value;
+#ifdef _DEBUG
+  wcout << L"Integer->ToInteger()" << endl;
+#endif
+  execution_stack[execution_stack_pos++] = left;
 }
