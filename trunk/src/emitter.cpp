@@ -183,12 +183,12 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 }
 
 /****************************
- * Emit code for a function call
+ * Emit code for a method call
  ****************************/
 void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block_instructions, 
 															 unordered_map<long, size_t>* jump_table)
 {
-	// emit parameters
+	// emit calling parameters
   vector<Expression*> parameters;
   if(reference->GetCallingParameters()) {
     parameters = reference->GetCallingParameters()->GetExpressions();	
@@ -198,20 +198,27 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block
   
     // emit function
 #ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
+    wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
 #endif
-    block_instructions->push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
+    block_instructions->push_back(MakeInstruction(CALL_MTHD, parameters.size(), reference->GetName()));
   }
+  // direct call to class method
+  else if(reference->GetId() < 0 && reference->GetReference()) {
+#ifdef _DEBUG
+    wcout << block_instructions->size() << L": " << L"class/method call: class='" << reference->GetName() 
+          << L"', method='" << reference->GetReference()->GetName() << "'" << endl;
+#endif
+    block_instructions->push_back(MakeInstruction(CALL_CLS_MTHD, parameters.size(), reference->GetName(), 
+                                                  reference->GetReference()->GetName()));
+  }
+  // call to instance method
   else {
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"load: name='" << reference->GetName() 
 					<< L"', id=" << reference->GetId() << endl;
 #endif
     block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
-
-    if(reference->GetReference()) {
-      EmitFunctionCall(reference->GetReference(), block_instructions, jump_table);
-    }
+    EmitFunctionCall(reference->GetReference(), block_instructions, jump_table);
   }
 }
 
