@@ -195,12 +195,24 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block
     for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
       EmitExpression(*iter, block_instructions, jump_table);		
     }
-  }
-  // emit function
+  
+    // emit function
 #ifdef _DEBUG
-  wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
+    wcout << block_instructions->size() << L": " << L"function call name='" << reference->GetName() << L"'" << endl;
 #endif
-	block_instructions->push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
+    block_instructions->push_back(MakeInstruction(FUNC_CALL, parameters.size(), reference->GetName()));
+  }
+  else {
+#ifdef _DEBUG
+    wcout << block_instructions->size() << L": " << L"load: name='" << reference->GetName() 
+					<< L"', id=" << reference->GetId() << endl;
+#endif
+    block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
+
+    if(reference->GetReference()) {
+      EmitFunctionCall(reference->GetReference(), block_instructions, jump_table);
+    }
+  }
 }
 
 /****************************

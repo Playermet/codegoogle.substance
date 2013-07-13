@@ -38,7 +38,7 @@
 using namespace std;
 
 typedef void(*Operation)(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-typedef void(*Method)(Value* stack, INT_T arg_count);
+typedef void(*Method)(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 
 /****************************
 * Base class for built-in types
@@ -131,7 +131,7 @@ class IntegerClass : public RuntimeClass {
     AddOperation(L"%", Modulo);
     // methods
     AddMethod(L"Abs", Abs);
-    AddMethod(L"ToInteger", ToInteger);
+    AddMethod(L"ToFloat", ToFloat);
   }
 
   ~IntegerClass() {
@@ -160,8 +160,8 @@ public:
   static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   
   // methods
-  static void Abs(Value* stack, INT_T arg_count);
-  static void ToInteger(Value* stack, INT_T arg_count);
+  static void Abs(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
+  static void ToFloat(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 };
 
 /****************************
@@ -182,8 +182,10 @@ class FloatClass : public RuntimeClass {
     AddOperation(L"<=", LessEqual);
     AddOperation(L">=", GreaterEqual);
     AddOperation(L"%", Modulo);
+    // methods
+    AddMethod(L"ToInteger", ToInteger);
   }
-
+  
   ~FloatClass() {
   }
 
@@ -207,6 +209,8 @@ public:
   static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  // methods
+  static void ToInteger(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 };
 
 class Classes {

@@ -170,7 +170,9 @@ class Value {
   BaseValue value;
   RuntimeClass* klass;
 
-	Value() {}
+	Value() {
+    klass = NULL;
+  }
 
 	Value(const Value &rhs) {
 		memcpy(this, &rhs, sizeof(Value));
