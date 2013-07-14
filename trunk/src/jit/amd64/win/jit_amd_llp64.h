@@ -223,7 +223,7 @@ namespace jit {
   ********************************/
   class JitCompiler {
     vector<JitInstruction*> block_instrs;
-    unordered_map<INT_T, size_t> jump_table;
+    unordered_map<INT_T, size_t>* jump_table;
     deque<RegInstr*> working_stack;
     vector<RegisterHolder*> aval_regs;
     list<RegisterHolder*> used_regs;
@@ -959,7 +959,7 @@ namespace jit {
     bool cond_jmp(JitInstructionType type);
 
   public: 
-    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T end_label) {
+    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t>* jump_table, INT_T end_label) {
       this->block_instrs = block_instrs;
       this->jump_table = jump_table;
       this->end_label = end_label;
