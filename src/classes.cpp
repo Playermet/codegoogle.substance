@@ -653,7 +653,7 @@ void FloatClass::ToInteger(Value &self, Value* execution_stack, size_t &executio
   Value left;
   left.type = INT_VALUE;
   left.klass = IntegerClass::Instance();
-  left.value.int_value = self.value.float_value;
+  left.value.int_value = (INT_T)self.value.float_value;
 #ifdef _DEBUG
   wcout << L"Integer->ToInteger()" << endl;
 #endif

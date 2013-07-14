@@ -440,7 +440,7 @@ namespace compiler {
     }
 
     bool HasCallingParameters() {
-      bool has_calling_parameters = calling_parameters;
+      bool has_calling_parameters = calling_parameters != NULL;
       Reference* child = reference;
       while(!has_calling_parameters && child) {
         has_calling_parameters = child->HasCallingParameters();

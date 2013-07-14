@@ -76,11 +76,11 @@ namespace compiler {
   class SymbolTable {
 	  deque<InnerTable*> table_hierarchy;
 	  vector<InnerTable*> all_tables;
-	  int entry_id;
+	  INT_T entry_id;
 	
    public:
 	  SymbolTable() {
-		  entry_id = 0;
+		  entry_id = 1;
 	  }
 	
 	  ~SymbolTable() {
