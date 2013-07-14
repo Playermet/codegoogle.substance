@@ -215,7 +215,7 @@ namespace jit {
   ********************************/
   class JitCompiler {
     vector<JitInstruction*> block_instrs;
-		unordered_map<INT_T, size_t> jump_table;
+		unordered_map<INT_T, size_t>* jump_table;
     deque<RegInstr*> working_stack;
     vector<RegisterHolder*> aval_regs;
     list<RegisterHolder*> used_regs;
@@ -753,7 +753,7 @@ namespace jit {
     bool cond_jmp(JitInstructionType type);
 		
   public:
-    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t> jump_table, INT_T end_label) {
+    JitCompiler(vector<JitInstruction*> block_instrs, unordered_map<INT_T, size_t>* jump_table, INT_T end_label) {
       this->block_instrs = block_instrs;
 			this->jump_table = jump_table;
 			this->end_label = end_label;
@@ -863,8 +863,6 @@ namespace jit {
 			for(iter = native_jump_table.begin(); iter != native_jump_table.end(); ++iter) {
 				JitInstruction* instr = iter->second;
 				int32_t src_offset = iter->first;
-				// int32_t dest_index = labels[instr->GetOperand()]; // jump_table[instr->GetOperand()];
-				// int32_t dest_offset = block_instrs[dest_index]->GetOffset();
 				int32_t dest_offset = jump_labels[instr->GetOperand()]->GetOffset();
 				int32_t offset = dest_offset - src_offset - 4;
 				memcpy(&code[src_offset], &offset, 4); 
