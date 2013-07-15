@@ -758,6 +758,7 @@ namespace compiler {
 		wstring name;
     ExpressionList* parameters;
     StatementList* statements;
+    SymbolTable* symbol_table;
 		
   public:
 	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
@@ -765,9 +766,14 @@ namespace compiler {
 			this->name = name;
       this->parameters = parameters;
       this->statements = statements;
+      symbol_table = NULL;
     }
 		
     ~ParsedFunction() {
+      if(symbol_table) {
+        delete symbol_table;
+        symbol_table = NULL;
+      }
     }
 
 		inline wstring GetName() {
@@ -781,6 +787,14 @@ namespace compiler {
     inline StatementList* GetStatements() {
       return statements;
     }
+
+    void SetSymbolTable(SymbolTable* symbol_table) {
+      this->symbol_table = symbol_table;
+    }
+
+    SymbolTable* GetSymbolTable() {
+      return symbol_table;
+    }
   };
 
   /****************************
@@ -790,12 +804,18 @@ namespace compiler {
 		unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
     StatementList* statements;
+    SymbolTable* symbol_table;
 		
   public:
     ParsedProgram() {
+      symbol_table = NULL;
     }
 
     ~ParsedProgram() {
+      if(symbol_table) {
+        delete symbol_table;
+        symbol_table = NULL;
+      }
     }
 
 		bool AddFunction(ParsedFunction* function) {
@@ -829,6 +849,14 @@ namespace compiler {
 
     StatementList* GetGlobal() {
       return statements;
+    }
+
+    void SetGlobalSymbolTable(SymbolTable* symbol_table) {
+      this->symbol_table = symbol_table;
+    }
+
+    SymbolTable* GetGlobalSymbolTable() {
+      return symbol_table;
     }
   };
 
