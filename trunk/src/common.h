@@ -1,33 +1,33 @@
 /***************************************************************************
- * Language model
- *
- * Copyright (c) 2013, Randy Hollines
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in
- * the documentation and/or other materials provided with the distribution.
- * - Neither the name of the Objeck Team nor the names of its
- * contributors may be used to endorse or promote products derived
- * from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- *  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- ***************************************************************************/
+* Language model
+*
+* Copyright (c) 2013, Randy Hollines
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+* - Redistributions of source code must retain the above copyright
+* notice, this list of conditions and the following disclaimer.
+* - Redistributions in binary form must reproduce the above copyright
+* notice, this list of conditions and the following disclaimer in
+* the documentation and/or other materials provided with the distribution.
+* - Neither the name of the Objeck Team nor the names of its
+* contributors may be used to endorse or promote products derived
+* from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+* TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+*  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+* NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************************************************************************/
 
 #ifndef __COMMON_H__
 #define __COMMON_H__
@@ -83,10 +83,10 @@ namespace jit {
 #define JMP_UNCND -1
 
 /****************************
- * Runtime instructions
- ****************************/
+* Runtime instructions
+****************************/
 enum InstructionType {
-	// literals
+  // literals
   LOAD_TRUE_LIT = -256,
   LOAD_FALSE_LIT,
   LOAD_INT_LIT,
@@ -94,7 +94,7 @@ enum InstructionType {
   // variables
   LOAD_VAR,
   STOR_VAR,
-	// logical  
+  // logical  
   EQL,
   NEQL,
   GTR,
@@ -110,41 +110,41 @@ enum InstructionType {
   // bitwise
   BIT_AND,
   BIT_OR,
-	// jumps
-	JMP,
-	LBL,
-	// functions and traps
-	CALL_MTHD,
+  // jumps
+  JMP,
+  LBL,
+  // functions and traps
+  CALL_MTHD,
   CALL_CLS_MTHD,
-	RTRN,
-	// misc
+  RTRN,
+  // misc
   DUMP_VALUE
 };
 
 class Instruction {
- public:
-	Instruction() {
-		native_code = NULL;
-	}
+public:
+  Instruction() {
+    native_code = NULL;
+  }
 
-	~Instruction() {
-	}
-	
+  ~Instruction() {
+  }
+
   InstructionType type;
   INT_T operand1;
   INT_T operand2;
-	INT_T operand3;
+  INT_T operand3;
   FLOAT_T operand4;
-	wstring operand5;
+  wstring operand5;
   wstring operand6;
-	jit::jit_fun_ptr native_code;
+  jit::jit_fun_ptr native_code;
 };
 
 /****************************
- * Runtime types and values
- ****************************/
+* Runtime types and values
+****************************/
 enum RuntimeType {
-	BOOL_VALUE = -512,
+  BOOL_VALUE = -512,
   INT_VALUE,
   FLOAT_VALUE,
   INT_ARY_VALUE,
@@ -152,8 +152,8 @@ enum RuntimeType {
 };
 
 /****************************
- * Runtime values
- ****************************/
+* Runtime values
+****************************/
 typedef union _BaseValue {
   BYTE_T byte_value;
   CHAR_T char_value;
@@ -163,52 +163,52 @@ typedef union _BaseValue {
 } BaseValue;
 
 /****************************
- * 'Abstract' value type
- ****************************/
+* 'Abstract' value type
+****************************/
 class Value { 
- public:
+public:
   RuntimeType type;
   BaseValue value;
   RuntimeClass* klass;
 
-	Value() {
+  Value() {
     klass = NULL;
   }
 
-	Value(const Value &rhs) {
-		memcpy(this, &rhs, sizeof(Value));
-	}
-	
-	Value& operator=(const Value &rhs) {
-		if(this != &rhs) {
-			memcpy(this, &rhs, sizeof(Value));
-		}
+  Value(const Value &rhs) {
+    memcpy(this, &rhs, sizeof(Value));
+  }
 
-		return *this;
-	}
+  Value& operator=(const Value &rhs) {
+    if(this != &rhs) {
+      memcpy(this, &rhs, sizeof(Value));
+    }
+
+    return *this;
+  }
 };
 
 /****************************
- * Holder for runtime program
- ****************************/
+* Holder for runtime program
+****************************/
 class ExecutableFunction {
   wstring name;
   int parameter_count;
-	vector<Instruction*>* block_instructions; 
-	unordered_map<long, size_t>* jump_table;
+  vector<Instruction*>* block_instructions; 
+  unordered_map<long, size_t>* jump_table;
   set<size_t> leaders;
-	
- public:
-	ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*>* block_instructions, 
-                     unordered_map<long, size_t>* jump_table, set<size_t> &leaders) {
-    this->name = name;
-    this->parameter_count = parameter_count;
-		this->block_instructions = block_instructions;
-		this->jump_table = jump_table;
-    this->leaders = leaders;
-	}
-	
-	~ExecutableFunction() {
+
+public:
+  ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*>* block_instructions, 
+    unordered_map<long, size_t>* jump_table, set<size_t> &leaders) {
+      this->name = name;
+      this->parameter_count = parameter_count;
+      this->block_instructions = block_instructions;
+      this->jump_table = jump_table;
+      this->leaders = leaders;
+  }
+
+  ~ExecutableFunction() {
     if(jump_table) {
       delete jump_table;
       jump_table = NULL;
@@ -218,33 +218,131 @@ class ExecutableFunction {
       delete block_instructions;
       block_instructions = NULL;
     }
-	}
-	
+  }
+
   const wstring GetName() {
     return name;
   }
-  
+
   int GetParameterCount() {
     return parameter_count;
   }
-  
-	vector<Instruction*>* GetInstructions() {
-		return block_instructions; 
-	}
-	
-	unordered_map<long, size_t>* GetJumpTable() {
-		return jump_table;
-	}
+
+  vector<Instruction*>* GetInstructions() {
+    return block_instructions; 
+  }
+
+  unordered_map<long, size_t>* GetJumpTable() {
+    return jump_table;
+  }
 };
 
 /****************************
- * Holder for runtime program
- ****************************/
+* Local symbol table
+****************************/
+class InnerTable {
+  unordered_map<wstring, int> table;
+
+public:
+  InnerTable() {
+  }
+
+  ~InnerTable() {		
+  }
+
+  void AddEntry(const wstring &name, int id) {
+    table.insert(pair<wstring, int>(name, id));
+  }
+
+  int GetEntry(const wstring &name) {
+    unordered_map<wstring, int>::iterator result = table.find(name);
+    if(result != table.end()) {
+      return result->second;
+    }
+
+    return -1;
+  }
+
+  bool HasEntry(const wstring &name) {
+    return GetEntry(name)  > -1;
+  }
+};
+
+/****************************
+* Hierarchical symbol table
+****************************/
+class SymbolTable {
+  deque<InnerTable*> table_hierarchy;
+  vector<InnerTable*> all_tables;
+  INT_T entry_id;
+
+public:
+  SymbolTable() {
+    entry_id = 1;
+  }
+
+  ~SymbolTable() {
+    while(!all_tables.empty()) {
+      InnerTable* tmp = all_tables.front();
+      all_tables.erase(all_tables.begin());
+      // delete
+      delete tmp;
+      tmp = NULL;
+    }
+  }
+
+  void NewScope() {
+    InnerTable* table = new InnerTable;
+    table_hierarchy.push_front(table);
+    all_tables.push_back(table);
+  }
+
+  bool PreviousScope() {
+    if(!table_hierarchy.empty()) {
+      table_hierarchy.pop_front();
+      return true;
+    }
+
+    return false;
+  }
+
+  bool AddEntry(const wstring &name) {
+    if(!table_hierarchy.empty()) {
+      table_hierarchy.front()->AddEntry(name, entry_id++);
+      return true;
+    }
+
+    return false;
+  }
+
+  int GetEntry(const wstring &name) {
+    for(size_t i = 0; i < table_hierarchy.size(); ++i) {
+      int value = table_hierarchy[i]->GetEntry(name);
+      if(value > -1) {
+        return value;
+      }
+    }
+
+    return -1;
+  }
+
+  bool HasEntry(const wstring &name) {
+    return GetEntry(name) > -1;
+  }
+
+  int GetEntryCount() {
+    return entry_id;
+  }
+};	
+
+/****************************
+* Holder for runtime program
+****************************/
 class ExecutableProgram {
   ExecutableFunction* global_function;
   unordered_map<wstring, ExecutableFunction*> functions;
-  
- public:
+
+public:
   ExecutableProgram() {
   }
 
@@ -253,7 +351,7 @@ class ExecutableProgram {
       delete global_function;
       global_function = NULL;
     }
-    
+
     unordered_map<wstring, ExecutableFunction*>::iterator iter;
     for(iter = functions.begin(); iter != functions.end(); ++iter) {
       ExecutableFunction* tmp = iter->second;
@@ -272,22 +370,22 @@ class ExecutableProgram {
     if(result != functions.end()) {
       return result->second;
     }
-    
+
     return NULL;
   }
-  
+
   void SetGlobal(ExecutableFunction* global_function) {
     this->global_function = global_function;
   }
-  
+
   ExecutableFunction* GetGlobal() {
     return global_function;
   }
 };
 
 /****************************
- * Utility functions
- ****************************/
+* Utility functions
+****************************/
 inline wstring IntToString(int v) {
   wostringstream str;
   str << v;
@@ -295,9 +393,9 @@ inline wstring IntToString(int v) {
 }
 
 /****************************
- * Converts a UTF-8 bytes to
- * native a unicode string
- ****************************/
+* Converts a UTF-8 bytes to
+* native a unicode string
+****************************/
 static bool BytesToUnicode(const std::string &in, std::wstring &out) {    
 #ifdef _WIN32
   // allocate space
@@ -314,7 +412,7 @@ static bool BytesToUnicode(const std::string &in, std::wstring &out) {
     buffer = NULL;
     return false;
   }
-  
+
   // create string
   out.append(buffer, wsize - 1);
 
@@ -359,27 +457,27 @@ static std::wstring BytesToUnicode(const std::string &in) {
 }
 
 /****************************
- * Converts UTF-8 bytes to
- * native a unicode character
- ****************************/
+* Converts UTF-8 bytes to
+* native a unicode character
+****************************/
 static bool BytesToCharacter(const std::string &in, wchar_t &out) {
   std::wstring buffer;
   if(!BytesToUnicode(in, buffer)) {
     return false;
   }
-  
+
   if(buffer.size() != 1) {
     return false;
   }
-  
+
   out = buffer[0];  
   return true;
 }
 
 /****************************
- * Converts a native string
- * to UTF-8 bytes
- ****************************/
+* Converts a native string
+* to UTF-8 bytes
+****************************/
 static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
 #ifdef _WIN32
   // allocate space
@@ -388,7 +486,7 @@ static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
     return false;
   }
   char* buffer = new char[size];
-  
+
   // convert std::string
   int check = WideCharToMultiByte(CP_UTF8, 0, in.c_str(), -1, buffer, size, NULL, NULL);
   if(!check) {
@@ -396,7 +494,7 @@ static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
     buffer = NULL;
     return false;
   }
-  
+
   // append output
   out.append(buffer, size - 1);
 
@@ -410,7 +508,7 @@ static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
     return false;
   }
   char* buffer = new char[size + 1];
-  
+
   wcstombs(buffer, in.c_str(), size);
   if(size == (size_t)-1) {
     delete[] buffer;
@@ -418,7 +516,7 @@ static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
     return false;
   }
   buffer[size] = '\0';
-  
+
   // create std::string      
   out.append(buffer, size);
 
@@ -426,7 +524,7 @@ static bool UnicodeToBytes(const std::wstring &in, std::string &out) {
   delete[] buffer;
   buffer = NULL;
 #endif
-  
+
   return true;
 }
 
@@ -440,14 +538,14 @@ static std::string UnicodeToBytes(const std::wstring &in) {
 }
 
 /****************************
- * Converts a native character
- * to UTF-8 bytes
- ****************************/
+* Converts a native character
+* to UTF-8 bytes
+****************************/
 static bool CharacterToBytes(wchar_t in, std::string &out) {
   if(in == L'\0') {
     return true;
   }
-  
+
   wchar_t buffer[2];
   buffer[0] = in;
   buffer[1] = L'\0';
@@ -455,68 +553,68 @@ static bool CharacterToBytes(wchar_t in, std::string &out) {
   if(!UnicodeToBytes(buffer, out)) {
     return false;
   }
-  
+
   return true;
 }
 
 /****************************
- * Loads a UTF-8 file into memory 
- * and converts content into native
- * Unicode format
+* Loads a UTF-8 file into memory 
+* and converts content into native
+* Unicode format
 ****************************/
 static wchar_t* LoadFileBuffer(const wstring &name, size_t& buffer_size) {
-	char* buffer;
-	string open_name(name.begin(), name.end());
-    
-	ifstream in(open_name.c_str(), ios_base::in | ios_base::binary | ios_base::ate);
-	if(in.good()) {
-		// get file size
-		in.seekg(0, ios::end);
-		buffer_size = (size_t)in.tellg();
-		in.seekg(0, ios::beg);
-		buffer = (char*)calloc(buffer_size + 1, sizeof(char));
-		in.read(buffer, buffer_size);
-		// close file
-		in.close();
-	}
-	else {
-		wcerr << L"Unable to open source file: " << name << endl;
-		exit(1);
-	}
+  char* buffer;
+  string open_name(name.begin(), name.end());
 
-	// convert unicode
+  ifstream in(open_name.c_str(), ios_base::in | ios_base::binary | ios_base::ate);
+  if(in.good()) {
+    // get file size
+    in.seekg(0, ios::end);
+    buffer_size = (size_t)in.tellg();
+    in.seekg(0, ios::beg);
+    buffer = (char*)calloc(buffer_size + 1, sizeof(char));
+    in.read(buffer, buffer_size);
+    // close file
+    in.close();
+  }
+  else {
+    wcerr << L"Unable to open source file: " << name << endl;
+    exit(1);
+  }
+
+  // convert unicode
 #ifdef _WIN32
-	int wsize = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, NULL, 0);
-	if(!wsize) {
-		wcerr << L"Unable to open source file: " << name << endl;
-		exit(1);
-	}
-	wchar_t* wbuffer = new wchar_t[wsize];
-	int check = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wbuffer, wsize);
-	if(!check) {
-		wcerr << L"Unable to open source file: " << name << endl;
-		exit(1);
-	}
+  int wsize = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, NULL, 0);
+  if(!wsize) {
+    wcerr << L"Unable to open source file: " << name << endl;
+    exit(1);
+  }
+  wchar_t* wbuffer = new wchar_t[wsize];
+  int check = MultiByteToWideChar(CP_UTF8, 0, buffer, -1, wbuffer, wsize);
+  if(!check) {
+    wcerr << L"Unable to open source file: " << name << endl;
+    exit(1);
+  }
 #else
-	size_t wsize = mbstowcs(NULL, buffer, buffer_size);
-	if(wsize == (size_t)-1) {
-		delete buffer;
-		wcerr << L"Unable to open source file: " << name << endl;
-		exit(1);
-	}
-	wchar_t* wbuffer = new wchar_t[wsize + 1];
-	size_t check = mbstowcs(wbuffer, buffer, buffer_size);
-	if(check == (size_t)-1) {
-		delete buffer;
-		delete wbuffer;
-		wcerr << L"Unable to open source file: " << name << endl;
-		exit(1);
-	}
-	wbuffer[wsize] = L'\0';
+  size_t wsize = mbstowcs(NULL, buffer, buffer_size);
+  if(wsize == (size_t)-1) {
+    delete buffer;
+    wcerr << L"Unable to open source file: " << name << endl;
+    exit(1);
+  }
+  wchar_t* wbuffer = new wchar_t[wsize + 1];
+  size_t check = mbstowcs(wbuffer, buffer, buffer_size);
+  if(check == (size_t)-1) {
+    delete buffer;
+    delete wbuffer;
+    wcerr << L"Unable to open source file: " << name << endl;
+    exit(1);
+  }
+  wbuffer[wsize] = L'\0';
 #endif
-    
-	free(buffer);
-	return wbuffer;
+
+  free(buffer);
+  return wbuffer;
 }
 
 

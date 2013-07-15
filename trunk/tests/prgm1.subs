@@ -1,4 +1,4 @@
-#~
+
 	i := 0;
 	count := 0;
 	while(i < 13) {
@@ -18,7 +18,4 @@
 		a := 100;
 	};
 	dump a;
-~#
 
-z = 1.13;
-dump g->ToInteger();

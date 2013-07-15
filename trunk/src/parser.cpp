@@ -163,7 +163,7 @@ ParsedProgram* Parser::Parse()
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
       ParsedFunction* function = ParseFunction(0);
-			delete symbol_table;
+      function->SetSymbolTable(symbol_table);
 			symbol_table = prev_symbol_table;			
       if(!function) {
         DeleteProgram();
@@ -185,10 +185,10 @@ ParsedProgram* Parser::Parse()
     }
   }
   program->SetGlobal(statements);
-	
+  
 	// clean up symbol table
   symbol_table->PreviousScope();
-	delete symbol_table;
+	program->SetGlobalSymbolTable(symbol_table);
 	symbol_table = NULL;
 	
   if(NoErrors()) {
@@ -1006,7 +1006,7 @@ Reference* Parser::ParseReference(int depth)
 #endif
 
 	// self reference
-	const wstring identifier = L"@self";
+	const wstring identifier = L"self";
 	int entry_id = symbol_table->GetEntry(identifier);
 	if(entry_id < 0) {
 		ProcessError(L"Unknown reference '" + identifier + L"'");
