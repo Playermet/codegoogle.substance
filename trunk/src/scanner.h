@@ -94,14 +94,15 @@ namespace compiler {
     TOKEN_CHAR_LIT,
     TOKEN_CHAR_STRING_LIT,
     // reserved words
-    TOKEN_FUNCTION_ID,
+    TOKEN_CLASS_ID,
+    TOKEN_FUNC_ID,
 		TOKEN_VAR_ID,
+    TOKEN_VARS_ID,
 	  TOKEN_IF_ID,
     TOKEN_ELSE_ID,
 	  TOKEN_WHILE_ID,
     TOKEN_DUMP_ID,
     TOKEN_SELF_ID,
-    TOKEN_CLASS_ID,
     TOKEN_RETURN_ID,
   };
 

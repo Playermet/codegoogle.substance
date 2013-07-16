@@ -92,6 +92,7 @@ namespace compiler {
     bool NoErrors();
 	
     // parsing operations
+    ParsedClass* ParseClass(int depth);
     ParsedFunction* ParseFunction(int depth);    
     ExpressionList* ParseDeclarationParameters(int depth);
     StatementList* ParseBlock(bool new_scope, int depth);
@@ -107,7 +108,7 @@ namespace compiler {
     Expression* ParseTerm(int depth);
     Expression* ParseFactor(int depth);
     Expression* ParseSimpleExpression(int depth);
-    Reference* ParseReference(int depth);
+    Reference* ParseSelf(int depth);
     Reference* ParseReference(const wstring &ident, int depth);
     void ParseReference(Reference* reference, int depth);
 		ExpressionList* ParseCallingParameters(int depth);

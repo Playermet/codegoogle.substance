@@ -369,10 +369,9 @@ namespace compiler {
     int array_size;
     int array_dim;
 
-	  Reference(const wstring &file_name, const unsigned int line_num, int v) 
-	   : Expression(file_name, line_num) {
-      name = L"@self";
-		  id = v;
+	  Reference(const wstring &file_name, const unsigned int line_num) : Expression(file_name, line_num) {
+      name = L"self";
+		  id = 0;
       is_self = true;
       reference	= NULL;
       indices = NULL;
@@ -752,6 +751,34 @@ namespace compiler {
   };
 
   /****************************
+   * ParsedClass class
+   ****************************/
+  class ParsedClass : public ParseNode {
+    wstring name;
+    SymbolTable* symbol_table;
+
+  public:
+    ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
+      this->name = name;
+    }
+
+    ~ParsedClass() {
+    }
+
+    inline wstring GetName() {
+			return name;
+		}
+
+    void SetSymbolTable(SymbolTable* symbol_table) {
+      this->symbol_table = symbol_table;
+    }
+
+    SymbolTable* GetSymbolTable() {
+      return symbol_table;
+    }
+  };
+
+  /****************************
    * ParsedFunction class
    ****************************/
   class ParsedFunction : public ParseNode {
@@ -801,7 +828,9 @@ namespace compiler {
    * Parsed program class
    ****************************/
   class ParsedProgram {
-		unordered_map<wstring, ParsedFunction*> function_table;
+    unordered_map<wstring, ParsedClass*> klass_table;
+    vector<ParsedClass*> klasses;
+    unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
     StatementList* statements;
     SymbolTable* symbol_table;
@@ -818,7 +847,32 @@ namespace compiler {
       }
     }
 
-		bool AddFunction(ParsedFunction* function) {
+		bool AddClass(ParsedClass* klass) {
+			wstring name = klass->GetName();
+			unordered_map<wstring, ParsedClass*>::iterator result = klass_table.find(name);
+			if(result == klass_table.end()) {
+				klass_table.insert(pair<wstring, ParsedClass*>(name, klass));
+        klasses.push_back(klass);
+				return true;
+			}
+			
+			return false;
+    }
+
+    ParsedClass* GetClass(const wstring &name) {
+      unordered_map<wstring, ParsedClass*>::iterator result = klass_table.find(name);
+      if(result != klass_table.end()) {
+        return result->second;
+      }
+      
+      return NULL;
+    }
+    
+    vector<ParsedClass*> GetClasss() {
+      return klasses;
+    }
+
+    bool AddFunction(ParsedFunction* function) {
 			wstring name = function->GetName();
 			unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
 			if(result == function_table.end()) {
@@ -1037,8 +1091,8 @@ namespace compiler {
       return tmp;
     }
 	
-	  Reference* MakeReference(const wstring &file_name, const unsigned int line_num, int id) {
-      Reference* tmp = new Reference(file_name, line_num, id);
+	  Reference* MakeSelf(const wstring &file_name, const unsigned int line_num) {
+      Reference* tmp = new Reference(file_name, line_num);
       references.push_back(tmp);
       return tmp;
 	  }

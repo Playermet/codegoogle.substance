@@ -106,8 +106,7 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
 #endif
   
-  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), 
-                                block_instructions, jump_table, leaders);
+  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), block_instructions, jump_table, leaders);
 }
 
 /****************************

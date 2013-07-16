@@ -1,4 +1,3 @@
-
 	i := 0;
 	count := 0;
 	while(i < 13) {
@@ -8,7 +7,7 @@
   dump i;
   dump count;
 
-  function : Add(a,b) {
+  func : Add(a,b) {
     dump a + b;
   }
 
@@ -19,3 +18,12 @@
 	};
 	dump a;
 
+  z = self->a() + b;
+  
+class Foo {
+  vars a, b, c;
+  
+  func : Sub(a, b, c) {
+    return a - b- c;
+  }
+}
