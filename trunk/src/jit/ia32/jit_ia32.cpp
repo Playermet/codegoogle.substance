@@ -1768,7 +1768,7 @@ void JitCompiler::math_mem_xreg(int32_t offset, Register dest, jit::JitInstructi
 	move_mem_reg(FRAME, EBP, base_holder->GetRegister());
 	add_imm_reg(offset + VALUE_OFFSET, base_holder->GetRegister());
   RegisterHolder* holder = GetXmmRegister();
-  move_mem_xreg(offset, base_holder->GetRegister(), holder->GetRegister());
+  move_mem_xreg(0, base_holder->GetRegister(), holder->GetRegister());
   math_xreg_xreg(holder->GetRegister(), dest, type);
 	ReleaseRegister(base_holder);
   ReleaseXmmRegister(holder);
