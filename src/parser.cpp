@@ -157,8 +157,25 @@ ParsedProgram* Parser::Parse()
   symbol_table->NewScope();
 	
   while(!Match(TOKEN_END_OF_STREAM)) {
+    // parse class
+    if(Match(TOKEN_CLASS_ID)) {
+      // new scope for function level statements
+			prev_symbol_table = symbol_table;			
+			symbol_table = new SymbolTable;			
+      ParsedClass* klass = ParseClass(0);
+      klass->SetSymbolTable(symbol_table);
+			symbol_table = prev_symbol_table;			
+      if(!klass) {
+        DeleteProgram();
+        return NULL;
+      }
+      // add function
+			if(!program->AddClass(klass)) {
+				ProcessError(L"Class with the same name already exists", klass);
+			}
+    }
 		// parse function
-    if(Match(TOKEN_FUNCTION_ID)) {
+    else if(Match(TOKEN_FUNC_ID)) {
 			// new scope for function level statements
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
@@ -196,6 +213,57 @@ ParsedProgram* Parser::Parse()
   }
   
   DeleteProgram();
+  return NULL;
+}
+
+/****************************
+ * Parses a class
+ ****************************/
+ParsedClass* Parser::ParseClass(int depth)
+{
+  NextToken();
+
+  if(!Match(TOKEN_IDENT)) {
+		ProcessError(TOKEN_IDENT);
+		return NULL;
+	}
+  const wstring &name = scanner->GetToken()->GetIdentifier();
+	NextToken();
+
+  if(!Match(TOKEN_OPEN_BRACE)) {
+    ProcessError(TOKEN_OPEN_BRACE);
+    return NULL;
+  }
+  NextToken();
+
+  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VARS_ID) || Match(TOKEN_FUNC_ID))) {
+    // variables
+    if(Match(TOKEN_VARS_ID)) {
+      NextToken();
+      while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
+        ParseDeclaration(depth + 1);
+        if(Match(TOKEN_COMMA)) {
+          NextToken();
+        }
+      }
+
+      if(!Match(TOKEN_SEMI_COLON)) {
+        return NULL;
+      }
+      NextToken();
+    }
+    // functions
+    else {
+      ParsedFunction* function = ParseFunction(0);
+    }
+  }
+
+  if(!Match(TOKEN_CLOSED_BRACE)) {
+    ProcessError(TOKEN_CLOSED_BRACE);
+    return NULL;
+  }
+  NextToken();
+
   return NULL;
 }
 
@@ -254,7 +322,7 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
 	}
   NextToken();
 
-  while(Match(TOKEN_IDENT)) {
+  while(!Match(TOKEN_END_OF_STREAM) && Match(TOKEN_IDENT)) {
     const wstring identifier = scanner->GetToken()->GetIdentifier();
     if(symbol_table->HasEntry(identifier)) {
 		  ProcessError(L"Variable already declared in this scope");
@@ -385,6 +453,7 @@ Statement* Parser::ParseStatement(int depth)
 
 		// var
 	case TOKEN_VAR_ID:
+    NextToken();
 		statement = ParseDeclaration(depth + 1);
 		break;
 		    
@@ -424,8 +493,6 @@ Statement* Parser::ParseDeclaration(int depth)
 #ifdef _DEBUG
 	Show(L"Var", depth);
 #endif
-	
-	NextToken();
 	
 	// variable assignment
 	if(Match(TOKEN_IDENT) && Match(TOKEN_ASSIGN, SECOND_INDEX)) {
@@ -494,7 +561,7 @@ Statement* Parser::ParseIfElse(int depth)
 		IfElse* if_else = TreeFactory::Instance()->MakeIfElseStatement(file_name, line_num, expression, if_block);
     // find 'else/if' blocks
     bool found_else = false;
-    while(Match(TOKEN_ELSE_ID) && !found_else) {
+    while(!Match(TOKEN_END_OF_STREAM) && Match(TOKEN_ELSE_ID) && !found_else) {
       NextToken();      
       // 'else if' part
       if(Match(TOKEN_IF_ID)) {        
@@ -637,7 +704,7 @@ Expression* Parser::ParseLogic(int depth)
   Expression* left = ParseMathLogic(depth + 1);
 
   CalculatedExpression* expression = NULL;
-  while((Match(TOKEN_AND) || Match(TOKEN_OR)) && !Match(TOKEN_END_OF_STREAM)) {
+  while(!Match(TOKEN_END_OF_STREAM) && ((Match(TOKEN_AND) || Match(TOKEN_OR)))) {
     if(expression) {
       left = expression;
     }
@@ -752,7 +819,7 @@ Expression* Parser::ParseTerm(int depth)
   }
 
   CalculatedExpression* expression = NULL;
-  while((Match(TOKEN_ADD) || Match(TOKEN_SUB)) && !Match(TOKEN_END_OF_STREAM)) {
+  while(!Match(TOKEN_END_OF_STREAM) && ((Match(TOKEN_ADD) || Match(TOKEN_SUB)))) {
     if(expression) {
       CalculatedExpression* right;
       if(Match(TOKEN_ADD)) {
@@ -809,8 +876,7 @@ Expression* Parser::ParseFactor(int depth)
   }
 
   CalculatedExpression* expression = NULL;
-  while((Match(TOKEN_MUL) || Match(TOKEN_DIV) || Match(TOKEN_MOD)) &&
-        !Match(TOKEN_END_OF_STREAM)) {
+  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_MUL) || Match(TOKEN_DIV) || Match(TOKEN_MOD))) {
     if(expression) {
       CalculatedExpression* right;
       if(Match(TOKEN_MUL)) {
@@ -862,7 +928,7 @@ ExpressionList* Parser::ParseIndices(int depth)
     expressions = TreeFactory::Instance()->MakeExpressionList(file_name, line_num);
     NextToken();
 
-    while(!Match(TOKEN_CLOSED_BRACKET) && !Match(TOKEN_END_OF_STREAM)) {
+    while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_CLOSED_BRACKET)) {
       // expression
       expressions->AddExpression(ParseExpression(depth + 1));
 
@@ -903,7 +969,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
   }
   else if(Match(TOKEN_SELF_ID)) {
     NextToken();
-    expression = ParseReference(depth + 1);
+    expression = ParseSelf(depth + 1);
   }
   else if(Match(TOKEN_SUB)) {
     NextToken();
@@ -996,31 +1062,24 @@ Expression* Parser::ParseSimpleExpression(int depth)
 /****************************
  * Parses a instance reference.
  ****************************/
-Reference* Parser::ParseReference(int depth)
+Reference* Parser::ParseSelf(int depth)
 {
 	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 	
 #ifdef _DEBUG
-  Show(L"Reference", depth);
+  Show(L"Self", depth);
 #endif
 
 	// self reference
-	const wstring identifier = L"self";
-	int entry_id = symbol_table->GetEntry(identifier);
-	if(entry_id < 0) {
-		ProcessError(L"Unknown reference '" + identifier + L"'");
-		return NULL;
-	}
-	
-  Reference* inst_ref = TreeFactory::Instance()->MakeReference(file_name, line_num, entry_id);
+	Reference* self_ref = TreeFactory::Instance()->MakeSelf(file_name, line_num);
 
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
-    ParseReference(inst_ref, depth + 1);
+    ParseReference(self_ref, depth + 1);
   }
 
-  return inst_ref;
+  return self_ref;
 }
 
 /****************************
@@ -1128,7 +1187,7 @@ ExpressionList* Parser::ParseCallingParameters(int depth)
 	}
   NextToken();
 
-  while(!Match(TOKEN_CLOSED_PAREN) && !Match(TOKEN_END_OF_STREAM)) {
+  while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_CLOSED_PAREN)) {
     Expression* parameter = ParseExpression(depth + 1);
     if(!parameter) {
       return NULL;
