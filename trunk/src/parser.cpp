@@ -163,9 +163,11 @@ ParsedProgram* Parser::Parse()
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
       ParsedClass* klass = ParseClass(0);
-      klass->SetSymbolTable(symbol_table);
-			symbol_table = prev_symbol_table;			
-      if(!klass) {
+      if(klass) {
+        klass->SetSymbolTable(symbol_table);
+        symbol_table = prev_symbol_table;			
+      }
+      else {
         DeleteProgram();
         return NULL;
       }
@@ -180,9 +182,11 @@ ParsedProgram* Parser::Parse()
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
       ParsedFunction* function = ParseFunction(0);
-      function->SetSymbolTable(symbol_table);
-			symbol_table = prev_symbol_table;			
-      if(!function) {
+      if(function) {
+        function->SetSymbolTable(symbol_table);
+        symbol_table = prev_symbol_table;			
+      }
+      else {
         DeleteProgram();
         return NULL;
       }
@@ -243,15 +247,25 @@ ParsedClass* Parser::ParseClass(int depth)
   }
   NextToken();
 
+  StatementList* declarations = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
   while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VARS_ID) || Match(TOKEN_FUNC_ID))) {
     // variables
     if(Match(TOKEN_VARS_ID)) {
       NextToken();
       while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
-        ParseDeclaration(depth + 1);
+        Statement* declaration = ParseDeclaration(depth + 1);
+        if(!declaration) {
+          return NULL;
+        }
+        declarations->AddStatement(declaration);
+        if(!Match(TOKEN_SEMI_COLON) && !Match(TOKEN_COMMA)) {
+          ProcessError(L"Expected ',' or ';'", declarations);
+          return NULL;
+        } 
+        
         if(Match(TOKEN_COMMA)) {
           NextToken();
-        }
+        } 
       }
       
       if(!Match(TOKEN_SEMI_COLON)) {
@@ -262,9 +276,14 @@ ParsedClass* Parser::ParseClass(int depth)
     }
     // functions
     else {
-      klass->AddFunction(ParseFunction(depth + 1));
+      ParsedFunction* function = ParseFunction(depth + 1);
+      if(!function) {
+        return NULL;
+      }
+      klass->AddFunction(function);
     }
   }
+  klass->SetDeclarations(declarations);
   
   if(!Match(TOKEN_CLOSED_BRACE)) {
     ProcessError(TOKEN_CLOSED_BRACE);
@@ -938,8 +957,12 @@ ExpressionList* Parser::ParseIndices(int depth)
 
     while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_CLOSED_BRACKET)) {
       // expression
-      expressions->AddExpression(ParseExpression(depth + 1));
-
+      Expression* expression = ParseExpression(depth + 1);
+      if(!expression) {
+        return NULL;
+      }
+      expressions->AddExpression(expression);
+      
       if(Match(TOKEN_COMMA)) {
         NextToken();
       }
