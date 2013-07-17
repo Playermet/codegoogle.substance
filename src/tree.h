@@ -751,34 +751,6 @@ namespace compiler {
   };
 
   /****************************
-   * ParsedClass class
-   ****************************/
-  class ParsedClass : public ParseNode {
-    wstring name;
-    SymbolTable* symbol_table;
-
-  public:
-    ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
-      this->name = name;
-    }
-
-    ~ParsedClass() {
-    }
-
-    inline wstring GetName() {
-			return name;
-		}
-
-    void SetSymbolTable(SymbolTable* symbol_table) {
-      this->symbol_table = symbol_table;
-    }
-
-    SymbolTable* GetSymbolTable() {
-      return symbol_table;
-    }
-  };
-
-  /****************************
    * ParsedFunction class
    ****************************/
   class ParsedFunction : public ParseNode {
@@ -823,7 +795,62 @@ namespace compiler {
       return symbol_table;
     }
   };
+  
+  /****************************
+   * ParsedClass class
+   ****************************/
+  class ParsedClass : public ParseNode {
+    wstring name;
+    SymbolTable* symbol_table;
+    unordered_map<wstring, ParsedFunction*> function_table;
+    vector<ParsedFunction*> functions;
+    
+  public:
+    ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
+      this->name = name;
+    }
 
+    ~ParsedClass() {
+    }
+
+    inline wstring GetName() {
+			return name;
+		}
+
+    void SetSymbolTable(SymbolTable* symbol_table) {
+      this->symbol_table = symbol_table;
+    }
+
+    SymbolTable* GetSymbolTable() {
+      return symbol_table;
+    }
+
+    bool AddFunction(ParsedFunction* function) {
+			wstring name = function->GetName();
+			unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
+			if(result == function_table.end()) {
+				function_table.insert(pair<wstring, ParsedFunction*>(name, function));
+        functions.push_back(function);
+				return true;
+			}
+			
+			return false;
+    }
+
+    ParsedFunction* GetFunction(const wstring &name) {
+      unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
+      if(result != function_table.end()) {
+        return result->second;
+      }
+      
+      return NULL;
+    }
+    
+    vector<ParsedFunction*> GetFunctions() {
+      return functions;
+    }
+  };
+  
   /****************************
    * Parsed program class
    ****************************/
@@ -1028,6 +1055,12 @@ namespace compiler {
       return tmp;
     }
 
+    ParsedClass* MakeClass(const wstring &file_name, const unsigned int line_num, const wstring &name) {
+      ParsedClass* tmp = new ParsedClass(file_name, line_num, name);
+      nodes.push_back(tmp);
+      return tmp;
+    }
+    
     ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
                                  ExpressionList* parameters, StatementList* statements) {
       ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements);

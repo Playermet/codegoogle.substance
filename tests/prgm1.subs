@@ -18,7 +18,6 @@
 	};
 	dump a;
 
-  z = self->a() + b;
   
 class Foo {
   vars a, b, c;

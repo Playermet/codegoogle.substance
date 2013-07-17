@@ -221,15 +221,22 @@ ParsedProgram* Parser::Parse()
  ****************************/
 ParsedClass* Parser::ParseClass(int depth)
 {
+  const unsigned int line_num = GetLineNumber();
+  const wstring &file_name = GetFileName();
+
+#ifdef _DEBUG
+	Show(L"Class", depth);
+#endif
+  
   NextToken();
 
   if(!Match(TOKEN_IDENT)) {
 		ProcessError(TOKEN_IDENT);
 		return NULL;
 	}
-  const wstring &name = scanner->GetToken()->GetIdentifier();
+  ParsedClass* klass = TreeFactory::Instance()->MakeClass(file_name, line_num, scanner->GetToken()->GetIdentifier());
 	NextToken();
-
+  
   if(!Match(TOKEN_OPEN_BRACE)) {
     ProcessError(TOKEN_OPEN_BRACE);
     return NULL;
@@ -246,25 +253,26 @@ ParsedClass* Parser::ParseClass(int depth)
           NextToken();
         }
       }
-
+      
       if(!Match(TOKEN_SEMI_COLON)) {
+        ProcessError(TOKEN_SEMI_COLON);
         return NULL;
       }
       NextToken();
     }
     // functions
     else {
-      ParsedFunction* function = ParseFunction(0);
+      klass->AddFunction(ParseFunction(depth + 1));
     }
   }
-
+  
   if(!Match(TOKEN_CLOSED_BRACE)) {
     ProcessError(TOKEN_CLOSED_BRACE);
     return NULL;
   }
   NextToken();
-
-  return NULL;
+  
+  return klass;
 }
 
 /****************************
