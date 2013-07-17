@@ -804,6 +804,7 @@ namespace compiler {
     SymbolTable* symbol_table;
     unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
+    StatementList* declarations;
     
   public:
     ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
@@ -848,6 +849,14 @@ namespace compiler {
     
     vector<ParsedFunction*> GetFunctions() {
       return functions;
+    }
+
+    void SetDeclarations(StatementList* declarations) {
+      this->declarations = declarations;
+    }
+    
+    StatementList* GetDeclarations() {
+      return declarations;
     }
   };
   
