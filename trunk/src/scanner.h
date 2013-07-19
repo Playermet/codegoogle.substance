@@ -94,6 +94,7 @@ namespace compiler {
     TOKEN_CHAR_LIT,
     TOKEN_CHAR_STRING_LIT,
     // reserved words
+    TOKEN_NEW_ID,
     TOKEN_CLASS_ID,
     TOKEN_FUNC_ID,
 		TOKEN_VAR_ID,

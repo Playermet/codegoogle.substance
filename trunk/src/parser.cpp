@@ -1175,18 +1175,29 @@ void Parser::ParseReference(Reference* reference, int depth)
   const wstring &file_name = GetFileName();
   
   NextToken();
-  if(!Match(TOKEN_IDENT)) {
-    ProcessError(TOKEN_IDENT);
-  }
-  // identifier
-  const wstring &identifier = scanner->GetToken()->GetIdentifier();
-  NextToken();
-
-#ifdef _DEBUG
-  Show(L"Nested reference: name=" + identifier, depth);
-#endif
   
-  Reference* nested_reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+  Reference* nested_reference = NULL;
+  if(Match(TOKEN_IDENT)) {
+    // identifier
+    const wstring &identifier = scanner->GetToken()->GetIdentifier();
+    NextToken();
+    
+#ifdef _DEBUG
+    Show(L"Nested reference: name=" + identifier, depth);
+#endif
+    nested_reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+  }
+  else if(Match(TOKEN_NEW_ID)) {
+    NextToken();
+#ifdef _DEBUG
+    Show(L"New", depth);
+#endif
+    nested_reference = TreeFactory::Instance()->MakeNew(file_name, line_num);
+  }
+  else {
+    ProcessError(L"Expected identifier or 'New'", reference);
+    return;
+  }
   reference->SetReference(nested_reference);
   
   // array reference

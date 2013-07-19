@@ -18,6 +18,7 @@
 	};
 	dump a;
 
+	a := Bar->New();
   
 class Foo {
   vars a = 7, b, c = 13;
