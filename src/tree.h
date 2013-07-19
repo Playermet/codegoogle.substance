@@ -366,6 +366,7 @@ namespace compiler {
 		ExpressionList* calling_parameters;
     Reference* reference;
     bool is_self;
+    bool is_new;
     int array_size;
     int array_dim;
 
@@ -373,6 +374,7 @@ namespace compiler {
       name = L"self";
 		  id = 0;
       is_self = true;
+      is_new = false;
       reference	= NULL;
       indices = NULL;
 			calling_parameters = NULL;
@@ -383,6 +385,7 @@ namespace compiler {
       name = n;
 		  id = v;
       is_self = false;
+      is_new = false;
       reference	= NULL;
       indices = NULL;
 			calling_parameters = NULL;
@@ -393,6 +396,7 @@ namespace compiler {
 			name = n;
 			id = -1;
 			is_self = false;
+      is_new = false;
 			reference	= NULL;
 			indices = NULL;
 			calling_parameters = NULL;
@@ -436,6 +440,14 @@ namespace compiler {
 
     bool IsSelf() {
       return is_self;
+    }
+
+    bool IsNew() {
+      return is_new;
+    }
+
+    void SetNew(bool n) {
+      is_new = n;
     }
 
     bool HasCallingParameters() {
@@ -1135,6 +1147,13 @@ namespace compiler {
 	
 	  Reference* MakeSelf(const wstring &file_name, const unsigned int line_num) {
       Reference* tmp = new Reference(file_name, line_num);
+      references.push_back(tmp);
+      return tmp;
+	  }
+
+    Reference* MakeNew(const wstring &file_name, const unsigned int line_num) {
+      Reference* tmp = new Reference(file_name, line_num, L"New");
+      tmp->SetNew(true);
       references.push_back(tmp);
       return tmp;
 	  }
