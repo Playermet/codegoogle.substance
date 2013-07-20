@@ -114,8 +114,7 @@ enum InstructionType {
   JMP,
   LBL,
   // functions and traps
-  CALL_MTHD,
-  CALL_CLS_MTHD,
+  CALL_FUNC,
   RTRN,
   // misc
   DUMP_VALUE
