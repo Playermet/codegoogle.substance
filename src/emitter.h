@@ -47,7 +47,7 @@ namespace compiler {
     static vector<Instruction*> instruction_factory;
 	  INT_T start_label_id;
     INT_T end_label_id;
-    bool returns_value;
+    int returns_value;
     
     INT_T NextEndId() {
       return end_label_id++;

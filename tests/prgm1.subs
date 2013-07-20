@@ -9,11 +9,12 @@
 
   func : Add(a,b) {
     if(a < 10) {
-      return 2;
+      return;
     };
     
     dump a + b;
-    return;
+
+	return 23;
   }
 
 	i *= 10;  

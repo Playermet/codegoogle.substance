@@ -101,7 +101,7 @@ ExecutableProgram* Emitter::Emit()
   wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif
   block_instructions->push_back(MakeInstruction(RTRN));    
-  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders);
+  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders, false);
   executable_program->SetGlobal(global);
   
   // emit functions
@@ -125,7 +125,7 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
 #endif
   
   // create holders
-  returns_value = false;
+  returns_value = -1;
   vector<Instruction*>* block_instructions = new vector<Instruction*>;
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
@@ -148,8 +148,17 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
     wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif
     block_instructions->push_back(MakeInstruction(RTRN));
+
+    if(returns_value == 1) {
+      ProcessError(statement_list->GetStatements().back(), L"Last statement must return a value");
+    }
   }
-  
+  else {
+    if(!static_cast<Return*>(statement_list->GetStatements().back())->GetExpression() && returns_value == 1) {
+      ProcessError(statement_list->GetStatements().back(), L"Last statement must return a value");
+    }
+  }
+
 #ifdef _DEBUG
   wcout << L"Leaders" << endl;
   set<size_t>::iterator iter = leaders.begin(); 
@@ -157,28 +166,9 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
     wcout << L"  " << *iter << endl;
   }
 #endif
-
-  bool returns_value = false;
-  vector<Statement*> statements = statement_list->GetStatements();
-  for(size_t i = 0; i < statements.size(); i++) {
-    Statement* statement = statements[i];
-    switch(statement->GetStatementType()) {
-    case RETURN_STATEMENT: {
-      if(static_cast<Return*>(statement)->GetExpression()) {
-        returns_value = true;
-      }
-      else if(returns_value) {
-        ProcessError(statement, L"Statement must return a value");
-      }
-    }
-      break;
-
-    default:
-      break;
-    }
-  }
   
-  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), block_instructions, jump_table, leaders);
+  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), block_instructions, 
+                                jump_table, leaders, returns_value > 0);
 }
 
 /****************************
@@ -221,6 +211,20 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
     case RETURN_STATEMENT:
       if(static_cast<Return*>(statement)->GetExpression()) {
         EmitExpression(static_cast<Return*>(statement)->GetExpression(), block_instructions, jump_table);
+        if(returns_value == 0) {
+          ProcessError(statement, L"Not all statements return a value");
+        }
+        else {
+          returns_value = 1;
+        }
+      }
+      else {
+        if(returns_value == 1) {
+          ProcessError(statement, L"Not all statements return a value");
+        }
+        else {
+          returns_value = 0;
+        }
       }
 #ifdef _DEBUG
       wcout << block_instructions->size() << L": " << L"return" << endl;
