@@ -25,8 +25,8 @@ dump a;
 
 #	a := Bar->New();
 
-Add(13,23);
-# t := Add(11,2); dump t;
+# Add(13,23);
+t := Add(11,2); dump t;
   
 class Foo {
   vars a = 7, b, c = 13;
