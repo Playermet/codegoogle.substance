@@ -41,20 +41,22 @@ int main(int argc, const char* argv[]) {
     // emit code
     if(parsed_program) {
 			// emit and run code
-      compiler::Emitter emitter(parsed_program);      
-      runtime::Runtime runtime(emitter.Emit(), emitter.GetLastLabelId());
-      // free parsed program
-      parser.DeleteProgram();
-			runtime.Run();        			
-      // clean up and exit
+      compiler::Emitter emitter(parsed_program); 
+      ExecutableProgram* executable_program = emitter.Emit();
+      if(executable_program) {
+        // run program
+        runtime::Runtime runtime(executable_program, emitter.GetLastLabelId());
+        // free parsed program
+        parser.DeleteProgram();
+			  runtime.Run();        
+			  return 0;
+      }
+      // clean up
 			compiler::Emitter::ClearInstructions();
-			return 0;
     }
-
-    return 1;
+    // clean up
+    parser.DeleteProgram();
 	}
   
-  // clean up and exit
-  compiler::Emitter::ClearInstructions();  
 	return 1;
 }

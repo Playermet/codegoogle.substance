@@ -36,6 +36,53 @@ using namespace compiler;
 vector<Instruction*> Emitter::instruction_factory;
 
 /****************************
+ * Emits an error
+ ****************************/
+void Emitter::ProcessError(ParseNode* node, const wstring &msg)
+{
+#ifdef _DEBUG
+  wcout << L"\tError: " << node->GetFileName() << L":" << node->GetLineNumber()
+	<< L": " << msg << endl;
+#endif
+
+  const wstring &str_line_num = IntToString(node->GetLineNumber());
+  errors.insert(pair<int, wstring>(node->GetLineNumber(), node->GetFileName() +
+				   L":" + str_line_num + L": " + msg));
+}
+
+/****************************
+ * Emits an error
+ ****************************/
+void Emitter::ProcessError(const wstring &msg)
+{
+#ifdef _DEBUG
+  wcout << L"\tError: " << msg << endl;
+#endif
+
+  errors.insert(pair<int, wstring>(0, msg));
+}
+
+/****************************
+ * Check for errors detected
+ * during the contextual
+ * analysis process.
+ ****************************/
+bool Emitter::NoErrors()
+{
+  // check and process errors
+  if(errors.size()) {
+    map<int, wstring>::iterator error;
+    for(error = errors.begin(); error != errors.end(); ++error) {
+      wcerr << error->second << endl;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
+/****************************
  * Emit program instructions
  ****************************/
 ExecutableProgram* Emitter::Emit()
@@ -63,8 +110,12 @@ ExecutableProgram* Emitter::Emit()
     ExecutableFunction* executable_function = EmitFunction(functions[i]);
     executable_program->AddFunction(executable_function);
   }
-  
-  return executable_program;
+
+  // check for errors
+  if(NoErrors()) {
+    return executable_program;
+  }
+  return NULL;
 }
 
 ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
@@ -90,7 +141,8 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
   
   // emit function
-  EmitFunction(parsed_function->GetStatements(), block_instructions, jump_table, leaders);
+  StatementList* statement_list = parsed_function->GetStatements();
+  EmitFunction(statement_list, block_instructions, jump_table, leaders);
   if(block_instructions->back()->type != RTRN) {
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"return" << endl;
@@ -105,6 +157,26 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
     wcout << L"  " << *iter << endl;
   }
 #endif
+
+  bool returns_value = false;
+  vector<Statement*> statements = statement_list->GetStatements();
+  for(size_t i = 0; i < statements.size(); i++) {
+    Statement* statement = statements[i];
+    switch(statement->GetStatementType()) {
+    case RETURN_STATEMENT: {
+      if(static_cast<Return*>(statement)->GetExpression()) {
+        returns_value = true;
+      }
+      else if(returns_value) {
+        ProcessError(statement, L"Statement must return a value");
+      }
+    }
+      break;
+
+    default:
+      break;
+    }
+  }
   
   return new ExecutableFunction(parsed_function->GetName(), parameters.size(), block_instructions, jump_table, leaders);
 }
@@ -147,7 +219,9 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 			break;
 			
     case RETURN_STATEMENT:
-      EmitExpression(static_cast<Return*>(statement)->GetExpression(), block_instructions, jump_table);
+      if(static_cast<Return*>(statement)->GetExpression()) {
+        EmitExpression(static_cast<Return*>(statement)->GetExpression(), block_instructions, jump_table);
+      }
 #ifdef _DEBUG
       wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif
