@@ -216,7 +216,6 @@ ParsedProgram* Parser::Parse()
     return program;
   }
   
-  DeleteProgram();
   return NULL;
 }
 
@@ -463,9 +462,14 @@ Statement* Parser::ParseStatement(int depth)
     break;
 		
 		// return
-  case TOKEN_RETURN_ID:
+  case TOKEN_RETURN_ID: {
     NextToken();
-    statement = TreeFactory::Instance()->MakeReturnStatement(file_name, line_num, ParseExpression(depth + 1));
+    Expression* expression = NULL;
+    if(!Match(TOKEN_SEMI_COLON)) {
+      expression = ParseExpression(depth + 1);
+    }
+    statement = TreeFactory::Instance()->MakeReturnStatement(file_name, line_num, expression);
+  }
     break;
 		
 		// if

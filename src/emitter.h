@@ -42,6 +42,7 @@
 
 namespace compiler {
   class Emitter {
+    map<int, wstring> errors;
     ParsedProgram* parsed_program;
     static vector<Instruction*> instruction_factory;
 	  INT_T start_label_id;
@@ -56,6 +57,10 @@ namespace compiler {
       return start_label_id++;
     }
     
+    void ProcessError(ParseNode* node, const wstring &msg);
+    void ProcessError(const wstring &msg);
+    bool NoErrors();
+
     ExecutableFunction* EmitFunction(ParsedFunction* parsed_function);
     void EmitFunction(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
