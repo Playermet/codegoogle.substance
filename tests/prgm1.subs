@@ -1,30 +1,32 @@
-	i := 0;
-	count := 0;
-	while(i < 13) {
-		i += 0.5;
-		count += 1;
-	};
-  dump i;
-  dump count;
+i := 0;
+count := 0;
+while(i < 13) {
+  i += 0.5;
+  count += 1;
+};
+dump i;
+dump count;
 
-  func : Add(a,b) {
-    if(a < 10) {
-      return;
-    };
-    
-    dump a + b;
+func : Add(a,b) { 
+  if(a < 10) {
+    return 2;
+  };
+  
+  dump a + b;
+  return 23;
+}
 
-	return 23;
-  }
+i *= 10;  
+var a := 113;
+if(i > 101) {
+  a := 100;
+};
+dump a;
 
-	i *= 10;  
-	var a := 113;
-	if(i > 101) {
-		a := 100;
-	};
-	dump a;
+#	a := Bar->New();
 
-	a := Bar->New();
+Add(13,23);
+# t := Add(11,2); dump t;
   
 class Foo {
   vars a = 7, b, c = 13;

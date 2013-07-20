@@ -585,11 +585,13 @@ namespace compiler {
   class FunctionCall : public Statement, public Expression {
     friend class TreeFactory;
 		Reference* reference;
+    bool returns_value;
 		
   public:
     FunctionCall(const wstring &file_name, const unsigned int line_num, Reference* reference)
        : Statement(file_name, line_num), Expression(file_name, line_num) {
 			this->reference = reference;
+      returns_value = false;
     }
     
 		Reference* GetReference() {
@@ -602,6 +604,14 @@ namespace compiler {
     
     const ExpressionType GetExpressionType() {
       return FUNCTION_CALL_EXPR;
+    }
+
+    void ReturnsValue(bool r) {
+      returns_value = r;
+    }
+
+    bool ReturnsValue() {
+      return returns_value;
     }
   };
 	

@@ -49,6 +49,7 @@ namespace runtime {
     size_t ip;
     Value* locals;
     unordered_map<INT_T, size_t>* jump_table;
+    bool orphan_return;
   } Frame;
   
   /****************************

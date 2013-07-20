@@ -101,6 +101,10 @@ void Runtime::Run()
         instructions = frame->instructions;
         locals = frame->locals;
         jump_table = frame->jump_table;
+        // clean up orphan return value
+        if(frame->orphan_return) {
+          PopValue();
+        }
 
         delete frame;
         frame = NULL;
@@ -108,16 +112,10 @@ void Runtime::Run()
     }
       break;
 			
-		case CALL_MTHD:
-    case CALL_CLS_MTHD:
-			FunctionCall(instruction, ip, locals);
+		case CALL_FUNC:
+    	FunctionCall(instruction, ip, locals);
 #ifdef _DEBUG
-      if(CALL_MTHD) {
-        wcout << L"CALL_MTHD: name=" << instruction->operand5 << endl;
-      }
-      else {
-        wcout << L"CALL_CLS_MTHD: class=" << instruction->operand5 << L", method=" << instruction->operand6 << endl;
-      }
+      wcout << L"CALL_FUNC: name=" << instruction->operand5 << endl;
 #endif
 			break;
       
@@ -503,21 +501,12 @@ void Runtime::Run()
 #endif
 }
 
-// TODO: handle orphan return values
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
-  // TODO: look up program class and method
   ExecutableFunction* function = program->GetFunction(instruction->operand5);
   if(!function) {
-    // look for built-in class and method
-    Value value = PopValue(); Method method = NULL;
-    if(value.klass && (method = value.klass->GetMethod(instruction->operand5))) {
-      (*method)(value, execution_stack, execution_stack_pos, instruction->operand1);
-    }
-    else {
-      wcerr << L">>> Unknown class or function: name='" << instruction->operand5 << L"' <<<" << endl;
-      exit(1);
-    }
+    wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
+    exit(1);
   }
   else {
     if(function->GetParameterCount() != instruction->operand1) {
@@ -531,6 +520,13 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
     frame->instructions = instructions;
     frame->locals = locals;
     frame->jump_table = jump_table;
+    // function returns an orphan value
+    if(function->ReturnsValue() && !instruction->operand2) {
+      frame->orphan_return = true;
+    }
+    else {
+      frame->orphan_return = false;
+    }
     call_stack.push(frame);
 
     // initialize new frame

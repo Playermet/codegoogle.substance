@@ -64,7 +64,7 @@ namespace compiler {
     ExecutableFunction* EmitFunction(ParsedFunction* parsed_function);
     void EmitFunction(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
-		void EmitFunctionCall(Reference* reference, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
+		void EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
     void EmitIfElse(IfElse* if_else, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);    
 	  void EmitWhile(While* if_while, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
     void EmitAssignment(Assignment* assignment, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
@@ -118,10 +118,11 @@ namespace compiler {
       return instruction;
     }
 
-		static Instruction* MakeInstruction(InstructionType type, int operand1, const wstring &operand5) {
+		static Instruction* MakeInstruction(InstructionType type, int operand1, int operand2, const wstring &operand5) {
       Instruction* instruction = new Instruction;
       instruction->type = type;
       instruction->operand1 = operand1;
+      instruction->operand2 = operand2;
       instruction->operand5 = operand5;
       instruction_factory.push_back(instruction);
 			

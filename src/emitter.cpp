@@ -41,13 +41,11 @@ vector<Instruction*> Emitter::instruction_factory;
 void Emitter::ProcessError(ParseNode* node, const wstring &msg)
 {
 #ifdef _DEBUG
-  wcout << L"\tError: " << node->GetFileName() << L":" << node->GetLineNumber()
-	<< L": " << msg << endl;
+  wcout << L"\tError: " << node->GetFileName() << L":" << node->GetLineNumber() << L": " << msg << endl;
 #endif
 
   const wstring &str_line_num = IntToString(node->GetLineNumber());
-  errors.insert(pair<int, wstring>(node->GetLineNumber(), node->GetFileName() +
-				   L":" + str_line_num + L": " + msg));
+  errors.insert(pair<int, wstring>(node->GetLineNumber(), node->GetFileName() + L":" + str_line_num + L": " + msg));
 }
 
 /****************************
@@ -233,7 +231,7 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 			break;
       
 		case FUNCTION_CALL_STATEMENT:
-			EmitFunctionCall(static_cast<FunctionCall*>(statement)->GetReference(), block_instructions, jump_table);
+			EmitFunctionCall(static_cast<FunctionCall*>(statement), block_instructions, jump_table);
 			break;
 			
     case IF_ELSE_STATEMENT:
@@ -262,10 +260,11 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
 /****************************
  * Emit code for a method call
  ****************************/
-void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block_instructions, 
+void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>* block_instructions, 
 															 unordered_map<long, size_t>* jump_table)
 {
 	// emit calling parameters
+  Reference* reference = function_call->GetReference();
   vector<Expression*> parameters;
   if(reference->GetCallingParameters()) {
     parameters = reference->GetCallingParameters()->GetExpressions();	
@@ -277,25 +276,10 @@ void Emitter::EmitFunctionCall(Reference* reference, vector<Instruction*>* block
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
 #endif
-    block_instructions->push_back(MakeInstruction(CALL_MTHD, parameters.size(), reference->GetName()));
+    block_instructions->push_back(MakeInstruction(CALL_FUNC, parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
   }
-  // direct call to class method
-  else if(reference->GetId() < 0 && reference->GetReference()) {
-#ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"class/method call: class='" << reference->GetName() 
-          << L"', method='" << reference->GetReference()->GetName() << "'" << endl;
-#endif
-    block_instructions->push_back(MakeInstruction(CALL_CLS_MTHD, parameters.size(), reference->GetName(), 
-                                                  reference->GetReference()->GetName()));
-  }
-  // call to instance method
   else {
-#ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"load: name='" << reference->GetName() 
-					<< L"', id=" << reference->GetId() << endl;
-#endif
-    block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
-    EmitFunctionCall(reference->GetReference(), block_instructions, jump_table);
+    ProcessError(reference, L"Unsupported function/method call");
   }
 }
 
@@ -444,8 +428,12 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*>* block
 														 unordered_map<long, size_t>* jump_table)
 {
 	// emit expression
+  if(assignment->GetExpression()->GetExpressionType() == FUNCTION_CALL_EXPR) {
+    FunctionCall* function_call = static_cast<FunctionCall*>(assignment->GetExpression());
+    function_call->ReturnsValue(true);
+  }
   EmitExpression(assignment->GetExpression(), block_instructions, jump_table);
-
+  
   switch(assignment->GetAssignmentType()) {
   case TOKEN_ADD_EQL:
     EmitReference(assignment->GetReference(), false, block_instructions, jump_table);
@@ -522,7 +510,7 @@ void Emitter::EmitExpression(Expression* expression, vector<Instruction*>* block
     break;
 
   case FUNCTION_CALL_EXPR:
-    EmitFunctionCall(static_cast<FunctionCall*>(expression)->GetReference(), block_instructions, jump_table);
+    EmitFunctionCall(static_cast<FunctionCall*>(expression), block_instructions, jump_table);
     break;
     
   case BOOLEAN_LIT_EXPR:
