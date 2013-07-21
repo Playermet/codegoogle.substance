@@ -1,3 +1,6 @@
 - Parsing function and method calls
 * Add support for arrays
 * Implement garbage collection
+-----------
+list (operate from both ends)
+hash (name/value)

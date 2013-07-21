@@ -165,8 +165,7 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
 #endif
   
-  return new ExecutableFunction(parsed_function->GetName(), parameters.size(), block_instructions, 
-                                jump_table, leaders, returns_value > 0);
+  return new ExecutableFunction(parsed_function->GetName(), (INT_T)parameters.size(), block_instructions, jump_table, leaders, returns_value > 0);
 }
 
 /****************************
@@ -276,7 +275,7 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
 #endif
-    block_instructions->push_back(MakeInstruction(CALL_FUNC, parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
+    block_instructions->push_back(MakeInstruction(CALL_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
   }
   else {
     ProcessError(reference, L"Unsupported function/method call");
