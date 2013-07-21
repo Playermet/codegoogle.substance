@@ -709,12 +709,32 @@ Expression* Parser::ParseExpression(int depth)
   Show(L"Expression", depth);
 #endif
   
-	Expression* expression = ParseLogic(depth + 1);
-  // check for function call
-  if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsMethodReference()) {
-    expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
+  Expression* expression = NULL;
+
+  // hash allocation
+  if(Match(TOKEN_NEQL_HSH)) {
+#ifdef _DEBUG
+  Show(L"New hash", depth + 1);
+#endif
+    NextToken();
+    expression = TreeFactory::Instance()->MakeHashAllocation(file_name, line_num);
+  } 
+  // list allocation
+  else if(Match(TOKEN_OPEN_BRACKET) && Match(TOKEN_CLOSED_BRACKET, SECOND_INDEX)) {
+#ifdef _DEBUG
+  Show(L"New list", depth + 1);
+#endif
+    NextToken(); NextToken();
+    expression = TreeFactory::Instance()->MakeListAllocation(file_name, line_num);
+  } 
+  else {
+	  expression = ParseLogic(depth + 1);
+    // check for function call
+    if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsMethodReference()) {
+      expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
+    }    
   }
-  
+
   return expression;
 }
 
@@ -786,7 +806,8 @@ Expression* Parser::ParseMathLogic(int depth)
 
   if(Match(TOKEN_LES) || Match(TOKEN_GTR) ||
      Match(TOKEN_LEQL) || Match(TOKEN_GEQL) ||
-     Match(TOKEN_EQL) || Match(TOKEN_NEQL)) {
+     Match(TOKEN_EQL) || Match(TOKEN_NEQL) || 
+     Match(TOKEN_NEQL_HSH)) {
     CalculatedExpression* expression = NULL;
     switch(GetToken()) {
     case TOKEN_LES:
@@ -805,6 +826,7 @@ Expression* Parser::ParseMathLogic(int depth)
       expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, EQL_EXPR);
       break;
     case TOKEN_NEQL:
+    case TOKEN_NEQL_HSH:
       expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, NEQL_EXPR);
       break;
 

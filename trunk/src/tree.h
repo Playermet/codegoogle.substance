@@ -358,6 +358,14 @@ namespace compiler {
   /****************************
    * Reference class
    ****************************/
+  enum ReferenceType {
+    REF_TYPE,
+    SELF_TYPE,
+    NEW_LIST_TYPE,
+    NEW_HASH_TYPE,
+    NEW_OBJ_TYPE
+  };
+
   class Reference : public Expression {
     friend class TreeFactory;
     wstring name;
@@ -365,16 +373,14 @@ namespace compiler {
     ExpressionList* indices;
 		ExpressionList* calling_parameters;
     Reference* reference;
-    bool is_self;
-    bool is_new;
+    ReferenceType ref_type;
     int array_size;
     int array_dim;
 
-	  Reference(const wstring &file_name, const unsigned int line_num) : Expression(file_name, line_num) {
+	  Reference(const wstring &file_name, const unsigned int line_num, ReferenceType type) : Expression(file_name, line_num) {
       name = L"self";
 		  id = 0;
-      is_self = true;
-      is_new = false;
+      ref_type = type;
       reference	= NULL;
       indices = NULL;
 			calling_parameters = NULL;
@@ -384,8 +390,7 @@ namespace compiler {
 		 : Expression(file_name, line_num) {
       name = n;
 		  id = v;
-      is_self = false;
-      is_new = false;
+      ref_type = REF_TYPE;
       reference	= NULL;
       indices = NULL;
 			calling_parameters = NULL;
@@ -395,8 +400,7 @@ namespace compiler {
 		 : Expression(file_name, line_num) {
 			name = n;
 			id = -1;
-			is_self = false;
-      is_new = false;
+			ref_type = REF_TYPE;
 			reference	= NULL;
 			indices = NULL;
 			calling_parameters = NULL;
@@ -438,16 +442,16 @@ namespace compiler {
       return REF_EXPR;
     }
 
-    bool IsSelf() {
-      return is_self;
+    void SetReferenceType(ReferenceType t) {
+      ref_type = t;
     }
 
-    bool IsNew() {
-      return is_new;
+    ReferenceType GetReferenceType() {
+      return ref_type;
     }
 
     void SetNew(bool n) {
-      is_new = n;
+      ref_type = NEW_OBJ_TYPE;
     }
 
     bool HasCallingParameters() {
@@ -1156,11 +1160,12 @@ namespace compiler {
     }
 	
 	  Reference* MakeSelf(const wstring &file_name, const unsigned int line_num) {
-      Reference* tmp = new Reference(file_name, line_num);
+      Reference* tmp = new Reference(file_name, line_num, SELF_TYPE);
       references.push_back(tmp);
       return tmp;
 	  }
 
+    // TODO: implement
     Reference* MakeNew(const wstring &file_name, const unsigned int line_num) {
       Reference* tmp = new Reference(file_name, line_num, L"New");
       tmp->SetNew(true);
@@ -1177,6 +1182,18 @@ namespace compiler {
 		
 		Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
       Reference* tmp = new Reference(file_name, line_num, name);
+      references.push_back(tmp);
+      return tmp;
+    }
+
+    Reference* MakeListAllocation(const wstring &file_name, const unsigned int line_num) {
+      Reference* tmp = new Reference(file_name, line_num, NEW_LIST_TYPE);
+      references.push_back(tmp);
+      return tmp;
+    }
+
+    Reference* MakeHashAllocation(const wstring &file_name, const unsigned int line_num) {
+      Reference* tmp = new Reference(file_name, line_num, NEW_HASH_TYPE);
       references.push_back(tmp);
       return tmp;
     }

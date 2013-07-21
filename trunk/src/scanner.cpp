@@ -696,7 +696,7 @@ void Scanner::ParseToken(int index)
       } 
       else if(nxt_char == L'>') {
         NextChar();
-        tokens[index]->SetType(TOKEN_NEQL);
+        tokens[index]->SetType(TOKEN_NEQL_HSH);
 				tokens[index]->SetLineNbr(line_num);
 				tokens[index]->SetFileName(file_name);
         NextChar();
