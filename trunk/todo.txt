@@ -4,3 +4,17 @@
 -----------
 list (operate from both ends)
 hash (name/value)
+-----------
+
+==========================
+Goal:
+Have libraries compile down to native code.  Have built-in syntax for lists and hashes.  This can be done if C/C++ code is used to implement system classes.
+
+compile time:
+1) load/process system source
+2) store vm instructions in binary / libraries
+
+pipeline
+1) load system source?
+-or-
+1) system classes part of binary / libaries
