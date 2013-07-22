@@ -47,6 +47,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (x64)|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\jit\jit_common.h" />
+    <ClInclude Include="..\memory.h" />
     <ClInclude Include="..\parser.h" />
     <ClInclude Include="..\runtime.h" />
     <ClInclude Include="..\scanner.h" />
@@ -63,6 +64,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release (x64)|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\memory.cpp" />
     <ClCompile Include="..\parser.cpp" />
     <ClCompile Include="..\runtime.cpp" />
     <ClCompile Include="..\scanner.cpp" />

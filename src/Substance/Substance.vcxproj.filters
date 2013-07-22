@@ -45,6 +45,9 @@
     <ClInclude Include="..\jit\amd64\win\jit_amd_llp64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\classes.cpp">
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\jit\amd64\win\jit_amd_llp64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
