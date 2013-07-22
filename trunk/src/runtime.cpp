@@ -72,7 +72,7 @@ void Runtime::Run()
 #endif
 
   // runtime variables
-  Value* locals = new Value[8];
+  Value* locals = new Value[program->GetGlobal()->GetLocalCount()];
   Value left, right;
 
   // tracing jit variables
@@ -532,7 +532,7 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
     // initialize new frame
     ip = 0;
     instructions = function->GetInstructions();
-    locals = new Value[8];
+    locals = new Value[function->GetLocalCount()];
     jump_table = function->GetJumpTable();
   }
 }

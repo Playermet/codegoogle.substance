@@ -192,6 +192,7 @@ public:
 ****************************/
 class ExecutableFunction {
   wstring name;
+  int local_count;
   int parameter_count;
   vector<Instruction*>* block_instructions; 
   unordered_map<long, size_t>* jump_table;
@@ -199,10 +200,11 @@ class ExecutableFunction {
   bool returns_value;
 
 public:
-  ExecutableFunction(const wstring &name, int parameter_count, vector<Instruction*>* block_instructions, 
+  ExecutableFunction(const wstring &name, int local_count, int parameter_count, vector<Instruction*>* block_instructions, 
                      unordered_map<long, size_t>* jump_table, set<size_t> &leaders, bool returns_value) {
       this->name = name;
       this->parameter_count = parameter_count;
+      this->local_count = local_count;
       this->block_instructions = block_instructions;
       this->jump_table = jump_table;
       this->leaders = leaders;
@@ -227,6 +229,10 @@ public:
 
   int GetParameterCount() {
     return parameter_count;
+  }
+
+  int GetLocalCount() {
+    return local_count;
   }
 
   bool ReturnsValue() {

@@ -99,7 +99,9 @@ ExecutableProgram* Emitter::Emit()
   wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif
   block_instructions->push_back(MakeInstruction(RTRN));    
-  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", 0, block_instructions, jump_table, leaders, false);
+
+  const int local_count = parsed_program->GetGlobalSymbolTable()->GetEntryCount();
+  ExecutableFunction* global = new ExecutableFunction(L"#GLOBAL#", local_count, 0, block_instructions, jump_table, leaders, false);
   executable_program->SetGlobal(global);
   
   // emit functions
@@ -165,7 +167,9 @@ ExecutableFunction* Emitter::EmitFunction(ParsedFunction* parsed_function)
   }
 #endif
   
-  return new ExecutableFunction(parsed_function->GetName(), (INT_T)parameters.size(), block_instructions, jump_table, leaders, returns_value > 0);
+  const int local_count = parsed_function->GetSymbolTable()->GetEntryCount();
+  return new ExecutableFunction(parsed_function->GetName(), local_count, (int)parameters.size(), 
+    block_instructions, jump_table, leaders, returns_value > 0);
 }
 
 /****************************

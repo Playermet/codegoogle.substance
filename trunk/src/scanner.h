@@ -72,7 +72,6 @@ namespace compiler {
     TOKEN_NOT,
     TOKEN_EQL,
     TOKEN_NEQL,
-    TOKEN_NEQL_HSH,
     TOKEN_LES,
     TOKEN_GTR,
     TOKEN_GEQL,

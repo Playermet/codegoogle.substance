@@ -712,7 +712,7 @@ Expression* Parser::ParseExpression(int depth)
   Expression* expression = NULL;
 
   // hash allocation
-  if(Match(TOKEN_NEQL_HSH)) {
+  if(Match(TOKEN_OPEN_BRACE) && Match(TOKEN_CLOSED_BRACE, SECOND_INDEX)) {
 #ifdef _DEBUG
   Show(L"New hash", depth + 1);
 #endif
@@ -806,8 +806,7 @@ Expression* Parser::ParseMathLogic(int depth)
 
   if(Match(TOKEN_LES) || Match(TOKEN_GTR) ||
      Match(TOKEN_LEQL) || Match(TOKEN_GEQL) ||
-     Match(TOKEN_EQL) || Match(TOKEN_NEQL) || 
-     Match(TOKEN_NEQL_HSH)) {
+     Match(TOKEN_EQL) || Match(TOKEN_NEQL)) {
     CalculatedExpression* expression = NULL;
     switch(GetToken()) {
     case TOKEN_LES:
@@ -826,7 +825,6 @@ Expression* Parser::ParseMathLogic(int depth)
       expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, EQL_EXPR);
       break;
     case TOKEN_NEQL:
-    case TOKEN_NEQL_HSH:
       expression = TreeFactory::Instance()->MakeCalculatedExpression(file_name, line_num, NEQL_EXPR);
       break;
 
