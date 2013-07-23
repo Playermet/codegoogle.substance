@@ -32,12 +32,17 @@
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
-#include "common.h"
+#include "runtime.h"
+
+using namespace runtime;
 
 class MemoryManager {
 public:
   MemoryManager() {}
   ~MemoryManager() {}
+
+  // TODO: what metadata need to added based upon type?
+  static void* AllocateMemory(size_t size, Frame** call_stack, size_t  call_stack_pos);
 };
 
 #endif

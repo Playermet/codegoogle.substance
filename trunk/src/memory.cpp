@@ -30,3 +30,7 @@
  ***************************************************************************/
 
 #include "memory.h"
+
+void* MemoryManager::AllocateMemory(size_t size, Frame** call_stack, size_t  call_stack_pos) {
+  return NULL;
+}

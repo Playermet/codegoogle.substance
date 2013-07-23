@@ -40,6 +40,7 @@ namespace runtime {
    ****************************/
   // size of execution stack
   #define EXECUTION_STACK_SIZE 128
+  #define CALL_STACK_SIZE 64
   
   /****************************
  * Call stack frame
@@ -67,7 +68,8 @@ namespace runtime {
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
     // call stack
-    stack<Frame*> call_stack;
+    Frame** call_stack;
+    size_t  call_stack_pos;
 
 		// tracing jit variables
 #ifndef _NO_JIT
@@ -77,8 +79,11 @@ namespace runtime {
 #endif
 		vector<jit::JitInstruction*> jit_instrs;
 		bool is_recording;
-		
-		Value TopValue() {
+
+    //
+    // Calculation stack operations
+    //
+    Value TopValue() {
 			return execution_stack[execution_stack_pos];
 		}
 
@@ -143,6 +148,28 @@ namespace runtime {
 			return execution_stack[--execution_stack_pos];
 		}
 
+    //
+    // Stack frame operations
+    //
+    void PushFrame(Frame* frame) {
+#ifdef _DEBUG
+			wcout << L"pushing frame: address=" << frame << endl;
+      assert(call_stack_pos < CALL_STACK_SIZE);
+#endif
+      call_stack[call_stack_pos++] = frame;
+    }
+
+    Frame* PopFrame() {
+#ifdef _DEBUG
+			wcout << L"popping frame: address=" << call_stack[call_stack_pos  - 1] << endl;
+      assert(call_stack_pos - 1 >= 0);
+#endif
+      return call_stack[--call_stack_pos];
+    }
+
+    //
+    // Clean up operations
+    // 
 		void ClearJitInstructions() {
 			for(size_t i = 0; i < jit_instrs.size(); i++) {
 				jit::JitInstruction* instr = jit_instrs[i];
@@ -202,8 +229,12 @@ namespace runtime {
 	  Runtime(ExecutableProgram *p, INT_T last_label_id) {
 			program = p;
       this->last_label_id = last_label_id;
+      // execution stack
       execution_stack = new Value[EXECUTION_STACK_SIZE];
-			execution_stack_pos = 0;      
+			execution_stack_pos = 0;
+      // call stack
+      call_stack = new Frame*[CALL_STACK_SIZE];
+      call_stack_pos = 0;
       // this should be part of a frame
       this->instructions = p->GetGlobal()->GetInstructions();
 		  this->jump_table = p->GetGlobal()->GetJumpTable();
