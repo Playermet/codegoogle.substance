@@ -91,12 +91,11 @@ void Runtime::Run()
     Instruction* instruction = instructions->at(ip++);
     switch(instruction->type) {
     case RTRN: {
-      if(call_stack.size() == 0) {
+      if(call_stack_pos == 0) {
         halt = true;
       }
       else {
-        Frame* frame = call_stack.top();
-        call_stack.pop();
+        Frame* frame = PopFrame();
         ip = frame->ip;
         instructions = frame->instructions;
         locals = frame->locals;
@@ -527,7 +526,7 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
     else {
       frame->orphan_return = false;
     }
-    call_stack.push(frame);
+    PushFrame(frame);
 
     // initialize new frame
     ip = 0;
