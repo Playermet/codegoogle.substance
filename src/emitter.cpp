@@ -267,7 +267,7 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
 															 unordered_map<long, size_t>* jump_table)
 {
 	// emit calling parameters
-  Reference* reference = function_call->GetReference();
+  Reference* reference = function_call->GetReference();  
   vector<Expression*> parameters;
   if(reference->GetCallingParameters()) {
     parameters = reference->GetCallingParameters()->GetExpressions();	
@@ -280,6 +280,23 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
     wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
 #endif
     block_instructions->push_back(MakeInstruction(CALL_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
+  }
+  else if(reference->GetReference()) {
+    if(reference->GetReference()->GetCallingParameters()) {
+      parameters = reference->GetReference()->GetCallingParameters()->GetExpressions();	
+      for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
+        EmitExpression(*iter, block_instructions, jump_table);		
+      }
+    }
+
+    // static call
+    if(reference->GetId() < 0 && reference->GetReference()) {
+      block_instructions->push_back(MakeInstruction(CALL_CLS_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName(), reference->GetReference()->GetName()));
+    }
+    // instance call
+    else {
+      ProcessError(reference, L"Unsupported function/method call");
+    }
   }
   else {
     ProcessError(reference, L"Unsupported function/method call");
