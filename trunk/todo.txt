@@ -7,6 +7,10 @@ Notes:
   - Types can change callee code
   - locals (parameters), instance variables
   
+Memory managment:
+[class name(ptr)][type(bit)][cache size(long)][marker(bit)][<-- bock o' memory -->]
+ 
+  
 * Have a single List class or Array and List (linked-list) classes?
   
 List Class:
