@@ -1,20 +1,8 @@
-- Parsing function and method calls
-* Add support for arrays
-* Implement garbage collection
------------
-list (operate from both ends)
-hash (name/value)
------------
-
-==========================
-Goal:
-Have libraries compile down to native code.  Have built-in syntax for lists and hashes.  This can be done if C/C++ code is used to implement system classes.
-
-compile time:
-1) load/process system source
-2) store vm instructions in binary / libraries
-
-pipeline
-1) load system source?
--or-
-1) system classes part of binary / libaries
+Notes:
+===============
+* All system classes will be pre-compiled and execute VM instructions
+* Traps will used for OS specific directives
+* Need a way to write, pre-compile and store instructions for system classes
+* Can tracing JIT call call into functions?
+  - Types can change callee code
+  - locals (parameters), instance variables
