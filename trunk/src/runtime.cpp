@@ -111,10 +111,17 @@ void Runtime::Run()
     }
       break;
 			
+    case CALL_CLS_FUNC:
+      ClassFunctionCall(instruction, ip, locals);
+#ifdef _DEBUG
+      wcout << L"CALL_CLS_FUNC: class=" << instruction->operand5 << ", " << L", function=" << instruction->operand6 << endl;
+#endif
+			break;
+
 		case CALL_FUNC:
     	FunctionCall(instruction, ip, locals);
 #ifdef _DEBUG
-      wcout << L"CALL_FUNC: name=" << instruction->operand5 << endl;
+      wcout << L"CALL_FUNC: function=" << instruction->operand5 << endl;
 #endif
 			break;
       
@@ -498,6 +505,11 @@ void Runtime::Run()
   wcout << L"==========================" << endl;
   wcout << L"ending stack pos=" << execution_stack_pos << endl;
 #endif
+}
+
+void Runtime::ClassFunctionCall(Instruction* instruction, size_t &ip, Value* locals)
+{
+  // TODO: look up class
 }
 
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)

@@ -223,6 +223,7 @@ namespace runtime {
     }
     
     // member operations
+    void ClassFunctionCall(Instruction* instruction, size_t &ip, Value* frame);
 		void FunctionCall(Instruction* instruction, size_t &ip, Value* frame);
 			
    public:
