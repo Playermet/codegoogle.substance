@@ -6,3 +6,12 @@ Notes:
 * Can tracing JIT call call into functions?
   - Types can change callee code
   - locals (parameters), instance variables
+  
+* Have a single List class or Array and List (linked-list) classes?
+  
+List Class:
+---------------
+New - Will create a new array i.e. NEW_ARRAY (operands); if link-list based NEW_OBJ for a node
+Add -
+Remove - ?
+Insert - ?
