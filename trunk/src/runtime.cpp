@@ -510,6 +510,7 @@ void Runtime::Run()
 void Runtime::ClassFunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
   // TODO: look up class
+  // TOOD: have function return a list of instructions (pre-compiled)
 }
 
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)

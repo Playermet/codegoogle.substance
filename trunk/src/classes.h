@@ -228,6 +228,8 @@ class Classes {
 
   Classes() {
     classes[L"Integer"] = IntegerClass::Instance();
+    classes[L"Float"] = FloatClass::Instance();
+    classes[L"Boolean"] = BooleanClass::Instance();
   }
 
   ~Classes() {
