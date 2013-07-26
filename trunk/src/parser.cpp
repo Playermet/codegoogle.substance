@@ -1230,8 +1230,10 @@ void Parser::ParseReference(Reference* reference, int depth)
   }
 	
 	// function call
-  nested_reference->SetCallingParameters(ParseCallingParameters(depth + 1));
-  
+  if(Match(TOKEN_OPEN_PAREN)) {
+    nested_reference->SetCallingParameters(ParseCallingParameters(depth + 1));
+  }
+
   // subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
     ParseReference(nested_reference, depth + 1);
