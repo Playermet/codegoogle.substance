@@ -466,7 +466,7 @@ namespace compiler {
     }
     
 		bool IsMethodReference() {
-			return HasCallingParameters();
+			return HasCallingParameters() || ref_type == NEW_OBJ_TYPE;
 		}
 		
 	  int GetId() {
@@ -1167,7 +1167,7 @@ namespace compiler {
 
     // TODO: implement
     Reference* MakeNew(const wstring &file_name, const unsigned int line_num) {
-      Reference* tmp = new Reference(file_name, line_num, L"New");
+      Reference* tmp = new Reference(file_name, line_num, NEW_OBJ_TYPE);
       tmp->SetNew(true);
       references.push_back(tmp);
       return tmp;

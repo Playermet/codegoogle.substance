@@ -730,9 +730,26 @@ Expression* Parser::ParseExpression(int depth)
   else {
 	  expression = ParseLogic(depth + 1);
     // check for function call
-    if(expression && expression->GetExpressionType() == REF_EXPR && static_cast<Reference*>(expression)->IsMethodReference()) {
-      expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
-    }    
+    if(expression && expression->GetExpressionType() == REF_EXPR) {
+      Reference* reference = static_cast<Reference*>(expression);
+      // TODO: move into function?
+      while(reference->GetReference()) {
+        reference = reference->GetReference();
+      }
+      switch(reference->GetReferenceType()) {
+      case NEW_LIST_TYPE:
+      case NEW_HASH_TYPE:
+      case NEW_OBJ_TYPE:
+        expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
+        break;
+
+      default:
+        if(static_cast<Reference*>(expression)->IsMethodReference()) {
+          expression = TreeFactory::Instance()->MakeFunctionCall(file_name, line_num, static_cast<Reference*>(expression));
+        }
+        break;
+      }
+    }  
   }
 
   return expression;

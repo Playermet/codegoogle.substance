@@ -280,6 +280,21 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
     wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
 #endif
     block_instructions->push_back(MakeInstruction(CALL_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
+
+    // array indices
+    if(reference->GetIndices()) {
+      vector<Expression*> indices = reference->GetIndices()->GetExpressions();	
+      for(size_t i = 0; i < indices.size(); i++) {
+        EmitExpression(indices[i], block_instructions, jump_table);		
+      }
+    }
+  }
+  // array indices
+  else if(reference->GetIndices()) {
+    vector<Expression*> indices = reference->GetIndices()->GetExpressions();	
+    for(size_t i = 0; i < indices.size(); i++) {
+      EmitExpression(indices[i], block_instructions, jump_table);		
+    }
   }
   else if(reference->GetReference()) {
     if(reference->GetReference()->GetCallingParameters()) {
