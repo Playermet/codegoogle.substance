@@ -38,14 +38,14 @@
 using namespace std;
 
 typedef void(*Operation)(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-typedef void(*Method)(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
+typedef void(*Function)(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 
 /****************************
 * Base class for built-in types
 ****************************/
 class RuntimeClass {
   unordered_map<wstring, Operation> operations;
-  unordered_map<wstring, Method> methods;
+  unordered_map<wstring, Function> methods;
   
 protected:
   RuntimeClass() {
@@ -58,8 +58,8 @@ protected:
     operations.insert(pair<wstring, Operation>(name, oper));
   }
   
-  void AddMethod(const wstring &name, Method method) {
-    methods.insert(pair<wstring, Method>(name, method));
+  void AddMethod(const wstring &name, Function method) {
+    methods.insert(pair<wstring, Function>(name, method));
   }
 
 public:
@@ -72,8 +72,8 @@ public:
     return NULL;
   }
 
-  Method GetMethod(const wstring name) {
-    unordered_map<wstring, Method>::iterator result = methods.find(name);
+  Function GetFunction(const wstring name) {
+    unordered_map<wstring, Function>::iterator result = methods.find(name);
     if(result != methods.end()) {
       return result->second;
     }
@@ -198,6 +198,7 @@ public:
     return instance;
   }
 
+  // operations
   static void Add(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
   static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
@@ -213,6 +214,35 @@ public:
   static void ToInteger(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 };
 
+/****************************
+* Float class
+****************************/
+class ArrayClass : public RuntimeClass {
+  static ArrayClass* instance;
+
+  ArrayClass() {
+    AddMethod(L"New", New);
+  }
+
+  ~ArrayClass() {
+  }
+
+public:
+  static ArrayClass* Instance() {
+    if(!instance) {
+      instance = new ArrayClass;
+    }
+
+    return instance;
+  }
+
+  // methods
+  static void New(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
+};
+
+/****************************
+* Collect of classes
+****************************/
 class Classes {
   static Classes* instance;
   unordered_map<wstring, RuntimeClass*> classes;
@@ -230,6 +260,7 @@ class Classes {
     classes[L"Integer"] = IntegerClass::Instance();
     classes[L"Float"] = FloatClass::Instance();
     classes[L"Boolean"] = BooleanClass::Instance();
+    classes[L"Array"] = ArrayClass::Instance();
   }
 
   ~Classes() {

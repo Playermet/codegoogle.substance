@@ -659,3 +659,50 @@ void FloatClass::ToInteger(Value &self, Value* execution_stack, size_t &executio
 #endif
   execution_stack[execution_stack_pos++] = left;
 }
+
+/****************************
+* Array class
+****************************/
+ArrayClass* ArrayClass::instance;
+
+void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count) {
+  if(execution_stack_pos == 0) {
+    wcerr << L">>> Array size not specified" << endl;
+    exit(1);
+  }
+
+  // calculate array size
+  size_t array_size = 1;
+  for(INT_T i = 0; i < arg_count; i++) {
+    Value value = execution_stack[--execution_stack_pos];
+    switch(value.type) {      
+    case INT_VALUE:
+      array_size *= value.value.int_value;
+      break;
+
+    case FLOAT_VALUE:
+      array_size *= (INT_T)value.value.float_value;
+      break;
+
+    default:
+      wcerr << L">>> Operation requires Int or Float type" << endl;
+      exit(1);
+    }
+  }
+
+  // allocate array
+  Value left;
+  left.type = ARY_VALUE;
+  left.klass = ArrayClass::Instance();
+  // TOOD: call memory manager
+  left.value.pointer_value = new Value[array_size];
+#ifdef _DEBUG
+  wcout << L"Array->New" << L"[" << array_size << L"]" << endl;
+#endif
+  execution_stack[execution_stack_pos++] = left;
+}
+
+/****************************
+* Classes class
+****************************/
+Classes* Classes::instance;
