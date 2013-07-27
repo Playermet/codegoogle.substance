@@ -270,6 +270,7 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
   Reference* reference = function_call->GetReference();  
   vector<Expression*> parameters;
   if(reference->GetCallingParameters()) {
+    // emit parameters
     parameters = reference->GetCallingParameters()->GetExpressions();	
     for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
       EmitExpression(*iter, block_instructions, jump_table);		
@@ -296,11 +297,22 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
       EmitExpression(indices[i], block_instructions, jump_table);		
     }
   }
+  // class static function call
   else if(reference->GetReference()) {
+    // emit parameters
     if(reference->GetReference()->GetCallingParameters()) {
       parameters = reference->GetReference()->GetCallingParameters()->GetExpressions();	
       for(std::vector<Expression*>::reverse_iterator iter = parameters.rbegin(); iter != parameters.rend(); ++iter) {
         EmitExpression(*iter, block_instructions, jump_table);		
+      }
+    }
+
+    // array indices
+    vector<Expression*> indices;
+    if(reference->GetReference()->GetIndices()) {
+      indices = reference->GetReference()->GetIndices()->GetExpressions();	
+      for(size_t i = 0; i < indices.size(); i++) {
+        EmitExpression(indices[i], block_instructions, jump_table);		
       }
     }
 
@@ -309,7 +321,14 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
 #ifdef _DEBUG
     wcout << block_instructions->size() << L": " << L"function call: class='" << reference->GetName() << L"'" << ", function='" << reference->GetReference()->GetName() << L"'" << endl;
 #endif
-      block_instructions->push_back(MakeInstruction(CALL_CLS_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName(), reference->GetReference()->GetName()));
+      INT_T num_params = 0;
+      if(reference->GetReference()->GetReferenceType() == NEW_OBJ_TYPE) {
+        num_params = (INT_T)indices.size();
+      }
+      else {
+        num_params = (INT_T)parameters.size();
+      }
+      block_instructions->push_back(MakeInstruction(CALL_CLS_FUNC, num_params, function_call->ReturnsValue() ? 1 : 0, reference->GetName(), reference->GetReference()->GetName()));
     }
     // instance call
     else {
