@@ -378,7 +378,28 @@ namespace compiler {
     int array_dim;
 
 	  Reference(const wstring &file_name, const unsigned int line_num, ReferenceType type) : Expression(file_name, line_num) {
-      name = L"self";
+      switch(type) {
+      case REF_TYPE:
+        name = L"ref";
+        break;
+
+      case SELF_TYPE:
+        name = L"self";
+        break;
+
+      case NEW_LIST_TYPE:
+        name = L"List";
+        break;
+
+      case NEW_HASH_TYPE:
+        name = L"Hash";
+        break;
+
+      case NEW_OBJ_TYPE:
+        name = L"New";
+        break;
+      }
+
 		  id = 0;
       ref_type = type;
       reference	= NULL;

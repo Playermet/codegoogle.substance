@@ -277,7 +277,7 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
   
     // emit function
 #ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"method call: name='" << reference->GetName() << L"'" << endl;
+    wcout << block_instructions->size() << L": " << L"function call: name='" << reference->GetName() << L"'" << endl;
 #endif
     block_instructions->push_back(MakeInstruction(CALL_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName()));
 
@@ -306,6 +306,9 @@ void Emitter::EmitFunctionCall(FunctionCall* function_call, vector<Instruction*>
 
     // static call
     if(reference->GetId() < 0 && reference->GetReference()) {
+#ifdef _DEBUG
+    wcout << block_instructions->size() << L": " << L"function call: class='" << reference->GetName() << L"'" << ", function='" << reference->GetReference()->GetName() << L"'" << endl;
+#endif
       block_instructions->push_back(MakeInstruction(CALL_CLS_FUNC, (INT_T)parameters.size(), function_call->ReturnsValue() ? 1 : 0, reference->GetName(), reference->GetReference()->GetName()));
     }
     // instance call
