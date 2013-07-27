@@ -538,20 +538,44 @@ void Emitter::EmitAssignment(Assignment* assignment, vector<Instruction*>* block
 void Emitter::EmitReference(Reference* reference, bool is_store, vector<Instruction*>* block_instructions, 
 														unordered_map<long, size_t>* jump_table)
 {
-  wstring name = reference->GetName();
+  // emit array indices
+  vector<Expression*> indices;
+  if(reference->GetIndices()) {
+    indices = reference->GetIndices()->GetExpressions();	
+    for(size_t i = 0; i < indices.size(); i++) {
+      EmitExpression(indices[i], block_instructions, jump_table);		
+    }
+  }
+
   if(is_store) {
+    if(reference->GetIndices()) {
 #ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"store: name='" << reference->GetName() 
-					<< L"', id=" << reference->GetId() << endl;
+      wcout << block_instructions->size() << L": " << L"store array variable: name='" << reference->GetName() 
+					  << L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions->push_back(MakeInstruction(STOR_VAR, reference->GetId()));
+      block_instructions->push_back(MakeInstruction(STOR_ARY_VAR, reference->GetId(), (INT_T)indices.size()));
+    }
+    else {
+#ifdef _DEBUG
+      wcout << block_instructions->size() << L": " << L"store variable: name='" << reference->GetName() << L"', id=" << reference->GetId() << endl;
+#endif
+      block_instructions->push_back(MakeInstruction(STOR_VAR, reference->GetId()));
+    }
   }
   else {
+    if(reference->GetIndices()) {
 #ifdef _DEBUG
-    wcout << block_instructions->size() << L": " << L"load: name='" << reference->GetName() 
-					<< L"', id=" << reference->GetId() << endl;
+      wcout << block_instructions->size() << L": " << L"load array variable: name='" << reference->GetName() << L"', id=" << reference->GetId() << endl;
 #endif
-    block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
+      block_instructions->push_back(MakeInstruction(LOAD_ARY_VAR, reference->GetId(), (INT_T)indices.size()));
+    }
+    else {
+#ifdef _DEBUG
+      wcout << block_instructions->size() << L": " << L"load variable: name='" << reference->GetName() 
+					  << L"', id=" << reference->GetId() << endl;
+#endif
+      block_instructions->push_back(MakeInstruction(LOAD_VAR, reference->GetId()));
+    }
   }
 }
 

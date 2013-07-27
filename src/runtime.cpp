@@ -210,6 +210,14 @@ void Runtime::Run()
       }
       break;
 
+    case STOR_ARY_VAR: {
+#ifdef _DEBUG
+      wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << endl;
+#endif
+      // operand2 is parm number
+    }
+      break;
+
     case STOR_VAR:
 #ifdef _DEBUG
       wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
@@ -236,6 +244,14 @@ void Runtime::Run()
           }
         }
       }
+      break;
+
+    case LOAD_ARY_VAR: {
+#ifdef _DEBUG
+      wcout << L"LOAD_ARY_VAR: id=" << instruction->operand1 << endl;
+#endif
+      // operand2 is parm number
+    }
       break;
 
     case LBL:			

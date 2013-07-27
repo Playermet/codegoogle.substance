@@ -94,6 +94,8 @@ enum InstructionType {
   // variables
   LOAD_VAR,
   STOR_VAR,
+  LOAD_ARY_VAR,
+  STOR_ARY_VAR,
   // logical  
   EQL,
   NEQL,
