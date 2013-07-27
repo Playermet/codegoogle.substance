@@ -673,19 +673,22 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
 
   // calculate array size
   size_t array_size = 1;
+  vector<INT_T> dimensions;
   for(INT_T i = 0; i < arg_count; i++) {
     Value value = execution_stack[--execution_stack_pos];
     switch(value.type) {      
     case INT_VALUE:
       array_size *= value.value.int_value;
+      dimensions.push_back(value.value.int_value);
       break;
 
     case FLOAT_VALUE:
       array_size *= (INT_T)value.value.float_value;
+      dimensions.push_back((INT_T)value.value.float_value);
       break;
 
     default:
-      wcerr << L">>> Operation requires Int or Float type" << endl;
+      wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       exit(1);
     }
   }
@@ -694,11 +697,21 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
   Value left;
   left.type = ARY_VALUE;
   left.klass = ArrayClass::Instance();
-  // TOOD: call memory manager
-  left.value.pointer_value = new Value[array_size];
+
+  // TOOD: code clean up
+  size_t alloc_meta_size = sizeof(INT_T) * (arg_count + 1);
+  size_t alloc_data_size = sizeof(Value) * array_size;
+
+  char* memory = (char*)calloc(alloc_meta_size + alloc_data_size, 1);
+  INT_T* meta_ptr = (INT_T*)memory;
+  meta_ptr[0] = arg_count;
+  for(size_t i = 0; i < dimensions.size(); i++) {
+    meta_ptr[i + 1] = (INT_T)dimensions[i];
+  }
 #ifdef _DEBUG
   wcout << L"Array->New" << L"[" << array_size << L"]" << endl;
 #endif
+  left.value.pointer_value = memory + alloc_meta_size;
   execution_stack[execution_stack_pos++] = left;
 }
 

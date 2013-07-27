@@ -214,6 +214,7 @@ void Runtime::Run()
 #ifdef _DEBUG
       wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << endl;
 #endif
+      instruction->operand2;
       // operand2 is parm number
     }
       break;
