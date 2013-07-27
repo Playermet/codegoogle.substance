@@ -147,8 +147,8 @@ enum RuntimeType {
   BOOL_VALUE = -512,
   INT_VALUE,
   FLOAT_VALUE,
-  INT_ARY_VALUE,
-  FLOAT_ARY_VALUE
+  ARY_VALUE,
+  CLS_VALUE
 };
 
 /****************************

@@ -73,6 +73,10 @@ void Runtime::Run()
 
   // runtime variables
   Value* locals = new Value[program->GetGlobal()->GetLocalCount()];
+  Value self;
+  self.type = CLS_VALUE;
+  self.value.pointer_value = NULL;
+  locals[0] = self;
   Value left, right;
 
   // tracing jit variables
@@ -509,8 +513,18 @@ void Runtime::Run()
 
 void Runtime::ClassFunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
-  // TODO: look up class
-  // TOOD: have function return a list of instructions (pre-compiled)
+  RuntimeClass* klass = Classes::Instance()->GetClass(instruction->operand5);
+  if(!klass) {
+    wcerr << L">>> Unknown class: name=" << instruction->operand5 << L" <<<" << endl;
+    exit(1);
+  }
+  Function func = klass->GetFunction(instruction->operand6);
+  if(!func) {
+    wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
+    exit(1);
+  }
+  Value self = locals[0];
+  (*func)(self, execution_stack, execution_stack_pos, instruction->operand1);
 }
 
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
@@ -519,32 +533,30 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
   if(!function) {
     wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
     exit(1);
+  }  
+  if(function->GetParameterCount() != instruction->operand1) {
+    wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
+    exit(1);
+  }
+
+  // push stack frame
+  Frame* frame = new Frame;
+  frame->ip = ip;
+  frame->instructions = instructions;
+  frame->locals = locals;
+  frame->jump_table = jump_table;
+  // function returns an orphan value
+  if(function->ReturnsValue() && !instruction->operand2) {
+    frame->orphan_return = true;
   }
   else {
-    if(function->GetParameterCount() != instruction->operand1) {
-      wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
-      exit(1);
-    }
-
-    // push stack frame
-    Frame* frame = new Frame;
-    frame->ip = ip;
-    frame->instructions = instructions;
-    frame->locals = locals;
-    frame->jump_table = jump_table;
-    // function returns an orphan value
-    if(function->ReturnsValue() && !instruction->operand2) {
-      frame->orphan_return = true;
-    }
-    else {
-      frame->orphan_return = false;
-    }
-    PushFrame(frame);
-
-    // initialize new frame
-    ip = 0;
-    instructions = function->GetInstructions();
-    locals = new Value[function->GetLocalCount()];
-    jump_table = function->GetJumpTable();
+    frame->orphan_return = false;
   }
+  PushFrame(frame);
+
+  // initialize new frame
+  ip = 0;
+  instructions = function->GetInstructions();
+  locals = new Value[function->GetLocalCount()];
+  jump_table = function->GetJumpTable();
 }
