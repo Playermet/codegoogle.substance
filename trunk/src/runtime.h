@@ -149,6 +149,37 @@ namespace runtime {
 		}
 
     //
+    // calculates an array offset
+    //
+    inline INT_T ArrayIndex(Instruction* instruction) {
+      INT_T index;
+      Value value = PopValue();
+      switch(value.type) {      
+      case INT_VALUE:
+        index = value.value.int_value;
+        break;
+
+      case FLOAT_VALUE:
+        index = (INT_T)value.value.float_value;
+        break;
+
+      default:
+        wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
+        exit(1);
+      }
+
+      const INT_T dim = instruction->operand2;
+/*
+      // TODO: encode array with bounds
+      for(INT_T i = 1; i < dim; i++) {
+        index *= array[i];
+        index += PopInt(op_stack, stack_pos);
+      }
+*/
+      return index;
+    }
+
+    //
     // Stack frame operations
     //
     void PushFrame(Frame* frame) {
