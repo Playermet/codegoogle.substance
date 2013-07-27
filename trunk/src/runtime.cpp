@@ -211,11 +211,17 @@ void Runtime::Run()
       break;
 
     case STOR_ARY_VAR: {
+      left = locals[instruction->operand1];
+      if(left.type != ARY_VALUE) {
+        wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
+      }
+      INT_T* array_meta = (INT_T*)left.value.pointer_value;
+      INT_T index = ArrayIndex(instruction, array_meta);
+      Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
-      wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << endl;
+      wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;
 #endif
-      instruction->operand2;
-      // operand2 is parm number
+      array[index] = PopValue();
     }
       break;
 
@@ -248,10 +254,18 @@ void Runtime::Run()
       break;
 
     case LOAD_ARY_VAR: {
+      left = locals[instruction->operand1];
+      if(left.type != ARY_VALUE) {
+
+        wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
+      }
+      INT_T* array_meta = (INT_T*)left.value.pointer_value;
+      INT_T index = ArrayIndex(instruction, array_meta);
+      Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
-      wcout << L"LOAD_ARY_VAR: id=" << instruction->operand1 << endl;
+      wcout << L"LOAD_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;
 #endif
-      // operand2 is parm number
+      PushValue(array[index]);
     }
       break;
 
