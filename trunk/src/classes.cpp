@@ -695,13 +695,14 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
 
   // allocate array
   // layout: [data_offset][max_size][dimensions][<- data ->]
-  const size_t meta_size = sizeof(INT_T) * (arg_count + 2);
+  const size_t meta_offset = (arg_count + 2);
+  const size_t meta_size = sizeof(INT_T) * meta_offset;
   const size_t data_size = sizeof(Value) * array_size;
   void* memory = calloc(meta_size + data_size, 1);
 
   // set metadata
   INT_T* meta_ptr = (INT_T*)memory;
-  meta_ptr[0] = meta_size / sizeof(INT_T);
+  meta_ptr[0] = meta_offset;
   meta_ptr[1] = arg_count;
   for(size_t i = 0; i < dimensions.size(); i++) {
     meta_ptr[i + 2] = (INT_T)dimensions[i];
