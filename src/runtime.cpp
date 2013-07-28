@@ -75,7 +75,7 @@ void Runtime::Run()
   Value* locals = new Value[program->GetGlobal()->GetLocalCount()];
   Value self;
   self.type = CLS_VALUE;
-  self.value.pointer_value = NULL;
+  self.value.ptr_value = NULL;
   locals[0] = self;
   Value left, right;
 
@@ -99,6 +99,7 @@ void Runtime::Run()
         halt = true;
       }
       else {
+
         Frame* frame = PopFrame();
         ip = frame->ip;
         instructions = frame->instructions;
@@ -111,22 +112,25 @@ void Runtime::Run()
 
         delete frame;
         frame = NULL;
+#ifdef _DEBUG
+      wcout << L"=== RTRN ===" << endl;
+#endif
       }
     }
       break;
 			
     case CALL_CLS_FUNC:
-      ClassFunctionCall(instruction, ip, locals);
 #ifdef _DEBUG
-      wcout << L"CALL_CLS_FUNC: class=" << instruction->operand5 << ", " << L", function=" << instruction->operand6 << endl;
+      wcout << L"=== CALL_CLS_FUNC: class='" << instruction->operand5 << L"', function=" << instruction->operand6 << L" ===" << endl;
 #endif
+      ClassFunctionCall(instruction, ip, locals);
 			break;
 
 		case CALL_FUNC:
-    	FunctionCall(instruction, ip, locals);
 #ifdef _DEBUG
-      wcout << L"CALL_FUNC: function=" << instruction->operand5 << endl;
+      wcout << L"=== CALL_FUNC: function='" << instruction->operand5 << L"' ===" << endl;
 #endif
+      FunctionCall(instruction, ip, locals);
 			break;
       
     case LOAD_TRUE_LIT:
@@ -215,7 +219,7 @@ void Runtime::Run()
       if(left.type != ARY_VALUE) {
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
-      INT_T* array_meta = (INT_T*)left.value.pointer_value;
+      INT_T* array_meta = (INT_T*)left.value.ptr_value;
       INT_T index = ArrayIndex(instruction, array_meta);
       Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
@@ -258,7 +262,7 @@ void Runtime::Run()
       if(left.type != ARY_VALUE) {
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
-      INT_T* array_meta = (INT_T*)left.value.pointer_value;
+      INT_T* array_meta = (INT_T*)left.value.ptr_value;
       INT_T index = ArrayIndex(instruction, array_meta);
       Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
@@ -285,7 +289,7 @@ void Runtime::Run()
       if(!is_recording && instruction->operand2 >= HIT_THRESHOLD) {
         if(instruction->native_code) {
 #ifdef _DEBUG	
-          wcout << L"========== NATIVE CODE: id=" << instruction->operand1 << L"==========" << endl;
+          wcout << L"### NATIVE CODE: id=" << instruction->operand1 << L" ###" << endl;
 #endif					
           jit::jit_fun_ptr jit_fun = instruction->native_code;
           const INT_T guard_label = (*jit_fun)(locals, NULL, NULL);
@@ -295,7 +299,7 @@ void Runtime::Run()
         }
         else {
 #ifdef _DEBUG
-          wcout << L"========== JIT START LABEL: id=" << instruction->operand1 << L"==========" << endl;
+          wcout << L"### JIT START LABEL: id=" << instruction->operand1 << L" ###" << endl;
 #endif
           is_recording = first_jmp = true;
           jit_instrs.push_back(new jit::JitInstruction(jit::LBL, instruction->operand1));
@@ -323,7 +327,7 @@ void Runtime::Run()
 
           if(!jit_start_label->native_code) {
 #ifdef _DEBUG
-            wcout << L"========== JIT END LABEL: id=" << jit_start_label->operand1 << L"==========" << endl;
+            wcout << L"### JIT END LABEL: id=" << jit_start_label->operand1 << L" ###" << endl;
 #endif
             // add ending code for JIT compiler
             jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_start_label->operand1, JMP_UNCND));
@@ -336,7 +340,7 @@ void Runtime::Run()
               exit(1);
             }
             jit_start_label->native_code = jit_fun;	
-            jit_start_label->operand3 = ip + 1;
+            jit_start_label->operand3 = (INT_T)(ip + 1);
             // reset
             is_recording = first_jmp = false;
             jit_base_label = last_label_id;

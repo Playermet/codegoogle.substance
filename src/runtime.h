@@ -101,11 +101,15 @@ namespace runtime {
 				break;
 				
 			case INT_VALUE:
-				wcout << L"integer; value=" << value.value.int_value << endl;
+				wcout << L"integer: value=" << value.value.int_value << endl;
 			  break;
 				
 			case FLOAT_VALUE:
-				wcout << L"float; value=" << value.value.float_value << endl;
+				wcout << L"float: value=" << value.value.float_value << endl;
+				break;
+
+      case ARY_VALUE:
+				wcout << L"array: address=" << value.value.ptr_value << L", max_bounds=" << ((INT_T*)value.value.ptr_value)[1] << endl;
 				break;
 				
 				// TODO:
@@ -138,6 +142,10 @@ namespace runtime {
 			case FLOAT_VALUE:
 				wcout << L"float; value=" << value.value.float_value << endl;
 				break;
+
+      case ARY_VALUE:
+				wcout << L"array: address=" << value.value.ptr_value << L", max_bounds=" << ((INT_T*)value.value.ptr_value)[1] << endl;
+				break;
 				
 				// TODO:
 			default:
@@ -149,8 +157,9 @@ namespace runtime {
 		}
 
     //
-    // calculates an array offset
+    // Calculate array offset
     //
+    // TODO: bounds check each dimension
     inline INT_T ArrayIndex(Instruction* instruction, INT_T* array_meta) {
       INT_T index;
       Value value = PopValue();
@@ -186,6 +195,11 @@ namespace runtime {
           wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
           exit(1);
         }
+      }
+
+      if(index >= array_meta[1]) {
+        wcerr << L">>> Array index out-of-bounds: index=" << index << L", max_bounds=" << array_meta[1] << L" <<<" << endl;
+        exit(1);
       }
 
       return index;
@@ -247,6 +261,10 @@ namespace runtime {
 		  case FLOAT_VALUE:
 			  wcout << L"float=" << value->value.float_value << endl;
 			  break;
+
+      case ARY_VALUE:
+				wcout << L"array: address=" << value->value.ptr_value << endl;
+				break;
 
 				// TODO:
 			default:
