@@ -694,7 +694,7 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
   }
 
   // allocate array
-  // layout: [data_offset][max_size][dimensions][<- data ->]
+  // layout: [data_offset (0)][max_size (1)][dimensions (2-n)][<- data -> (data_offset - n)]
   const size_t meta_offset = (arg_count + 2);
   const size_t meta_size = sizeof(INT_T) * meta_offset;
   const size_t data_size = sizeof(Value) * array_size;
@@ -702,20 +702,20 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
 
   // set metadata
   INT_T* meta_ptr = (INT_T*)memory;
-  meta_ptr[0] = meta_offset;
-  meta_ptr[1] = arg_count;
+  meta_ptr[0] = (INT_T)meta_offset;
+  meta_ptr[1] = (INT_T)array_size;
   for(size_t i = 0; i < dimensions.size(); i++) {
     meta_ptr[i + 2] = (INT_T)dimensions[i];
   }
 #ifdef _DEBUG
-  wcout << L"Array->New" << L"[" << array_size << L"], address=" << memory << endl;
+  wcout << L"  Array->New" << L"[" << array_size << L"], address=" << memory << endl;
 #endif
 
   // set value
   Value left;
   left.type = ARY_VALUE;
   left.klass = ArrayClass::Instance();
-  left.value.pointer_value = memory;
+  left.value.ptr_value = memory;
   execution_stack[execution_stack_pos++] = left;
 }
 

@@ -161,7 +161,7 @@ typedef union _BaseValue {
   CHAR_T char_value;
   INT_T int_value;
   FLOAT_T float_value;
-  void* pointer_value;
+  void* ptr_value;
 } BaseValue;
 
 /****************************

@@ -1,16 +1,15 @@
-{
-  j := 0;
-  i := 0;
-  while(i < 100) {
-    i += 1;
-    j := 0;
-    while(j < 3) {
-      if(i < 50 & false) {
-        i := i;
-      };
-      j += 2;
-    };
+i := 0;
+var y;
+while(i < 3) {
+  y := Foo(i, i + 1);
+  i += 1;
+};
+dump y;
+
+func : Foo(a, b) {
+  if(a <> 2) {
+    return 2 * b + a;
   };
-  dump j;
-  dump i;
+   
+   return a * 13 + b;
 }

@@ -1,21 +1,15 @@
-Notes:
-===============
+Notes
+======
+General
 * All system classes will be pre-compiled and execute VM instructions
 * Traps will used for OS specific directives
 * Need a way to write, pre-compile and store instructions for system classes
-* Can tracing JIT call call into functions?
-  - Types can change callee code
-  - locals (parameters), instance variables
-  
-Memory managment:
-[class name(ptr)][type(bit)][cache size(long)][marker(bit)][<-- bock o' memory -->]
- 
-  
-* Have a single List class or Array and List (linked-list) classes?
-  
-List Class:
----------------
-New - Will create a new array i.e. NEW_ARRAY (operands); if link-list based NEW_OBJ for a node
-Add -
-Remove - ?
-Insert - ?
+* TODO: add JIT support for array indexing and creation (call back?) 
+* TODO: unit test suite for specific functionality
+
+Tracing
+--------
+* Function calls need to be inlined
+    - How do we jump back to the correct place (call back?)
+    
+    
