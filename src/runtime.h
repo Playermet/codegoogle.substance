@@ -171,7 +171,7 @@ namespace runtime {
       const INT_T dim = instruction->operand2;
       // TODO: encode array with bounds
       for(INT_T i = 1; i < dim; i++) {
-        index *= array_meta[i];
+        index *= array_meta[i + 2];
         Value value = PopValue();
         switch(value.type) {      
         case INT_VALUE:

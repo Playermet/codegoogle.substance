@@ -704,7 +704,7 @@ void ArrayClass::New(Value &self, Value* execution_stack, size_t &execution_stac
   meta_ptr[0] = meta_size / sizeof(INT_T);
   meta_ptr[1] = arg_count;
   for(size_t i = 0; i < dimensions.size(); i++) {
-    meta_ptr[i + 1] = (INT_T)dimensions[i];
+    meta_ptr[i + 2] = (INT_T)dimensions[i];
   }
 #ifdef _DEBUG
   wcout << L"Array->New" << L"[" << array_size << L"], address=" << memory << endl;
