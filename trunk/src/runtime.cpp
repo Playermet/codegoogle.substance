@@ -256,7 +256,6 @@ void Runtime::Run()
     case LOAD_ARY_VAR: {
       left = locals[instruction->operand1];
       if(left.type != ARY_VALUE) {
-
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
       INT_T* array_meta = (INT_T*)left.value.pointer_value;
@@ -531,7 +530,8 @@ void Runtime::Run()
       }
       break;
     }    
-  } while(!halt);
+  } 
+  while(!halt);
 
   delete[] locals;
   locals = NULL;
