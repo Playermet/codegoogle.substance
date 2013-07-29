@@ -92,7 +92,7 @@ void Runtime::Run()
   size_t ip = 0;  
   bool halt = false;
   do {
-    Instruction* instruction = instructions->at(ip++);
+    Instruction* instruction = current_function->GetInstructions()->at(ip++);
     switch(instruction->type) {
     case RTRN: {
       if(call_stack_pos == 0) {
@@ -102,9 +102,8 @@ void Runtime::Run()
 
         Frame* frame = PopFrame();
         ip = frame->ip;
-        instructions = frame->instructions;
+        current_function = frame->function;
         locals = frame->locals;
-        jump_table = frame->jump_table;
         // clean up orphan return value
         if(frame->orphan_return) {
           PopValue();
@@ -333,7 +332,7 @@ void Runtime::Run()
             jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_start_label->operand1, JMP_UNCND));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, (INT_T)jit_end_label));
             // compile into native code and execute
-            jit::JitCompiler compiler(jit_instrs, jump_table, jit_end_label);
+            jit::JitCompiler compiler(jit_instrs, current_function->GetJumpTable(), jit_end_label);
             jit::jit_fun_ptr jit_fun = compiler.Compile();
             if(!jit_fun) {
               wcerr << L">>> Unable to JIT compile trace <<<" << endl;
@@ -564,12 +563,12 @@ void Runtime::ClassFunctionCall(Instruction* instruction, size_t &ip, Value* loc
 
 void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
 {
-  ExecutableFunction* function = program->GetFunction(instruction->operand5);
-  if(!function) {
+  ExecutableFunction* callee = program->GetFunction(instruction->operand5);
+  if(!callee) {
     wcerr << L">>> Unknown function: name='" << instruction->operand5 << L"' <<<" << endl;
     exit(1);
   }  
-  if(function->GetParameterCount() != instruction->operand1) {
+  if(callee->GetParameterCount() != instruction->operand1) {
     wcerr << L">>> Incorrect number of calling parameters <<<" << endl;
     exit(1);
   }
@@ -577,21 +576,19 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
   // push stack frame
   Frame* frame = new Frame;
   frame->ip = ip;
-  frame->instructions = instructions;
+  frame->function = current_function;
   frame->locals = locals;
-  frame->jump_table = jump_table;
   // function returns an orphan value
-  if(function->ReturnsValue() && !instruction->operand2) {
+  if(callee->ReturnsValue() && !instruction->operand2) {
     frame->orphan_return = true;
   }
   else {
     frame->orphan_return = false;
   }
   PushFrame(frame);
-
+  
   // initialize new frame
+  current_function = callee;
+  locals = new Value[current_function->GetLocalCount()];
   ip = 0;
-  instructions = function->GetInstructions();
-  locals = new Value[function->GetLocalCount()];
-  jump_table = function->GetJumpTable();
 }

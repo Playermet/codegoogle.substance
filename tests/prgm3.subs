@@ -7,9 +7,10 @@ while(i < 3) {
 dump y;
 
 func : Foo(a, b) {
-  if(a <> 2) {
+  x = 10;
+  if(a + x <> 2) {
     return 2 * b + a;
   };
    
-   return a * 13 + b;
+   return (a * 13 + b) / x;
 }

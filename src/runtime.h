@@ -46,7 +46,7 @@ namespace runtime {
  * Call stack frame
  ****************************/
   typedef struct _Frame {
-    vector<Instruction*>* instructions; // TODO: pass as a pointer?
+    ExecutableFunction* function;
     size_t ip;
     Value* locals;
     unordered_map<INT_T, size_t>* jump_table;
@@ -63,8 +63,9 @@ namespace runtime {
     Value* execution_stack;
 		size_t execution_stack_pos;
 		// program instructions and jump table
-    vector<Instruction*>* instructions;
-	  unordered_map<INT_T, size_t>* jump_table;
+    // vector<Instruction*>* instructions;
+	  // unordered_map<INT_T, size_t>* jump_table;
+    ExecutableFunction* current_function;
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
     // call stack
@@ -274,8 +275,8 @@ namespace runtime {
   #endif
     
     inline size_t GetLabelOffset(INT_T label) {
-      unordered_map<INT_T, size_t>::iterator result = jump_table->find(label);
-      if(result == jump_table->end()) {
+      unordered_map<INT_T, size_t>::iterator result = current_function->GetJumpTable()->find(label);
+      if(result == current_function->GetJumpTable()->end()) {
         wcerr << ">>> Invalid label identifier <<<" << endl;
         exit(1);
       }
@@ -298,8 +299,7 @@ namespace runtime {
       call_stack = new Frame*[CALL_STACK_SIZE];
       call_stack_pos = 0;
       // this should be part of a frame
-      this->instructions = p->GetGlobal()->GetInstructions();
-		  this->jump_table = p->GetGlobal()->GetJumpTable();
+      this->current_function = p->GetGlobal();
     }
   
     ~Runtime() {
