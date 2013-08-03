@@ -363,6 +363,10 @@ void JitCompiler::ProcessInstructions() {
 #endif
 			jump_labels[instr->GetOperand()] = instr;
 			break;
+      
+    case MTHD_CALL:
+      ProcessMethodCall(instr);
+      break;
 			
 			// TODO:
 		default:
@@ -1161,6 +1165,10 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 	else {
 		skip_jump = false;
 	}
+}
+
+void JitCompiler::ProcessMethodCall(JitInstruction* instr) {
+  
 }
 
 /////////////////// OPERATIONS ///////////////////

@@ -62,9 +62,7 @@ namespace runtime {
 		// execution stack and stack pointer
     Value* execution_stack;
 		size_t execution_stack_pos;
-		// program instructions and jump table
-    // vector<Instruction*>* instructions;
-	  // unordered_map<INT_T, size_t>* jump_table;
+		// current function
     ExecutableFunction* current_function;
 		// loop iteration counts
 		stack<INT_T> loop_iterations;
