@@ -99,7 +99,6 @@ void Runtime::Run()
         halt = true;
       }
       else {
-
         Frame* frame = PopFrame();
         ip = frame->ip;
         current_function = frame->function;
@@ -588,6 +587,9 @@ void Runtime::FunctionCall(Instruction* instruction, size_t &ip, Value* locals)
   PushFrame(frame);
   
   // initialize new frame
+  if(is_recording) {
+    jit_instrs.push_back(new jit::JitInstruction(jit::MTHD_CALL, current_function));
+  }
   current_function = callee;
   locals = new Value[current_function->GetLocalCount()];
   ip = 0;

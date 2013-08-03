@@ -104,6 +104,7 @@ namespace jit {
     JMP,
     LBL,
     RTRN,
+    MTHD_CALL,
     // memory operations
     NEW_BYTE_ARY,
     NEW_CHAR_ARY,
@@ -137,6 +138,7 @@ namespace jit {
     INT_T operand;
     INT_T operand2;
     INT_T operand3;
+    void* operand4;
     FLOAT_T float_operand;
     long native_offset;
   
@@ -173,9 +175,14 @@ namespace jit {
       native_offset = 0;
     }
 
+    JitInstruction(JitInstructionType t, void* o4) {
+      type = t;
+      operand4 = o4;
+    }
+  
     ~JitInstruction() {
     }  
-
+    
     inline JitInstructionType GetType() const {
       return type;
     }
@@ -194,6 +201,10 @@ namespace jit {
 
     inline long GetOperand3() const {
       return operand3;
+    }
+
+    inline void* GetOperand4() const {
+      return operand4;
     }
 
     inline void SetOperand(long o) {
