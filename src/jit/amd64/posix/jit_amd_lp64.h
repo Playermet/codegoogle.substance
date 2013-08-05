@@ -886,6 +886,7 @@ namespace jit {
     void ProcessFloatCalculation(JitInstruction* instruction);
 		void ProcessJump(JitInstruction* instr);
     void ProcessMethodCall(JitInstruction* instr);
+    void ProcessTrap(JitInstruction* instr);
     RegInstr* ProcessIntFold(long left_imm, long right_imm, JitInstructionType type);
     
     // Gets an avaiable register from

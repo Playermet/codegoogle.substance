@@ -374,7 +374,12 @@ void JitCompiler::ProcessInstructions() {
     case MTHD_CALL:
       ProcessMethodCall(instr);
       break;
-			
+      
+      // handles callbacks
+    case TRAP:
+      ProcessTrap(instr);
+      break;		
+      
 			// TODO:
 		default:
 			break;
@@ -1211,7 +1216,9 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 }
 
 void JitCompiler::ProcessMethodCall(JitInstruction* instr) {
-  
+}
+
+void JitCompiler::ProcessTrap(JitInstruction* instr) {
 }
 
 /////////////////// OPERATIONS ///////////////////
