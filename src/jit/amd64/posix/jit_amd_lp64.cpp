@@ -191,6 +191,13 @@ void JitCompiler::ProcessInstructions() {
 #endif
       ProcessStore(instr);
       break;
+      
+    case STOR_INT_ARY_ELM:
+      ProcessStoreIntElement(instr);
+      break;
+
+    case STOR_FLOAT_ARY_ELM:
+      break;
 			
       // mathematical
     case AND_INT:
@@ -531,6 +538,42 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
   if(addr_holder) {
     ReleaseRegister(addr_holder);
   }
+
+  delete left;
+  left = NULL;
+}
+
+void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
+  RegisterHolder* elem_holder = ArrayIndex(instr, INT_VALUE);
+  RegInstr* left = working_stack.front();
+  working_stack.pop_front();
+  
+  /*
+  switch(left->GetType()) {
+  case IMM_INT:
+    move_imm_mem(left->GetOperand(), 0, elem_holder->GetRegister());
+    break;
+
+  case MEM_INT: {
+    RegisterHolder* holder = GetRegister();
+    move_mem_reg(left->GetOperand(), RBP, holder->GetRegister());
+    move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseRegister(holder);
+  }
+    break;
+
+  case REG_INT: {
+    RegisterHolder* holder = left->GetRegister();
+    move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseRegister(holder);
+  }
+    break;
+
+  default:
+    break;
+  }
+  ReleaseRegister(elem_holder);
+  */  
 
   delete left;
   left = NULL;
