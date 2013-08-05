@@ -217,8 +217,12 @@ void Runtime::Run()
       if(left.type != ARY_VALUE) {
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
+      
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
+      }
       INT_T* array_meta = (INT_T*)left.value.ptr_value;
-      INT_T index = ArrayIndex(instruction, array_meta);
+      INT_T index = ArrayIndex(instruction, array_meta, true);
       Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
       wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;
@@ -261,7 +265,7 @@ void Runtime::Run()
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
       INT_T* array_meta = (INT_T*)left.value.ptr_value;
-      INT_T index = ArrayIndex(instruction, array_meta);
+      INT_T index = ArrayIndex(instruction, array_meta, false);
       Value* array = (Value*)(array_meta + array_meta[0]);
 #ifdef _DEBUG
       wcout << L"LOAD_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;

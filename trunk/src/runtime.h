@@ -159,16 +159,32 @@ namespace runtime {
     // Calculate array offset
     //
     // TODO: bounds check each dimension
-    inline INT_T ArrayIndex(Instruction* instruction, INT_T* array_meta) {
+    inline INT_T ArrayIndex(Instruction* instruction, INT_T* array_meta, bool is_store) {
       INT_T index;
       Value value = PopValue();
       switch(value.type) {      
       case INT_VALUE:
         index = value.value.int_value;
+        if(is_recording) {
+          if(is_store) {
+            jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_ARY_ELM, instruction->operand2));
+          }
+          else {
+            jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_ARY_ELM, instruction->operand2));
+          }
+        }
         break;
 
       case FLOAT_VALUE:
         index = (INT_T)value.value.float_value;
+        if(is_recording) {
+          if(is_store) {
+            jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_ARY_ELM, instruction->operand2));
+          }
+          else {
+            jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_ARY_ELM, instruction->operand2));
+          }
+        }
         break;
 
       default:
