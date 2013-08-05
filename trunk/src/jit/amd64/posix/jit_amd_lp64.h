@@ -732,7 +732,11 @@ namespace jit {
 
       case MEM_INT:
         array_holder = GetRegister();
-        move_mem_reg(holder->GetOperand(), RBP, array_holder->GetRegister());
+        move_mem_reg(FRAME, RBP, array_holder->GetRegister());
+        add_imm_reg(holder->GetOperand() + VALUE_OFFSET, array_holder->GetRegister());
+        move_mem_reg(0, array_holder->GetRegister(), array_holder->GetRegister());
+        
+        // move_mem_reg(holder->GetOperand(), RBP, array_holder->GetRegister());
         break;
 	
       default:
