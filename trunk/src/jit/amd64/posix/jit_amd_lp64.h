@@ -734,8 +734,7 @@ namespace jit {
         array_holder = GetRegister();
         move_mem_reg(FRAME, RBP, array_holder->GetRegister());
         add_imm_reg(holder->GetOperand() + VALUE_OFFSET, array_holder->GetRegister());
-        move_mem_reg(0, array_holder->GetRegister(), array_holder->GetRegister());
-        
+        move_mem_reg(0, array_holder->GetRegister(), array_holder->GetRegister());        
         // move_mem_reg(holder->GetOperand(), RBP, array_holder->GetRegister());
         break;
 	
@@ -755,8 +754,7 @@ namespace jit {
          index += PopInt();
          }
       */
-
-      /*
+      
       if(holder) {
         delete holder;
         holder = NULL;
@@ -778,7 +776,13 @@ namespace jit {
 
       case MEM_INT:
         index_holder = GetRegister();
+        move_mem_reg(FRAME, RBP, index_holder->GetRegister());
+        add_imm_reg(holder->GetOperand() + VALUE_OFFSET, index_holder->GetRegister());
+        add_mem_reg(0, index_holder->GetRegister(), index_holder->GetRegister());        
+        /*
+        index_holder = GetRegister();
         move_mem_reg(holder->GetOperand(), RBP, index_holder->GetRegister());
+        */
         break;
 	
       default:
@@ -805,12 +809,17 @@ namespace jit {
           break;
 
         case REG_INT:
-          add_reg_reg(holder->GetRegister()->GetRegister(), 
-                      index_holder->GetRegister());
+          add_reg_reg(holder->GetRegister()->GetRegister(), index_holder->GetRegister());
           break;
 
-        case MEM_INT:
-          add_mem_reg(holder->GetOperand(), RBP, index_holder->GetRegister());
+        case MEM_INT: {
+          RegisterHolder* tmp_holder = GetRegister();
+          move_mem_reg(FRAME, RBP, tmp_holder->GetRegister());
+          add_imm_reg(holder->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
+          add_mem_reg(0, tmp_holder->GetRegister(), index_holder->GetRegister()); 
+          ReleaseRegister(tmp_holder);
+          // add_mem_reg(holder->GetOperand(), RBP, index_holder->GetRegister());
+        }
           break;
 
         default:
@@ -818,6 +827,7 @@ namespace jit {
         }
       }
       
+      /*
       // bounds check
       RegisterHolder* bounds_holder = GetRegister();
       move_mem_reg(0, array_holder->GetRegister(), bounds_holder->GetRegister()); 
