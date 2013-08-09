@@ -714,7 +714,10 @@ namespace jit {
       code = code | reg_id;
     }
     
-    // method.
+    //
+    // Resolve array index
+    //
+    // TODO: bounds checking
     RegisterHolder* ArrayIndex(JitInstruction* instr) {
       RegInstr* holder = working_stack.front();
       working_stack.pop_front();
@@ -735,7 +738,6 @@ namespace jit {
         move_mem_reg(FRAME, RBP, array_holder->GetRegister());
         add_imm_reg(holder->GetOperand() + VALUE_OFFSET, array_holder->GetRegister());
         move_mem_reg(0, array_holder->GetRegister(), array_holder->GetRegister());        
-        // move_mem_reg(holder->GetOperand(), RBP, array_holder->GetRegister());
         break;
 	
       default:
@@ -769,20 +771,16 @@ namespace jit {
         index_holder = GetRegister();
         move_imm_reg(holder->GetOperand(), index_holder->GetRegister());
         break;
-
+        
       case REG_INT:
         index_holder = holder->GetRegister();
         break;
-
+        
       case MEM_INT:
         index_holder = GetRegister();
         move_mem_reg(FRAME, RBP, index_holder->GetRegister());
         add_imm_reg(holder->GetOperand() + VALUE_OFFSET, index_holder->GetRegister());
-        add_mem_reg(0, index_holder->GetRegister(), index_holder->GetRegister());        
-        /*
-        index_holder = GetRegister();
-        move_mem_reg(holder->GetOperand(), RBP, index_holder->GetRegister());
-        */
+        move_mem_reg(0, index_holder->GetRegister(), index_holder->GetRegister());        
         break;
 	
       default:
@@ -817,7 +815,6 @@ namespace jit {
           add_imm_reg(holder->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
           add_mem_reg(0, tmp_holder->GetRegister(), index_holder->GetRegister()); 
           ReleaseRegister(tmp_holder);
-          // add_mem_reg(holder->GetOperand(), RBP, index_holder->GetRegister());
         }
           break;
 
