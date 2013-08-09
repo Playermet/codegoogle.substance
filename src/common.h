@@ -150,7 +150,8 @@ enum RuntimeType {
   INT_VALUE,
   FLOAT_VALUE,
   ARY_VALUE,
-  CLS_VALUE
+  CLS_VALUE,
+  UNINIT
 };
 
 /****************************
@@ -175,6 +176,7 @@ public:
 
   Value() {
     klass = NULL;
+    type = UNINIT;
   }
 
   Value(const Value &rhs) {

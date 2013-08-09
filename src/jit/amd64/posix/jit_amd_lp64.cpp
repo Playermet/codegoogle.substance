@@ -549,21 +549,22 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
 }
 
 void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
-  RegisterHolder* elem_holder = ArrayIndex(instr, INT_VALUE);
+  RegisterHolder* elem_holder = ArrayIndex(instr);
   RegInstr* left = working_stack.front();
   working_stack.pop_front();
   
-  /*
   switch(left->GetType()) {
   case IMM_INT:
     move_imm_mem(left->GetOperand(), 0, elem_holder->GetRegister());
     break;
 
   case MEM_INT: {
+    /*
     RegisterHolder* holder = GetRegister();
     move_mem_reg(left->GetOperand(), RBP, holder->GetRegister());
     move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
     ReleaseRegister(holder);
+    */
   }
     break;
 
@@ -578,8 +579,7 @@ void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
     break;
   }
   ReleaseRegister(elem_holder);
-  */  
-
+  
   delete left;
   left = NULL;
 }

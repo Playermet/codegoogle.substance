@@ -715,7 +715,7 @@ namespace jit {
     }
     
     // method.
-    RegisterHolder* ArrayIndex(JitInstruction* instr, RuntimeType type) {
+    RegisterHolder* ArrayIndex(JitInstruction* instr) {
       RegInstr* holder = working_stack.front();
       working_stack.pop_front();
 
@@ -794,8 +794,7 @@ namespace jit {
       const long dim = instr->GetOperand();
       for(int i = 1; i < dim; i++) {
         // index *= array[i];
-        mul_mem_reg((i + 2) * sizeof(long), array_holder->GetRegister(), 
-                    index_holder->GetRegister());
+        mul_mem_reg((i + 2) * sizeof(long), array_holder->GetRegister(), index_holder->GetRegister());
         if(holder) {
           delete holder;
           holder = NULL;
@@ -830,38 +829,23 @@ namespace jit {
       /*
       // bounds check
       RegisterHolder* bounds_holder = GetRegister();
-      move_mem_reg(0, array_holder->GetRegister(), bounds_holder->GetRegister()); 
+      move_mem_reg(0, array_holder->GetRegister(), bounds_holder->GetRegister());
+      */ 
       
-      // ajust indices
-      switch(type) {
-      case BYTE_ARY_TYPE:
-        break;
-
-      case CHAR_ARY_TYPE:
-        shl_imm_reg(2, index_holder->GetRegister());
-        shl_imm_reg(2, bounds_holder->GetRegister());
-        break;
-	      
-      case INT_TYPE:
-      case FLOAT_TYPE:
-        shl_imm_reg(3, index_holder->GetRegister());
-        shl_imm_reg(3, bounds_holder->GetRegister());
-        break;
-	
-      default:
-        break;
-      }
+      mul_imm_reg(sizeof(Value), index_holder->GetRegister());
+      
+      /*
       CheckArrayBounds(index_holder->GetRegister(), bounds_holder->GetRegister());
       ReleaseRegister(bounds_holder);
-
+      */
+      
       // skip first 2 integers (size and dimension) and all dimension indices
-      add_imm_reg((instr->GetOperand() + 2) * sizeof(long), index_holder->GetRegister());
+      add_imm_reg((instr->GetOperand() + 3) * sizeof(long), index_holder->GetRegister());
       add_reg_reg(index_holder->GetRegister(), array_holder->GetRegister());
       ReleaseRegister(index_holder);
 
       delete holder;
       holder = NULL;
-      */
       
       return array_holder;
     }
