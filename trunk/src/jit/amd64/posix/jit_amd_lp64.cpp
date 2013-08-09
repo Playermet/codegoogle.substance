@@ -558,13 +558,13 @@ void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
     move_imm_mem(left->GetOperand(), 0, elem_holder->GetRegister());
     break;
 
-  case MEM_INT: {
-    /*
+  case MEM_INT: {    
     RegisterHolder* holder = GetRegister();
-    move_mem_reg(left->GetOperand(), RBP, holder->GetRegister());
+    move_mem_reg(FRAME, RBP, holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+    move_mem_reg(0, holder->GetRegister(), holder->GetRegister());    
     move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
     ReleaseRegister(holder);
-    */
   }
     break;
 
