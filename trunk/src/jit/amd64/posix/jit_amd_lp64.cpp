@@ -628,7 +628,7 @@ void JitCompiler::ProcessStoreFloatElement(JitInstruction* instr) {
   working_stack.pop_front();
   
   // set element type
-  move_imm_mem(FLOAT_VALUE, -sizeof(FLOAT_T), elem_holder->GetRegister());
+  move_imm_mem(FLOAT_VALUE, -sizeof(INT_T), elem_holder->GetRegister());
   
   switch(left->GetType()) {
   case IMM_FLOAT:
