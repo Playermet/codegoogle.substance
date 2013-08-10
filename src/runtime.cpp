@@ -285,6 +285,23 @@ void Runtime::Run()
       wcout << L"LOAD_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;
 #endif
       PushValue(array[index]);
+      
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
+        
+        switch(array[index].type) {      
+        case INT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_ARY_ELM, instruction->operand2));
+          break;
+
+        case FLOAT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_FLOAT_ARY_ELM, instruction->operand2));
+          break;
+          
+        default:
+          break;
+        }
+      }
     }
       break;
 
