@@ -5,7 +5,7 @@
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted provided that the following conf2ditions are met:
  *
  * - Redistributions of source code must retain the above copyright 
  * notice, this lis  of conditions and the following disclaimer.
@@ -145,7 +145,7 @@ void JitCompiler::ProcessInstructions() {
       // load self
     case LOAD_INST_MEM: {
 #ifdef _DEBUG
-      std::wcout << L"LOAD_INST_MEM; regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+      std::wcout << L"LOAD_INST_MEM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       working_stack.push_front(new RegInstr(instr));
     }
@@ -154,7 +154,7 @@ void JitCompiler::ProcessInstructions() {
       // load self
     case LOAD_CLS_MEM: {
 #ifdef _DEBUG
-      std::wcout << L"LOAD_CLS_MEM; regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+      std::wcout << L"LOAD_CLS_MEM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
 #endif
       working_stack.push_front(new RegInstr(instr));
     }
@@ -175,7 +175,21 @@ void JitCompiler::ProcessInstructions() {
 #endif
       ProcessLoad(instr);
       break;
-    
+      
+    case LOAD_INT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"LOAD_INT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessLoadIntElement(instr);
+      break;
+      
+    case LOAD_FLOAT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"LOAD_FLOAT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessLoadFloatElement(instr);
+      break;
+      
       // store value
     case STOR_INT_VAR:
     case STOR_FLOAT_VAR:
@@ -193,10 +207,16 @@ void JitCompiler::ProcessInstructions() {
       break;
       
     case STOR_INT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"STOR_INT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
       ProcessStoreIntElement(instr);
       break;
 
     case STOR_FLOAT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"STOR_FLOAT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
       ProcessStoreFloatElement(instr);
       break;
 			
@@ -430,6 +450,20 @@ void JitCompiler::ProcessLoad(JitInstruction* instr) {
   }
 }
 
+void JitCompiler::ProcessLoadIntElement(JitInstruction* instruction) {
+  RegisterHolder* elem_holder = ArrayIndex(instruction);
+  move_mem_reg(0, elem_holder->GetRegister(), elem_holder->GetRegister());
+  working_stack.push_front(new RegInstr(elem_holder));
+}
+
+void JitCompiler::ProcessLoadFloatElement(JitInstruction* instruction) {
+  RegisterHolder* elem_holder = ArrayIndex(instruction);
+  RegisterHolder* holder = GetXmmRegister();
+  move_mem_xreg(0, elem_holder->GetRegister(), holder->GetRegister());
+  working_stack.push_front(new RegInstr(holder));
+  ReleaseRegister(elem_holder);
+}
+
 void JitCompiler::ProcessStore(JitInstruction* instr) {
   Register dest;
   RegisterHolder* addr_holder = NULL;
@@ -648,8 +682,7 @@ void JitCompiler::ProcessFloatToInt() {
     cvt_imm_reg(left, holder->GetRegister());
     break;
     
-  case MEM_FLOAT:
-  case MEM_INT: {
+  case MEM_FLOAT: {
     RegisterHolder* holder = GetRegister();
     move_mem_reg(FRAME, RBP, holder->GetRegister());
     add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
@@ -658,8 +691,7 @@ void JitCompiler::ProcessFloatToInt() {
     break;
 
   case REG_FLOAT:
-    cvt_xreg_reg(left->GetRegister()->GetRegister(), 
-								 holder->GetRegister());
+    cvt_xreg_reg(left->GetRegister()->GetRegister(), holder->GetRegister());
     ReleaseXmmRegister(left->GetRegister());
     break;
 
