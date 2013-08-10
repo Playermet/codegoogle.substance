@@ -218,9 +218,6 @@ void Runtime::Run()
         wcerr << L">>> Operation requires Integer or Float type <<<" << endl;
       }
       
-      if(is_recording) {
-        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
-      }
       INT_T* array_meta = (INT_T*)left.value.ptr_value;
       INT_T index = ArrayIndex(instruction, array_meta, true);
       Value* array = (Value*)(array_meta + array_meta[0]);
@@ -228,6 +225,23 @@ void Runtime::Run()
       wcout << L"STOR_ARY_VAR: id=" << instruction->operand1 << L", native_offset=" << index << endl;
 #endif
       array[index] = PopValue();
+
+      if(is_recording) {
+        jit_instrs.push_back(new jit::JitInstruction(jit::LOAD_INT_VAR, instruction->operand1, jit::LOCL));
+        
+        switch(array[index].type) {      
+        case INT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_INT_ARY_ELM, instruction->operand2));
+          break;
+
+        case FLOAT_VALUE:
+          jit_instrs.push_back(new jit::JitInstruction(jit::STOR_FLOAT_ARY_ELM, instruction->operand2));
+          break;
+          
+        default:
+          break;
+        }
+      }        
     }
       break;
 
@@ -528,6 +542,10 @@ void Runtime::Run()
 
       case FLOAT_VALUE:
         wcout << L"type=float, value=" << left.value.float_value << endl;
+        break;
+
+      case UNINIT_VALUE:
+        wcout << L"type=uninit, value=Nil" << endl;
         break;
 
       default:

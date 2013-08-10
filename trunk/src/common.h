@@ -146,12 +146,12 @@ public:
 * Runtime types and values
 ****************************/
 enum RuntimeType {
-  BOOL_VALUE = -512,
+  BOOL_VALUE = -5,
   INT_VALUE,
   FLOAT_VALUE,
   ARY_VALUE,
   CLS_VALUE,
-  UNINIT
+  UNINIT_VALUE
 };
 
 /****************************
@@ -176,7 +176,7 @@ public:
 
   Value() {
     klass = NULL;
-    type = UNINIT;
+    type = UNINIT_VALUE;
   }
 
   Value(const Value &rhs) {
