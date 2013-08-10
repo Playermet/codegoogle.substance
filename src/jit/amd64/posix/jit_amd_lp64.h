@@ -837,7 +837,7 @@ namespace jit {
       ReleaseRegister(bounds_holder);
       */
       
-      // skip first 2 integers (size and dimension) and all dimension indices
+      // skip metadata
       add_imm_reg((instr->GetOperand() + 3) * sizeof(long), index_holder->GetRegister());
       add_reg_reg(index_holder->GetRegister(), array_holder->GetRegister());
       ReleaseRegister(index_holder);

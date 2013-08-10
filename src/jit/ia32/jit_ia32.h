@@ -500,6 +500,139 @@ namespace jit {
       code = code | reg_id;
     }
 
+    //
+    // Resolve array index
+    //
+    // TODO: bounds checking
+    RegisterHolder* ArrayIndex(JitInstruction* instr) {
+      RegInstr* holder = working_stack.front();
+      working_stack.pop_front();
+
+      RegisterHolder* array_holder;
+      switch(holder->GetType()) {
+      case IMM_INT:
+        wcerr << L">>> trying to index a constant! <<<" << endl;
+        exit(1);
+        break;
+
+      case REG_INT:
+        array_holder = holder->GetRegister();
+        break;
+
+      case MEM_INT:
+        array_holder = GetRegister();
+        move_mem_reg(FRAME, EBP, array_holder->GetRegister());
+        add_imm_reg(holder->GetOperand() + VALUE_OFFSET, array_holder->GetRegister());
+        move_mem_reg(0, array_holder->GetRegister(), array_holder->GetRegister());        
+        break;
+	
+      default:
+        wcerr << L"internal error" << endl;
+        exit(1);
+        break;
+      }
+      // CheckNilDereference(array_holder->GetRegister());
+      
+      /* Algorithm:
+         long index = PopInt();
+         const long dim = instr->GetOperand();
+	
+         for(int i = 1; i < dim; i++) {
+         index *= array[i];
+         index += PopInt();
+         }
+      */
+      
+      if(holder) {
+        delete holder;
+        holder = NULL;
+      }
+
+      // get initial index
+      RegisterHolder* index_holder;
+      holder = working_stack.front();
+      working_stack.pop_front();
+      switch(holder->GetType()) {
+      case IMM_INT:
+        index_holder = GetRegister();
+        move_imm_reg(holder->GetOperand(), index_holder->GetRegister());
+        break;
+        
+      case REG_INT:
+        index_holder = holder->GetRegister();
+        break;
+        
+      case MEM_INT:
+        index_holder = GetRegister();
+        move_mem_reg(FRAME, EBP, index_holder->GetRegister());
+        add_imm_reg(holder->GetOperand() + VALUE_OFFSET, index_holder->GetRegister());
+        move_mem_reg(0, index_holder->GetRegister(), index_holder->GetRegister());        
+        break;
+	
+      default:
+        wcerr << L"internal error" << endl;
+        exit(1);
+        break;
+      }
+      
+      const long dim = instr->GetOperand();
+      for(int i = 1; i < dim; i++) {
+        // index *= array[i];
+        mul_mem_reg((i + 2) * sizeof(long), array_holder->GetRegister(), index_holder->GetRegister());
+        if(holder) {
+          delete holder;
+          holder = NULL;
+        }
+
+        holder = working_stack.front();
+        working_stack.pop_front();
+        switch(holder->GetType()) {
+        case IMM_INT:
+          add_imm_reg(holder->GetOperand(), index_holder->GetRegister());
+          break;
+
+        case REG_INT:
+          add_reg_reg(holder->GetRegister()->GetRegister(), index_holder->GetRegister());
+          break;
+
+        case MEM_INT: {
+          RegisterHolder* tmp_holder = GetRegister();
+          move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
+          add_imm_reg(holder->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
+          add_mem_reg(0, tmp_holder->GetRegister(), index_holder->GetRegister()); 
+          ReleaseRegister(tmp_holder);
+        }
+          break;
+
+        default:
+          break;
+        }
+      }
+      
+      /*
+      // bounds check
+      RegisterHolder* bounds_holder = GetRegister();
+      move_mem_reg(0, array_holder->GetRegister(), bounds_holder->GetRegister());
+      */ 
+      
+      mul_imm_reg(sizeof(Value), index_holder->GetRegister());
+      
+      /*
+      CheckArrayBounds(index_holder->GetRegister(), bounds_holder->GetRegister());
+      ReleaseRegister(bounds_holder);
+      */
+      
+      // skip metadata
+      add_imm_reg((instr->GetOperand() + 4) * sizeof(long), index_holder->GetRegister());
+      add_reg_reg(index_holder->GetRegister(), array_holder->GetRegister());
+      ReleaseRegister(index_holder);
+
+      delete holder;
+      holder = NULL;
+      
+      return array_holder;
+    }
+
     // Caculates the indices for
     // memory references.
     void ProcessIndices() {
@@ -527,7 +660,11 @@ namespace jit {
     void Epilog(int32_t imm);
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
+    void ProcessLoadIntElement(JitInstruction* instruction);
+    void ProcessLoadFloatElement(JitInstruction* instruction);
     void ProcessStore(JitInstruction* instruction);
+    void ProcessStoreIntElement(JitInstruction* instruction);
+    void ProcessStoreFloatElement(JitInstruction* instruction);
 		void ProcessIntToFloat();
 		void ProcessFloatToInt();
     void ProcessIntCalculation(JitInstruction* instruction);
