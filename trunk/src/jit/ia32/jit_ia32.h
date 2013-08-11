@@ -622,7 +622,7 @@ namespace jit {
       ReleaseRegister(bounds_holder);
       */
       
-      // skip metadata
+      // skip metadata (note extra padding in Windows)
       add_imm_reg((instr->GetOperand() + 4) * sizeof(long), index_holder->GetRegister());
       add_reg_reg(index_holder->GetRegister(), array_holder->GetRegister());
       ReleaseRegister(index_holder);

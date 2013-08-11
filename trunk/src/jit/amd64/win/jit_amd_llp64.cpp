@@ -586,10 +586,11 @@ void JitCompiler::ProcessIntToFloat() {
     break;
     
   case MEM_INT: {
-    RegisterHolder* holder = GetRegister();
-    move_mem_reg(FRAME, RBP, holder->GetRegister());
-    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
-    cvt_mem_xreg(0, holder->GetRegister(), holder->GetRegister());
+    RegisterHolder* tmp_holder = GetRegister();
+    move_mem_reg(FRAME, RBP, tmp_holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
+    cvt_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());
+    ReleaseRegister(tmp_holder);
   }
     break;
 

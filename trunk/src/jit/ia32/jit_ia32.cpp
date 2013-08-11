@@ -552,7 +552,7 @@ void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
   working_stack.pop_front();
 
   // set element type
-  move_imm_mem(INT_VALUE, -sizeof(INT_T), elem_holder->GetRegister());
+  move_imm_mem(INT_VALUE, -VALUE_OFFSET, elem_holder->GetRegister());
 
   switch(left->GetType()) {
   case IMM_INT:
@@ -591,7 +591,7 @@ void JitCompiler::ProcessStoreFloatElement(JitInstruction* instr) {
   working_stack.pop_front();
   
   // set element type
-  move_imm_mem(FLOAT_VALUE, -sizeof(INT_T), elem_holder->GetRegister());
+  move_imm_mem(FLOAT_VALUE, -VALUE_OFFSET, elem_holder->GetRegister());
   
   switch(left->GetType()) {
   case IMM_FLOAT:
@@ -684,16 +684,16 @@ void JitCompiler::ProcessIntToFloat() {
     break;
     
   case MEM_INT: {
-    RegisterHolder* holder = GetRegister();
-    move_mem_reg(FRAME, EBP, holder->GetRegister());
-    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
-    cvt_mem_xreg(0, holder->GetRegister(), holder->GetRegister());
+    RegisterHolder* tmp_holder = GetRegister();
+    move_mem_reg(FRAME, EBP, tmp_holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, tmp_holder->GetRegister());
+    cvt_mem_xreg(0, tmp_holder->GetRegister(), holder->GetRegister());
+    ReleaseRegister(tmp_holder);
   }
     break;
 
   case REG_INT:
-    cvt_reg_xreg(left->GetRegister()->GetRegister(), 
-								 holder->GetRegister());
+    cvt_reg_xreg(left->GetRegister()->GetRegister(), holder->GetRegister());
     ReleaseRegister(left->GetRegister());
     break;
 
