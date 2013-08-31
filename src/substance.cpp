@@ -34,8 +34,6 @@
 #include "runtime.h"
 
 int main(int argc, const char* argv[]) {
-  wcout << "value: size=" << sizeof(Value) << endl;
-  /*
 	if(argc == 2) {
     // parse program
 		compiler::Parser parser(BytesToUnicode(argv[1]));
@@ -59,8 +57,7 @@ int main(int argc, const char* argv[]) {
     // clean up
     parser.DeleteProgram();
 	}
-  */  
-
+  
 	return 1;
   
 }

@@ -71,24 +71,26 @@ void Runtime::Run()
   wcout << L"========== Executing Code =========" << endl;
 #endif
 
-  // runtime variables
-  Value* locals = new Value[program->GetGlobal()->GetLocalCount()];
-  Value self;
-  self.type = CLS_VALUE;
-  self.value.ptr_value = NULL;
-  locals[0] = self;
-  Value left, right;
-
-  // tracing jit variables
+  // setup locals
+  const long local_size = program->GetGlobal()->GetLocalCount();
+  Value* locals = new Value[local_size];
+  memset(locals, local_size * sizeof(Value), 0);
+  
+  // initialize 'self'
+  locals[0].type = CLS_VALUE;
+  locals[0].value.ptr_value = NULL;
+  
+  // initialize JIT tracing
 #ifndef _NO_JIT
   stack<Instruction*> jit_jump_labels;
   INT_T jit_base_label = last_label_id + 1;
   INT_T jit_end_label;
   is_jump = false;
 #endif
-
-  // execute code
+  
+  // start execution
   is_recording = false;
+  Value left, right;
   size_t ip = 0;  
   bool halt = false;
   do {
@@ -250,7 +252,33 @@ void Runtime::Run()
       wcout << L"STOR_VAR: id=" << instruction->operand1 << endl;
 #endif
       left = PopValue();
-      locals[instruction->operand1] = left;
+      // copy value
+      locals[instruction->operand1].klass = left.klass;
+      switch(left.type) {
+      case BOOL_VALUE:
+        locals[instruction->operand1].type = BOOL_VALUE;
+        locals[instruction->operand1].value.int_value = left.value.int_value;
+        break;
+        
+      case INT_VALUE:
+        locals[instruction->operand1].type = INT_VALUE;
+        locals[instruction->operand1].value.int_value = left.value.int_value;
+        break;
+
+      case FLOAT_VALUE:        
+        locals[instruction->operand1].type = FLOAT_VALUE;
+        left.value.float_value = left.value.float_value;
+        break;
+
+      case UNINIT_VALUE:
+        locals[instruction->operand1].type = UNINIT_VALUE;
+        break;
+        
+      default:
+        wcerr << L"Invalid type" << endl;
+        exit(1);
+      }
+      
       // record JIT instructions
       if(is_recording) {
         // ensure the type hasn't changed

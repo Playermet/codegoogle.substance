@@ -1,3 +1,8 @@
 a = 12;
 b = 13;
-dump a + b;
+i := 0;
+while(i < 10) {
+	b = a + b + i;
+	i += 1;
+};
+dump b;
