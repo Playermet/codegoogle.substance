@@ -64,11 +64,11 @@ namespace std {
 using namespace std;
 
 class RuntimeClass;
-class Value;
+struct _Value;
 
 // prototype for JIT function
 namespace jit {
-  typedef long (*jit_fun_ptr)(Value* frame, void* inst_mem, void* cls_mem);
+  typedef long (*jit_fun_ptr)(struct _Value* frame, void* inst_mem, void* cls_mem);
 }
 
 // basic datatypes
@@ -168,29 +168,18 @@ typedef union _BaseValue {
 /****************************
 * 'Abstract' value type
 ****************************/
-class Value { 
-public:
+typedef struct _Value { 
   RuntimeType type;
-  BaseValue value;
   RuntimeClass* klass;
-
-  Value() {
-    klass = NULL;
-    type = UNINIT_VALUE;
-  }
-
-  Value(const Value &rhs) {
-    memcpy(this, &rhs, sizeof(Value));
-  }
-
-  Value& operator=(const Value &rhs) {
-    if(this != &rhs) {
-      memcpy(this, &rhs, sizeof(Value));
-    }
-
-    return *this;
-  }
-};
+  
+  union _value {
+    BYTE_T byte_value;
+    CHAR_T char_value;
+    INT_T int_value;
+    FLOAT_T float_value;
+    void* ptr_value;
+  } value;
+} Value;
 
 /****************************
 * Holder for runtime program
