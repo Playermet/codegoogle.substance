@@ -56,7 +56,7 @@
 #ifdef _WIN32
 #define VALUE_OFFSET sizeof(int32_t) * 2
 #else
-#define VALUE_OFFSET sizeof(int32_t)
+#define VALUE_OFFSET sizeof(int32_t) * 2
 #endif
 
 // register type
