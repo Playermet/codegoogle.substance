@@ -155,17 +155,6 @@ enum RuntimeType {
 };
 
 /****************************
-* Runtime values
-****************************/
-typedef union _BaseValue {
-  BYTE_T byte_value;
-  CHAR_T char_value;
-  INT_T int_value;
-  FLOAT_T float_value;
-  void* ptr_value;
-} BaseValue;
-
-/****************************
 * 'Abstract' value type
 ****************************/
 typedef struct _Value { 

@@ -52,12 +52,7 @@
 
 #define MAX_DBLS 64
 #define PAGE_SIZE 4096
-
-#ifdef _WIN32
-#define VALUE_OFFSET sizeof(int32_t) * 2
-#else
-#define VALUE_OFFSET sizeof(int32_t) * 2
-#endif
+#define VALUE_OFFSET 8
 
 // register type
 namespace jit {
