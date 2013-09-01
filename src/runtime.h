@@ -176,7 +176,13 @@ namespace runtime {
         exit(1);
       }
 
+      // check dimensions
       const INT_T dim = instruction->operand2;
+      if(array_meta[0] - 2 != dim) {
+        wcerr << L">>> Mismatch array dimensions <<<" << endl;
+        exit(1);
+      }
+
       // TODO: encode array with bounds
       for(INT_T i = 1; i < dim; i++) {
         index *= array_meta[i + 2];
