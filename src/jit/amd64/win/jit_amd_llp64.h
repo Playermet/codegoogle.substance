@@ -48,8 +48,8 @@ using namespace std;
 
 #define RED_ZONE -128  
 #define MAX_DBLS 64
-#define PAGE_OFFSET 24
-#define VALUE_OFFSET sizeof(long) * 2
+#define PAGE_OFFSET 26
+#define VALUE_OFFSET 16
 
 // register type
 namespace jit {
