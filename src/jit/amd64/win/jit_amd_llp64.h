@@ -869,6 +869,8 @@ namespace jit {
     void Epilog(long imm);
     void ProcessInstructions();
     void ProcessLoad(JitInstruction* instr);
+    void ProcessLoadIntElement(JitInstruction* instruction);
+    void ProcessLoadFloatElement(JitInstruction* instruction);
     void ProcessStore(JitInstruction* instruction);
     void ProcessStoreIntElement(JitInstruction* instruction);
     void ProcessStoreFloatElement(JitInstruction* instruction);
