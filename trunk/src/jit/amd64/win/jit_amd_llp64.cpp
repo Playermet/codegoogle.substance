@@ -176,6 +176,20 @@ void JitCompiler::ProcessInstructions() {
 #endif
       ProcessLoad(instr);
       break;
+
+    case LOAD_INT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"LOAD_INT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessLoadIntElement(instr);
+      break;
+      
+    case LOAD_FLOAT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"LOAD_FLOAT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessLoadFloatElement(instr);
+      break;
     
       // store value
     case STOR_INT_VAR:
@@ -426,6 +440,20 @@ void JitCompiler::ProcessLoad(JitInstruction* instr) {
     delete left;
     left = NULL;
   }
+}
+
+void JitCompiler::ProcessLoadIntElement(JitInstruction* instruction) {
+  RegisterHolder* elem_holder = ArrayIndex(instruction);
+  move_mem_reg(0, elem_holder->GetRegister(), elem_holder->GetRegister());
+  working_stack.push_front(new RegInstr(elem_holder));
+}
+
+void JitCompiler::ProcessLoadFloatElement(JitInstruction* instruction) {
+  RegisterHolder* elem_holder = ArrayIndex(instruction);
+  RegisterHolder* holder = GetXmmRegister();
+  move_mem_xreg(0, elem_holder->GetRegister(), holder->GetRegister());
+  working_stack.push_front(new RegInstr(holder));
+  ReleaseRegister(elem_holder);
 }
 
 void JitCompiler::ProcessStore(JitInstruction* instr) {

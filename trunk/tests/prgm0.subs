@@ -1,4 +1,3 @@
-#~
 a = 12;
 b = 13;
 i := 0;
@@ -12,15 +11,12 @@ dump b;
 end = 5;
 aa = Array->New[2,end];
 i := 0;
+aa[1,3] = 113;
 while(i < end) {
-  aa[0,i] = i;
-  aa[1,i] = i * i;
+  aa[0,i] = aa[1,3];
+  aa[1,i] = aa[1,3] * i;
   i += 1;
 };
 dump aa[0,0];
 dump aa[1,end - 1];
-~#
 
-aa = Array->New[2,8];
-aa[0,1] = 101;
-aa[1,7] = 321;
