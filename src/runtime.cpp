@@ -267,7 +267,12 @@ void Runtime::Run()
 
       case FLOAT_VALUE:        
         locals[instruction->operand1].type = FLOAT_VALUE;
-        left.value.float_value = left.value.float_value;
+        locals[instruction->operand1].value.float_value = left.value.float_value;
+        break;      
+
+      case ARY_VALUE:
+        locals[instruction->operand1].type = ARY_VALUE;
+        locals[instruction->operand1].value.ptr_value = left.value.ptr_value;
         break;
 
       case UNINIT_VALUE:
