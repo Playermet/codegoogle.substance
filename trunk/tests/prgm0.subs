@@ -6,3 +6,15 @@ while(i < 10) {
 	i += 1;
 };
 dump b;
+
+# end = 15;
+end = 5;
+aa = Array->New[2,end];
+i := 0;
+while(i < end) {
+  aa[0,i] = i;
+  aa[1,i] = i * i;
+  i += 1;
+};
+dump aa[0,0];
+dump aa[1,end - 1];

@@ -192,6 +192,20 @@ void JitCompiler::ProcessInstructions() {
 #endif
       ProcessStore(instr);
       break;
+
+    case STOR_INT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"STOR_INT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessStoreIntElement(instr);
+      break;
+
+    case STOR_FLOAT_ARY_ELM:
+#ifdef _DEBUG
+      std::wcout << L"STOR_FLOAT_ARY_ELM: regs=" << aval_regs.size() << L"," << aux_regs.size() << std::endl;
+#endif
+      ProcessStoreFloatElement(instr);
+      break;
 			
       // mathematical
     case AND_INT:
@@ -529,6 +543,91 @@ void JitCompiler::ProcessStore(JitInstruction* instr) {
     ReleaseRegister(addr_holder);
   }
 
+  delete left;
+  left = NULL;
+}
+
+void JitCompiler::ProcessStoreIntElement(JitInstruction* instr) {
+  RegisterHolder* elem_holder = ArrayIndex(instr);
+  RegInstr* left = working_stack.front();
+  working_stack.pop_front();
+
+  // set element type
+  move_imm_mem(INT_VALUE, -VALUE_OFFSET, elem_holder->GetRegister());
+
+  switch(left->GetType()) {
+  case IMM_INT:
+    move_imm_mem(left->GetOperand(), 0, elem_holder->GetRegister());
+    break;
+
+  case MEM_INT: {
+    RegisterHolder* holder = GetRegister();
+    move_mem_reg(FRAME, RBP, holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+    move_mem_reg(0, holder->GetRegister(), holder->GetRegister());    
+    move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseRegister(holder);
+  }
+    break;
+
+  case REG_INT: {
+    RegisterHolder* holder = left->GetRegister();
+    move_reg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseRegister(holder);
+  }
+    break;
+
+  default:
+    break;
+  }
+  ReleaseRegister(elem_holder);
+  
+  delete left;
+  left = NULL;
+}
+
+void JitCompiler::ProcessStoreFloatElement(JitInstruction* instr) {
+  RegisterHolder* elem_holder = ArrayIndex(instr);
+  RegInstr* left = working_stack.front();
+  working_stack.pop_front();
+  
+  // set element type
+  move_imm_mem(FLOAT_VALUE, -VALUE_OFFSET, elem_holder->GetRegister());
+  
+  switch(left->GetType()) {
+  case IMM_FLOAT:
+    move_imm_memx(left, 0, elem_holder->GetRegister());
+    break;
+    
+  case MEM_FLOAT: {
+    RegisterHolder* holder = GetXmmRegister();
+    move_mem_reg(FRAME, RBP, holder->GetRegister());
+    add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
+    move_mem_reg(0, holder->GetRegister(), holder->GetRegister());    
+    move_xreg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseXmmRegister(holder);
+
+    /*
+    RegisterHolder* holder = GetXmmRegister();
+    move_mem_xreg(left->GetOperand(), RBP, holder->GetRegister());
+    move_xreg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseXmmRegister(holder);
+    */
+  }
+    break;
+    
+  case REG_FLOAT: {
+    RegisterHolder* holder = left->GetRegister();
+    move_xreg_mem(holder->GetRegister(), 0, elem_holder->GetRegister());
+    ReleaseXmmRegister(holder);
+  }
+    break;
+    
+  default:
+    break;
+  }
+  ReleaseRegister(elem_holder);
+  
   delete left;
   left = NULL;
 }
