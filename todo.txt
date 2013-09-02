@@ -19,3 +19,6 @@ New - Will create a new array i.e. NEW_ARRAY (operands); if link-list based NEW_
 Add -
 Remove - ?
 Insert - ?
+---------------
+* JIT code to handle data type conversions
+* Line numbers for runtime errors

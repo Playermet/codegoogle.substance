@@ -20,3 +20,4 @@ while(i < end) {
 dump aa[0,0];
 dump aa[1,end - 1];
 
+var x;
