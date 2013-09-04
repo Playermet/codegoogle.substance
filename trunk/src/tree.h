@@ -805,13 +805,15 @@ namespace compiler {
     ExpressionList* parameters;
     StatementList* statements;
     SymbolTable* symbol_table;
+    bool is_new;
 		
   public:
 	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-                   ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
+                   ExpressionList* parameters, StatementList* statements, bool is_new) : ParseNode(file_name, line_num) {
 			this->name = name;
       this->parameters = parameters;
       this->statements = statements;
+      this->is_new = is_new;
       symbol_table = NULL;
     }
 		
@@ -1118,8 +1120,8 @@ namespace compiler {
     }
     
     ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-                                 ExpressionList* parameters, StatementList* statements) {
-      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements);
+                                 ExpressionList* parameters, StatementList* statements, bool is_new) {
+      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements, is_new);
       nodes.push_back(tmp);
       return tmp;
     }

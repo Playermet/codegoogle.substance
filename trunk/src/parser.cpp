@@ -177,11 +177,13 @@ ParsedProgram* Parser::Parse()
 			}
     }
 		// parse function
-    else if(Match(TOKEN_FUNC_ID)) {
+    else if(Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID)) {
+      const bool is_new = Match(TOKEN_NEW_ID);
+
 			// new scope for function level statements
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
-      ParsedFunction* function = ParseFunction(0);
+      ParsedFunction* function = ParseFunction(0, is_new);
       if(function) {
         function->SetSymbolTable(symbol_table);
         symbol_table = prev_symbol_table;			
@@ -275,7 +277,7 @@ ParsedClass* Parser::ParseClass(int depth)
     }
     // functions
     else {
-      ParsedFunction* function = ParseFunction(depth + 1);
+      ParsedFunction* function = ParseFunction(false, depth + 1);
       if(!function) {
         return NULL;
       }
@@ -296,7 +298,7 @@ ParsedClass* Parser::ParseClass(int depth)
 /****************************
  * Parses a function
  ****************************/
-ParsedFunction* Parser::ParseFunction(int depth)
+ParsedFunction* Parser::ParseFunction(bool is_new, int depth)
 {
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
@@ -307,19 +309,25 @@ ParsedFunction* Parser::ParseFunction(int depth)
 	
 	NextToken();
 	
-  if(!Match(TOKEN_COLON)) {
-		ProcessError(TOKEN_COLON);
-		return NULL;
-	}
-  NextToken();
+  wstring name;
+  if(is_new) {
+    name = L"New";
+  }
+  else {
+    if(!Match(TOKEN_COLON)) {
+		  ProcessError(TOKEN_COLON);
+		  return NULL;
+	  }
+    NextToken();
 
-  if(!Match(TOKEN_IDENT)) {
-		ProcessError(TOKEN_IDENT);
-		return NULL;
-	}
-  const wstring &name = scanner->GetToken()->GetIdentifier();
-	NextToken();
-
+    if(!Match(TOKEN_IDENT)) {
+		  ProcessError(TOKEN_IDENT);
+		  return NULL;
+	  }
+    name = scanner->GetToken()->GetIdentifier();
+	  NextToken();
+  }
+    
   symbol_table->NewScope();
 
   ExpressionList* parameters = ParseDeclarationParameters(depth + 1);
@@ -330,7 +338,7 @@ ParsedFunction* Parser::ParseFunction(int depth)
 
   symbol_table->PreviousScope();
 
-  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements);
+  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements, is_new);
 }
 
 /****************************
