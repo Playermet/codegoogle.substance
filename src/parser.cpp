@@ -177,13 +177,11 @@ ParsedProgram* Parser::Parse()
 			}
     }
 		// parse function
-    else if(Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID)) {
-      const bool is_new = Match(TOKEN_NEW_ID);
-
+    else if(Match(TOKEN_FUNC_ID)) {
 			// new scope for function level statements
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
-      ParsedFunction* function = ParseFunction(0, is_new);
+      ParsedFunction* function = ParseFunction(false, 0);
       if(function) {
         function->SetSymbolTable(symbol_table);
         symbol_table = prev_symbol_table;			
@@ -249,9 +247,9 @@ ParsedClass* Parser::ParseClass(int depth)
   NextToken();
 
   StatementList* declarations = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
-  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VARS_ID) || Match(TOKEN_FUNC_ID))) {
+  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VAR_ID) || Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID))) {
     // variables
-    if(Match(TOKEN_VARS_ID)) {
+    if(Match(TOKEN_VAR_ID)) {
       NextToken();
       while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
         Statement* declaration = ParseDeclaration(depth + 1);
@@ -276,8 +274,9 @@ ParsedClass* Parser::ParseClass(int depth)
       NextToken();
     }
     // functions
-    else {
-      ParsedFunction* function = ParseFunction(false, depth + 1);
+    else if(Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID)) {
+      const bool is_new = Match(TOKEN_NEW_ID);
+      ParsedFunction* function = ParseFunction(is_new, depth + 1);
       if(!function) {
         return NULL;
       }
@@ -491,9 +490,30 @@ Statement* Parser::ParseStatement(int depth)
     break;
 
 		// var
-	case TOKEN_VAR_ID:
+	case TOKEN_VAR_ID: {
+    Declarations* declarations = TreeFactory::Instance()->MakeDeclarations(file_name, line_num);
+    NextToken();
+    while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
+      Statement* declaration = ParseDeclaration(depth + 1);
+      if(!declaration) {
+        return NULL;
+      }
+      // declarations->AddStatement(declaration);
+      if(!Match(TOKEN_SEMI_COLON) && !Match(TOKEN_COMMA)) {
+        ProcessError(L"Expected ',' or ';'", declarations);
+        return NULL;
+      } 
+        
+      if(Match(TOKEN_COMMA)) {
+        NextToken();
+      } 
+    } 
+    statement = declarations;
+/*
     NextToken();
 		statement = ParseDeclaration(depth + 1);
+*/
+    }
 		break;
 		    
     // value dump
