@@ -1,0 +1,17 @@
+f := Foo->New();
+
+class Foo {
+  vars a = 10, b = 5;
+  
+  New() {
+  }
+  
+  func : Fun1() {
+    var x = 10;
+    return 3 + x;
+  }
+  
+  func : Fun2() {
+    return 4 + 3;
+  }
+}
