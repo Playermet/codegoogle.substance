@@ -521,6 +521,7 @@ namespace compiler {
 	  WHILE_STATEMENT,
     FOR_STATEMENT,
 		DECLARATION_STATEMENT,
+    DECLARATIONS_STATEMENT,
     RETURN_STATEMENT,
     DUMP_STATEMENT
   };
@@ -546,6 +547,7 @@ namespace compiler {
    ****************************/
   class StatementList : public ParseNode {
     friend class TreeFactory;
+    friend class Declarations;
     vector<Statement*> statements;
   
     StatementList(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
@@ -579,6 +581,29 @@ namespace compiler {
 		
     const StatementType GetStatementType() {
       return DECLARATION_STATEMENT;
+    }
+  };
+
+  /****************************
+   * Declaration statement
+   ****************************/
+  class Declarations : public Statement {
+    friend class TreeFactory;
+		StatementList* declarations;
+
+   public:
+		Declarations(const wstring &file_name, const unsigned int line_num) 
+			: Statement(file_name, line_num) {
+			this->declarations = new StatementList(file_name, line_num);
+    }
+
+    ~Declarations() {
+      delete this->declarations;
+      this->declarations = NULL;
+    }
+		
+    const StatementType GetStatementType() {
+      return DECLARATIONS_STATEMENT;
     }
   };
 
@@ -1128,6 +1153,12 @@ namespace compiler {
 
 		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, const wstring &variable) {
       Declaration* tmp = new Declaration(file_name, line_num, variable);
+      statements.push_back(tmp);
+      return tmp;
+    }
+
+    Declarations* MakeDeclarations(const wstring &file_name, const unsigned int line_num) {
+      Declarations* tmp = new Declarations(file_name, line_num);
       statements.push_back(tmp);
       return tmp;
     }

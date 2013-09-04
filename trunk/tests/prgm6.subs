@@ -1,7 +1,7 @@
 f := Foo->New();
 
 class Foo {
-  vars a = 10, b = 5;
+  var a = 10, b = 5;
   
   New() {
   }
@@ -12,6 +12,7 @@ class Foo {
   }
   
   func : Fun2() {
+    var j, o, n;
     return 4 + 3;
   }
 }
