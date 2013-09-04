@@ -1,5 +1,5 @@
 /***************************************************************************
- * Debugger parse tree.
+ * Language parse tree.
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
