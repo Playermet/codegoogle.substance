@@ -151,7 +151,7 @@ ParsedProgram* Parser::Parse()
 	symbol_table = new SymbolTable;
 	SymbolTable* prev_symbol_table;
 	
-  StatementList* statements = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
+  StatementList* global_statements = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
 	
 	// scope for global statements
   symbol_table->NewScope();
@@ -163,6 +163,7 @@ ParsedProgram* Parser::Parse()
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
       ParsedClass* klass = ParseClass(0);
+      current_klass = klass;
       if(klass) {
         klass->SetSymbolTable(symbol_table);
         symbol_table = prev_symbol_table;			
@@ -182,6 +183,7 @@ ParsedProgram* Parser::Parse()
 			prev_symbol_table = symbol_table;			
 			symbol_table = new SymbolTable;			
       ParsedFunction* function = ParseFunction(false, 0);
+      current_function = function;
       if(function) {
         function->SetSymbolTable(symbol_table);
         symbol_table = prev_symbol_table;			
@@ -202,10 +204,12 @@ ParsedProgram* Parser::Parse()
         DeleteProgram();
         return NULL;
       }
-      statements->AddStatement(statement);
+      global_statements->AddStatement(statement);
     }
+    current_klass = NULL;
+    current_function = NULL;
   }
-  program->SetGlobal(statements);
+  program->SetGlobal(global_statements);
   
 	// clean up symbol table
   symbol_table->PreviousScope();
@@ -252,7 +256,7 @@ ParsedClass* Parser::ParseClass(int depth)
     if(Match(TOKEN_VAR_ID)) {
       NextToken();
       while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
-        Declaration* declaration = static_cast<Declaration*>(ParseDeclaration(depth + 1));
+         Declaration* declaration = static_cast<Declaration*>(ParseDeclaration(INST_SCOPE, depth + 1));
         if(!declaration) {
           return NULL;
         }
@@ -361,7 +365,7 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
 		  ProcessError(L"Variable already declared in this scope");
 		  return NULL;
 	  }	
-    symbol_table->AddEntry(identifier);
+    symbol_table->AddEntry(identifier, LOCAL_SCOPE);
     Reference* parameter = ParseReference(identifier, depth + 1);
     if(!parameter) {
       return NULL;
@@ -494,7 +498,7 @@ Statement* Parser::ParseStatement(int depth)
     Declarations* declarations = TreeFactory::Instance()->MakeDeclarations(file_name, line_num);
     NextToken();
     while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
-      Statement* declaration = ParseDeclaration(depth + 1);
+      Statement* declaration = ParseDeclaration(LOCAL_SCOPE, depth + 1);
       if(!declaration) {
         return NULL;
       }
@@ -540,7 +544,7 @@ Statement* Parser::ParseStatement(int depth)
 /****************************
  * Parses a declaration
  ****************************/
-Statement* Parser::ParseDeclaration(int depth)
+Statement* Parser::ParseDeclaration(ScopeType scope, int depth)
 {
 	const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
@@ -567,14 +571,14 @@ Statement* Parser::ParseDeclaration(int depth)
 	}
 
   // TODO: get fully qualified name
-	const wstring identifier = scanner->GetToken()->GetIdentifier();
+	const wstring identifier = GetQualifiedName();
 	NextToken(); 
 		
 	if(symbol_table->HasEntry(identifier)) {
 		ProcessError(L"Variable already declared in this scope");
 		return NULL;
 	}	
-	symbol_table->AddEntry(identifier); 
+	symbol_table->AddEntry(identifier, scope); 
 	
 	return TreeFactory::Instance()->MakeDeclarationStatement(file_name, line_num, identifier);
 }
@@ -1202,7 +1206,8 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
     if(!Match(TOKEN_ASSESSOR)) {
       // add reference to table if it doesn't exist
       if(!symbol_table->HasEntry(identifier)) {
-        symbol_table->AddEntry(identifier);
+// TODO: resolve symbol position before emitting
+//        symbol_table->AddEntry(identifier);
       }	
       reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, symbol_table->GetEntry(identifier));
     }
