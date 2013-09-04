@@ -565,6 +565,8 @@ Statement* Parser::ParseDeclaration(int depth)
 		ProcessError(TOKEN_IDENT);
 		return NULL;
 	}
+
+  // TODO: get fully qualified name
 	const wstring identifier = scanner->GetToken()->GetIdentifier();
 	NextToken(); 
 		
