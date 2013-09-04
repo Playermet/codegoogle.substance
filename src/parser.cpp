@@ -246,17 +246,17 @@ ParsedClass* Parser::ParseClass(int depth)
   }
   NextToken();
 
-  StatementList* declarations = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
+  Declarations* declarations = TreeFactory::Instance()->MakeDeclarations(file_name, line_num);
   while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VAR_ID) || Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID))) {
     // variables
     if(Match(TOKEN_VAR_ID)) {
       NextToken();
       while(!Match(TOKEN_END_OF_STREAM) && !Match(TOKEN_SEMI_COLON)) {
-        Statement* declaration = ParseDeclaration(depth + 1);
+        Declaration* declaration = static_cast<Declaration*>(ParseDeclaration(depth + 1));
         if(!declaration) {
           return NULL;
         }
-        declarations->AddStatement(declaration);
+        declarations->AddDeclaration(declaration);
         if(!Match(TOKEN_SEMI_COLON) && !Match(TOKEN_COMMA)) {
           ProcessError(L"Expected ',' or ';'", declarations);
           return NULL;
@@ -509,11 +509,7 @@ Statement* Parser::ParseStatement(int depth)
       } 
     } 
     statement = declarations;
-/*
-    NextToken();
-		statement = ParseDeclaration(depth + 1);
-*/
-    }
+  }
 		break;
 		    
     // value dump

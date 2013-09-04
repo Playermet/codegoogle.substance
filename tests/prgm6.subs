@@ -1,4 +1,6 @@
 f := Foo->New();
+g = f->Fun2();
+dump g;
 
 class Foo {
   var a = 10, b = 5;

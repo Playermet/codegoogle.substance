@@ -601,7 +601,15 @@ namespace compiler {
       delete this->declarations;
       this->declarations = NULL;
     }
+
+    void AddDeclaration(Declaration* declaration) {
+      declarations->AddStatement(declaration);
+    }
 		
+    StatementList* GetDeclarations() {
+      return declarations;
+    }
+
     const StatementType GetStatementType() {
       return DECLARATIONS_STATEMENT;
     }
@@ -878,7 +886,7 @@ namespace compiler {
     SymbolTable* symbol_table;
     unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
-    StatementList* declarations;
+    Declarations* declarations;
     
   public:
     ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
@@ -925,11 +933,11 @@ namespace compiler {
       return functions;
     }
 
-    void SetDeclarations(StatementList* declarations) {
+    void SetDeclarations(Declarations* declarations) {
       this->declarations = declarations;
     }
     
-    StatementList* GetDeclarations() {
+    Declarations* GetDeclarations() {
       return declarations;
     }
   };
