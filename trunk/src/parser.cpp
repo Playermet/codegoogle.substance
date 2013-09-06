@@ -199,6 +199,7 @@ ParsedProgram* Parser::Parse()
     }
 		// parse global statement
     else {
+      // TODO: create a global function
       Statement* statement = ParseStatement(0);
       if(!statement) {
         DeleteProgram();
@@ -305,11 +306,7 @@ ParsedFunction* Parser::ParseFunction(bool is_new, int depth)
 {
   const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
-
-#ifdef _DEBUG
-	Show(L"Function", depth);
-#endif
-	
+  	
 	NextToken();
 	
   wstring name;
@@ -330,6 +327,10 @@ ParsedFunction* Parser::ParseFunction(bool is_new, int depth)
     name = scanner->GetToken()->GetIdentifier();
 	  NextToken();
   }
+
+#ifdef _DEBUG
+	Show(L"Function: name=" + name, depth);
+#endif
     
   symbol_table->NewScope();
 
@@ -360,7 +361,7 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
   NextToken();
 
   while(!Match(TOKEN_END_OF_STREAM) && Match(TOKEN_IDENT)) {
-    const wstring identifier = scanner->GetToken()->GetIdentifier();
+    const wstring identifier = GetQualifiedName();
     if(symbol_table->HasEntry(identifier)) {
 		  ProcessError(L"Variable already declared in this scope");
 		  return NULL;
@@ -555,7 +556,13 @@ Statement* Parser::ParseDeclaration(ScopeType scope, int depth)
 	
 	// variable assignment
 	if(Match(TOKEN_IDENT) && Match(TOKEN_ASSIGN, SECOND_INDEX)) {
-		Reference* reference = ParseReference(scanner->GetToken()->GetIdentifier(), depth + 1);
+    const wstring identifier = GetQualifiedName();
+    if(symbol_table->HasEntry(identifier)) {
+        ProcessError(L"Variable already declared");
+        return NULL;
+    }
+    symbol_table->AddEntry(identifier, LOCAL_SCOPE);
+		Reference* reference = ParseReference(identifier, depth + 1);
 		if(!reference) {
 			return NULL;
 		}
@@ -1198,26 +1205,26 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
 
 	NextToken();
 	
-	// scalar or array reference
 	bool is_function_call = false;
-	Reference* reference;
-	if(!Match(TOKEN_OPEN_PAREN)) {
-    // check to see if the reference is nested
-    if(!Match(TOKEN_ASSESSOR)) {
-      // add reference to table if it doesn't exist
-      if(!symbol_table->HasEntry(identifier)) {
-// TODO: resolve symbol position before emitting
-//        symbol_table->AddEntry(identifier);
-      }	
-      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, symbol_table->GetEntry(identifier));
+	Reference* reference = NULL;
+
+  // function call
+	if(Match(TOKEN_OPEN_PAREN)) {
+    reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+		is_function_call = true;
+	}
+  // scalar or array reference
+	else {
+    // TODO: will nested references be supported
+    if(Match(TOKEN_ASSESSOR)) {
+      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, -1);      
     }
     else {
-      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, -1);
+      // account for unidentified variable
+      if(!symbol_table->HasEntry(identifier)) {
+        current_function->AddUnidentifiedVariable(identifier);        
+      }
     }
-	}
-	else {
-		reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
-		is_function_call = true;
 	}
 	
 	// array reference

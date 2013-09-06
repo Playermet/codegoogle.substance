@@ -3,18 +3,18 @@ g = f->Fun2();
 dump g;
 
 class Foo {
-  var a = 10, b = 5;
-  
   New() {
   }
   
-  func : Fun1() {
+  func : Fun1(x,y) {
     var x = 10;
-    return 3 + x;
+    return 3 + x * a;
   }
   
   func : Fun2() {
     var j, o, n;
-    return 4 + 3;
+    return 4 + 3 * b;
   }
+  
+  var a = 10, b = 5;
 }
