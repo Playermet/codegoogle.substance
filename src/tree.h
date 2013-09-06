@@ -838,6 +838,7 @@ namespace compiler {
     ExpressionList* parameters;
     StatementList* statements;
     SymbolTable* symbol_table;
+    vector<const wstring> unidentified_variables;
     bool is_new;
 		
   public:
@@ -867,6 +868,14 @@ namespace compiler {
 
     inline StatementList* GetStatements() {
       return statements;
+    }
+
+    void AddUnidentifiedVariable(const wstring &identifier) {
+      unidentified_variables.push_back(identifier);
+    }
+
+    vector<const wstring> GetUnidentifiedVariables() {
+      return unidentified_variables;
     }
 
     void SetSymbolTable(SymbolTable* symbol_table) {
