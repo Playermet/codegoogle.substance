@@ -156,7 +156,9 @@ ParsedProgram* Parser::Parse()
   ParsedFunction* global_function = TreeFactory::Instance()->MakeFunction(file_name, -1, L"#global#", false);	
   StatementList* global_block = TreeFactory::Instance()->MakeStatementList(file_name, -1); 
   while(!Match(TOKEN_END_OF_STREAM)) {
+    //
     // parse class
+    //
     if(Match(TOKEN_CLASS_ID)) {
       // new scope for function level statements
 			prev_symbol_table = symbol_table;			
@@ -171,12 +173,18 @@ ParsedProgram* Parser::Parse()
         DeleteProgram();
         return NULL;
       }
-      // add function
+
+      // TODO: resolve unidentified variables
+      //...
+
+      // add class
 			if(!program->AddClass(klass)) {
 				ProcessError(L"Class with the same name already exists", klass);
 			}
     }
+    //
 		// parse function
+    //
     else if(Match(TOKEN_FUNC_ID)) {
 			// new scope for function level statements
 			prev_symbol_table = symbol_table;			
@@ -196,11 +204,11 @@ ParsedProgram* Parser::Parse()
 				ProcessError(L"Function with the same name already exists", function);
 			}
     }
+    //
 		// parse global statement
+    //
     else {
       current_function = global_function;
-      
-      // TODO: create a global function
       Statement* statement = ParseStatement(0);
       if(!statement) {
         DeleteProgram();
@@ -211,15 +219,19 @@ ParsedProgram* Parser::Parse()
     current_function = NULL;
     current_klass = NULL;
   }
-  // TODO: update code...
-  // program->SetGlobal(global_statements);
-  global_function->SetStatements(global_block);
   
+  // set global function
+  global_function->SetStatements(global_block);
+	program->SetGlobalFunction(global_function);
+
+  // TODO: resolve unidentified variables
+  //...
+
 	// clean up symbol table
   symbol_table->PreviousScope();
 	program->SetGlobalSymbolTable(symbol_table);
 	symbol_table = NULL;
-	
+
   if(NoErrors()) {
     return program;
   }
@@ -370,7 +382,7 @@ ExpressionList* Parser::ParseDeclarationParameters(int depth)
   NextToken();
 
   while(!Match(TOKEN_END_OF_STREAM) && Match(TOKEN_IDENT)) {
-    const wstring identifier = GetQualifiedName();
+    const wstring &identifier = GetQualifiedName();
     if(symbol_table->HasEntry(identifier)) {
 		  ProcessError(L"Variable already declared in this scope");
 		  return NULL;
@@ -453,7 +465,8 @@ Statement* Parser::ParseStatement(int depth)
   switch(scanner->GetToken()->GetType()) {
     // reference type
   case TOKEN_IDENT: {
-		Reference* reference = ParseReference(scanner->GetToken()->GetIdentifier(), depth + 1);
+    const wstring &identifier = GetQualifiedName();
+		Reference* reference = ParseReference(identifier, depth + 1);
 		if(!reference) {
 			return NULL;
 		}		
@@ -565,7 +578,7 @@ Statement* Parser::ParseDeclaration(ScopeType scope, int depth)
 	
 	// variable assignment
 	if(Match(TOKEN_IDENT) && Match(TOKEN_ASSIGN, SECOND_INDEX)) {
-    const wstring identifier = GetQualifiedName();
+    const wstring &identifier = GetQualifiedName();
     if(symbol_table->HasEntry(identifier)) {
         ProcessError(L"Variable already declared");
         return NULL;
@@ -587,7 +600,7 @@ Statement* Parser::ParseDeclaration(ScopeType scope, int depth)
 	}
 
   // TODO: get fully qualified name
-	const wstring identifier = GetQualifiedName();
+	const wstring &identifier = GetQualifiedName();
 	NextToken(); 
 		
 	if(symbol_table->HasEntry(identifier)) {
@@ -1082,7 +1095,7 @@ Expression* Parser::ParseSimpleExpression(int depth)
   Expression* expression = NULL;
 
   if(Match(TOKEN_IDENT)) {
-    const wstring &identifier = scanner->GetToken()->GetIdentifier();
+    const wstring &identifier = GetQualifiedName();
     expression = ParseReference(identifier, depth + 1);
   }
   else if(Match(TOKEN_SELF_ID)) {
@@ -1214,39 +1227,31 @@ Reference* Parser::ParseReference(const wstring &identifier, int depth)
 
 	NextToken();
 	
-	bool is_function_call = false;
-	Reference* reference = NULL;
-
-  // function call
-	if(Match(TOKEN_OPEN_PAREN)) {
-    reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
-		is_function_call = true;
-	}
-  // scalar or array reference
-	else {
-    // TODO: will nested references be supported
-    if(Match(TOKEN_ASSESSOR)) {
-      reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier, -1);      
+	Reference* reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
+  
+  // check for function call
+  if(Match(TOKEN_OPEN_PAREN)) {
+    reference->SetCallingParameters(ParseCallingParameters(depth + 1));
+  }
+  // check variable
+  else {
+    const int entry_id = symbol_table->GetEntry(identifier);
+    if(entry_id > -1) {
+      // associate id
+      reference->SetId(entry_id);
     }
     else {
-      // account for unidentified variable
-      if(!symbol_table->HasEntry(identifier)) {
-        current_function->AddUnidentifiedVariable(identifier);        
-      }
+      // instance of method id, resolve later
+      current_function->AddUnidentifiedReference(reference);
     }
-	}
-	
-	// array reference
+  }
+  
+	// array index
   if(Match(TOKEN_OPEN_BRACKET)) {
     reference->SetIndices(ParseIndices(depth + 1));
   }
 	
-	// function call
-	if(is_function_call) {
-    reference->SetCallingParameters(ParseCallingParameters(depth + 1));
-  }
-	
-  // subsequent instance references
+	// subsequent instance references
   if(Match(TOKEN_ASSESSOR)) {
     ParseReference(reference, depth + 1);
   }
@@ -1267,11 +1272,11 @@ void Parser::ParseReference(Reference* reference, int depth)
   Reference* nested_reference = NULL;
   if(Match(TOKEN_IDENT)) {
     // identifier
-    const wstring &identifier = scanner->GetToken()->GetIdentifier();
+    const wstring &identifier = GetQualifiedName();
     NextToken();
     
 #ifdef _DEBUG
-    Show(L"Nested reference: name=" + identifier, depth);
+    Show(L"Reference (nested): name=" + identifier, depth);
 #endif
     nested_reference = TreeFactory::Instance()->MakeReference(file_name, line_num, identifier);
   }
