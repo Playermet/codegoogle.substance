@@ -138,7 +138,6 @@ bool Parser::NoErrors()
  ****************************/
 ParsedProgram* Parser::Parse()
 {
-  const unsigned int line_num = GetLineNumber();
   const wstring &file_name = GetFileName();
 
 #ifdef _DEBUG
@@ -151,11 +150,11 @@ ParsedProgram* Parser::Parse()
 	symbol_table = new SymbolTable;
 	SymbolTable* prev_symbol_table;
 	
-  StatementList* global_statements = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
-	
 	// scope for global statements
   symbol_table->NewScope();
-	
+  
+  ParsedFunction* global_function = TreeFactory::Instance()->MakeFunction(file_name, -1, L"#global#", false);	
+  StatementList* global_block = TreeFactory::Instance()->MakeStatementList(file_name, -1); 
   while(!Match(TOKEN_END_OF_STREAM)) {
     // parse class
     if(Match(TOKEN_CLASS_ID)) {
@@ -199,18 +198,22 @@ ParsedProgram* Parser::Parse()
     }
 		// parse global statement
     else {
+      current_function = global_function;
+      
       // TODO: create a global function
       Statement* statement = ParseStatement(0);
       if(!statement) {
         DeleteProgram();
         return NULL;
       }
-      global_statements->AddStatement(statement);
+      global_block->AddStatement(statement);
     }
-    current_klass = NULL;
     current_function = NULL;
+    current_klass = NULL;
   }
-  program->SetGlobal(global_statements);
+  // TODO: update code...
+  // program->SetGlobal(global_statements);
+  global_function->SetStatements(global_block);
   
 	// clean up symbol table
   symbol_table->PreviousScope();
@@ -286,6 +289,7 @@ ParsedClass* Parser::ParseClass(int depth)
         return NULL;
       }
       klass->AddFunction(function);
+      current_function = NULL;
     }
   }
   klass->SetDeclarations(declarations);
@@ -331,7 +335,10 @@ ParsedFunction* Parser::ParseFunction(bool is_new, int depth)
 #ifdef _DEBUG
 	Show(L"Function: name=" + name, depth);
 #endif
-    
+
+  ParsedFunction* function = TreeFactory::Instance()->MakeFunction(file_name, line_num, name, is_new);
+  current_function = function;
+
   symbol_table->NewScope();
 
   ExpressionList* parameters = ParseDeclarationParameters(depth + 1);
@@ -339,10 +346,12 @@ ParsedFunction* Parser::ParseFunction(bool is_new, int depth)
   if(!parameters || !statements) {
     return NULL;
   }
-
+  function->SetParameters(parameters);
+  function->SetStatements(statements);
+  
   symbol_table->PreviousScope();
 
-  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements, is_new);
+  return function;
 }
 
 /****************************
