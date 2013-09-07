@@ -838,17 +838,17 @@ namespace compiler {
     ExpressionList* parameters;
     StatementList* statements;
     SymbolTable* symbol_table;
-    vector<const wstring> unidentified_variables;
+    vector<wstring> unidentified_variables;
     bool is_new;
 		
   public:
-	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-                   ExpressionList* parameters, StatementList* statements, bool is_new) : ParseNode(file_name, line_num) {
+	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name, bool is_new) 
+      : ParseNode(file_name, line_num) {
 			this->name = name;
-      this->parameters = parameters;
-      this->statements = statements;
       this->is_new = is_new;
-      symbol_table = NULL;
+      this->parameters = NULL;
+      this->statements = NULL;
+      this->symbol_table = NULL;
     }
 		
     ~ParsedFunction() {
@@ -862,8 +862,16 @@ namespace compiler {
 			return name;
 		}
 		
+    inline void SetParameters(ExpressionList* parameters) {
+      this->parameters = parameters;
+    }
+    
     inline ExpressionList* GetParameters() {
       return parameters;
+    }
+
+    inline void SetStatements(StatementList* statements) {
+      this->statements = statements;
     }
 
     inline StatementList* GetStatements() {
@@ -874,7 +882,7 @@ namespace compiler {
       unidentified_variables.push_back(identifier);
     }
 
-    vector<const wstring> GetUnidentifiedVariables() {
+    vector<wstring> GetUnidentifiedVariables() {
       return unidentified_variables;
     }
 
@@ -1161,9 +1169,8 @@ namespace compiler {
       return tmp;
     }
     
-    ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
-                                 ExpressionList* parameters, StatementList* statements, bool is_new) {
-      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements, is_new);
+    ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name, bool is_new) {
+      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, is_new);
       nodes.push_back(tmp);
       return tmp;
     }
