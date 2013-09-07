@@ -94,7 +94,7 @@ ExecutableProgram* Emitter::Emit()
   vector<Instruction*>* block_instructions = new vector<Instruction*>;
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
-  EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
+  EmitFunction(parsed_program->GetGlobalFunction()->GetStatements(), block_instructions, jump_table, leaders);
 #ifdef _DEBUG
   wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif

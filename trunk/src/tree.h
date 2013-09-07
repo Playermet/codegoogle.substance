@@ -407,17 +407,7 @@ namespace compiler {
 			calling_parameters = NULL;
     }
 	
-    Reference(const wstring &file_name, const unsigned int line_num, const wstring &n, int v) 
-		 : Expression(file_name, line_num) {
-      name = n;
-		  id = v;
-      ref_type = REF_TYPE;
-      reference	= NULL;
-      indices = NULL;
-			calling_parameters = NULL;
-    }
-		
-	  Reference(const wstring &file_name, const unsigned int line_num, const wstring &n)
+    Reference(const wstring &file_name, const unsigned int line_num, const wstring &n)
 		 : Expression(file_name, line_num) {
 			name = n;
 			id = -1;
@@ -489,6 +479,10 @@ namespace compiler {
 		bool IsMethodReference() {
 			return HasCallingParameters() || ref_type == NEW_OBJ_TYPE;
 		}
+
+    void SetId(int id) {
+		  this->id = id;
+	  }
 		
 	  int GetId() {
 		  return id;
@@ -838,7 +832,7 @@ namespace compiler {
     ExpressionList* parameters;
     StatementList* statements;
     SymbolTable* symbol_table;
-    vector<wstring> unidentified_variables;
+    vector<Reference*> unidentified_references;
     bool is_new;
 		
   public:
@@ -878,12 +872,12 @@ namespace compiler {
       return statements;
     }
 
-    void AddUnidentifiedVariable(const wstring &identifier) {
-      unidentified_variables.push_back(identifier);
+    void AddUnidentifiedReference(Reference *reference) {
+      unidentified_references.push_back(reference);
     }
 
-    vector<wstring> GetUnidentifiedVariables() {
-      return unidentified_variables;
+    vector<Reference*> GetUnidentifiedReferences() {
+      return unidentified_references;
     }
 
     void SetSymbolTable(SymbolTable* symbol_table) {
@@ -967,7 +961,7 @@ namespace compiler {
     vector<ParsedClass*> klasses;
     unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
-    StatementList* statements;
+    ParsedFunction* function;
     SymbolTable* symbol_table;
 		
   public:
@@ -1032,12 +1026,12 @@ namespace compiler {
       return functions;
     }
     
-    void SetGlobal(StatementList* statements) {
-      this->statements = statements;
+    void SetGlobalFunction(ParsedFunction* function) {
+      this->function = function;
     }
 
-    StatementList* GetGlobal() {
-      return statements;
+    ParsedFunction* GetGlobalFunction() {
+      return this->function;
     }
 
     void SetGlobalSymbolTable(SymbolTable* symbol_table) {
@@ -1243,7 +1237,6 @@ namespace compiler {
       return tmp;
 	  }
 
-    // TODO: implement
     Reference* MakeNew(const wstring &file_name, const unsigned int line_num) {
       Reference* tmp = new Reference(file_name, line_num, NEW_OBJ_TYPE);
       tmp->SetNew(true);
@@ -1251,14 +1244,7 @@ namespace compiler {
       return tmp;
 	  }
 	
-    Reference* MakeReference(const wstring &file_name, const unsigned int line_num, 
-													   const wstring &name, int id) {
-      Reference* tmp = new Reference(file_name, line_num, name, id);
-      references.push_back(tmp);
-      return tmp;
-    }
-		
-		Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
+    Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
       Reference* tmp = new Reference(file_name, line_num, name);
       references.push_back(tmp);
       return tmp;
