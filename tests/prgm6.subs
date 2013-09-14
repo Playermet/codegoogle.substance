@@ -1,32 +1,13 @@
-a := 10;
+c := C->New();
 
-#~
-var a = 10;
-a[0] := 13;
-a->b = 11;
-a(b);
-a(1)[2];
-~#
-
-#~
-f := Foo->New();
-g = f->Fun2();
-dump g;
-
-class Foo {
-  New() {
+class C {
+  New(x, y) {
+    @a = 10;
+    @b = 13;
   }
   
-  func : Fun1(x,y) {
-    var x = 10;
-    return 3 + x * a;
-  }
-  
-  func : Fun2() {
-    var j, o, n;
-    return 4 + 3 * b;
-  }
-  
-  var a = 10, b = 5;
+  Foo(a, b) {
+    @b := a * 2 * @b;
+    dump @b;
+   }
 }
-~#
