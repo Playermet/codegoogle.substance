@@ -366,6 +366,7 @@ void JitCompiler::ProcessInstructions() {
 			
 			// TODO:
 		default:
+      wcout << "???" << endl;
 			break;
     }
   }
