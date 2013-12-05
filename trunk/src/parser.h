@@ -47,8 +47,6 @@ namespace compiler {
 	  wstring input;
     Scanner* scanner;
 	  SymbolTable* symbol_table;
-    ParsedClass* current_klass;
-    ParsedFunction* current_function;
 	  map<ScannerTokenType, wstring> error_msgs;
     map<size_t, wstring> errors;
 	
@@ -84,24 +82,7 @@ namespace compiler {
       str << v;
       return str.str();
     }
-
-    const wstring GetQualifiedName() {
-      wstring name;
-
-      // append class name
-      if(current_klass) {
-        name += current_klass->GetName() + L':';
-      }
-      // append function name
-      if(current_function) {
-        name += current_function->GetName() + L':';
-      }
-      // append variable name
-      name += scanner->GetToken()->GetIdentifier();
-	    
-      return name;
-    }
-
+	
     // error processing
     void LoadErrorCodes();
     void ProcessError(const ScannerTokenType type);
@@ -112,10 +93,10 @@ namespace compiler {
 	
     // parsing operations
     ParsedClass* ParseClass(int depth);
-    ParsedFunction* ParseFunction(bool is_new, int depth);
+    ParsedFunction* ParseFunction(int depth);    
     ExpressionList* ParseDeclarationParameters(int depth);
     StatementList* ParseBlock(bool new_scope, int depth);
-		Statement* ParseDeclaration(ScopeType scope, int depth);
+		Statement* ParseDeclaration(int depth);
 	  Statement* ParseStatement(int depth);
     Statement* ParseIfElse(int depth);
 	  Statement* ParseWhile(int depth);
@@ -137,8 +118,6 @@ namespace compiler {
 		  this->input = input;
       LoadErrorCodes();
 		  scanner = new Scanner(input);
-      current_klass = NULL;
-      current_function = NULL;
     }
   
     ~Parser() {

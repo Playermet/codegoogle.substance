@@ -94,7 +94,7 @@ ExecutableProgram* Emitter::Emit()
   vector<Instruction*>* block_instructions = new vector<Instruction*>;
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
   set<size_t> leaders;
-  EmitFunction(parsed_program->GetGlobalFunction()->GetStatements(), block_instructions, jump_table, leaders);
+  EmitFunction(parsed_program->GetGlobal(), block_instructions, jump_table, leaders);
 #ifdef _DEBUG
   wcout << block_instructions->size() << L": " << L"return" << endl;
 #endif
@@ -206,7 +206,7 @@ void Emitter::EmitBlock(StatementList* block_statements, vector<Instruction*>* b
       EmitAssignment(static_cast<Assignment*>(statement), block_instructions, jump_table);
       break;
 			
-    case DECLARATIONS_STATEMENT:
+		case DECLARATION_STATEMENT:
 			break;
 			
     case RETURN_STATEMENT:
@@ -350,6 +350,12 @@ void Emitter::EmitIfElse(IfElse* if_else, vector<Instruction*>* block_instructio
   long next_label = NextStartId();
   
   // emit test
+
+  // emit expression
+  if(if_else->GetExpression()->GetExpressionType() == FUNCTION_CALL_EXPR) {
+    FunctionCall* function_call = static_cast<FunctionCall*>(if_else->GetExpression());
+    function_call->ReturnsValue(true);
+  }
 	EmitExpression(if_else->GetExpression(), block_instructions, jump_table);
 
   // basic 'if' statement

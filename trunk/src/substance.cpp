@@ -40,7 +40,6 @@ int main(int argc, const char* argv[]) {
     compiler::ParsedProgram* parsed_program = parser.Parse();    
     // emit code
     if(parsed_program) {
-/*
 			// emit and run code
       compiler::Emitter emitter(parsed_program); 
       ExecutableProgram* executable_program = emitter.Emit();
@@ -54,7 +53,6 @@ int main(int argc, const char* argv[]) {
       }
       // clean up
 			compiler::Emitter::ClearInstructions();
-*/
     }
     // clean up
     parser.DeleteProgram();
