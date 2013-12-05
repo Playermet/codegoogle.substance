@@ -1,3 +1,4 @@
+topCandidate = 1000;
 candidate := 2;
 while(candidate <= topCandidate) {
 	trialDivisor := 2;
