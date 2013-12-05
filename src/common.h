@@ -265,23 +265,14 @@ public:
 /****************************
 * Hierarchical symbol table
 ****************************/
-enum ScopeType {
-  LOCAL_SCOPE = -25,
-  INST_SCOPE,
-  CLS_SCOPE
-};
-
 class SymbolTable {
   deque<InnerTable*> table_hierarchy;
   vector<InnerTable*> all_tables;
-  INT_T local_id;
-  INT_T inst_id;
-  INT_T cls_id;
+  INT_T entry_id;
 
 public:
   SymbolTable() {
-    local_id = 1;
-    inst_id = cls_id = 0;
+    entry_id = 1;
   }
 
   ~SymbolTable() {
@@ -309,22 +300,9 @@ public:
     return false;
   }
 
-  bool AddEntry(const wstring &name, ScopeType scope) {
+  bool AddEntry(const wstring &name) {
     if(!table_hierarchy.empty()) {
-      switch(scope) {
-      case LOCAL_SCOPE:
-        table_hierarchy.front()->AddEntry(name, local_id++);
-        break;
-
-      case INST_SCOPE:
-        table_hierarchy.front()->AddEntry(name, inst_id++);
-        break;
-
-      case CLS_SCOPE:
-        table_hierarchy.front()->AddEntry(name, cls_id++);
-        break;
-      }
-
+      table_hierarchy.front()->AddEntry(name, entry_id++);
       return true;
     }
 
@@ -346,9 +324,8 @@ public:
     return GetEntry(name) > -1;
   }
 
-  // TODO: take function as parameter
   int GetEntryCount() {
-    return -1;
+    return entry_id;
   }
 };	
 

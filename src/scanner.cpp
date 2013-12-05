@@ -90,6 +90,7 @@ void Scanner::LoadKeywords()
   ident_map[L"class"] = TOKEN_CLASS_ID;
   ident_map[L"return"] = TOKEN_RETURN_ID;
   ident_map[L"class"] = TOKEN_CLASS_ID;
+  ident_map[L"vars"] = TOKEN_VARS_ID;	
   ident_map[L"func"] = TOKEN_FUNC_ID;
   ident_map[L"true"] = TOKEN_TRUE_LIT;
   ident_map[L"false"] = TOKEN_FALSE_LIT;
@@ -113,7 +114,8 @@ void Scanner::CheckIdentifier(int index)
   case TOKEN_CLASS_ID:
   case TOKEN_FUNC_ID:
 	case TOKEN_VAR_ID:
-  case TOKEN_IF_ID:
+  case TOKEN_VARS_ID:
+	case TOKEN_IF_ID:
   case TOKEN_ELSE_ID:
 	case TOKEN_WHILE_ID:
   case TOKEN_DUMP_ID:

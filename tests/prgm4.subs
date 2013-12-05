@@ -1,26 +1,25 @@
+func : IsPrime(n)
 {
-#    topCandidate := 1000000;
-  topCandidate := 900000;
-  
-  candidate := 2;
-  while(candidate <= topCandidate) {
-    trialDivisor := 2;
-    prime := 1;
-				
-    found := true;
-    while(trialDivisor * trialDivisor <= candidate & found) {
-      if(candidate % trialDivisor == 0) {
-        prime := 0;
-        found := false;
-      }
-      else {
-        trialDivisor += 1;
-      };
-    };
-    
-    if(found) {
-      dump candidate;
-    };
-    candidate += 1;
-  };
+	i = 2;
+ 
+	if (n == 2) {
+		return true;	
+	};
+ 
+	while (i < n) {
+		if (n % i == 0) {
+			return false;
+		};
+		i+=1;
+	};
+ 
+	return true;
 }
+
+i = 3;
+while(i < 100) {
+	if (IsPrime(i)) {
+		dump i;
+	};
+	i += 1;
+};

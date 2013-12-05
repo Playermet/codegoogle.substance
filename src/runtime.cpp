@@ -73,7 +73,7 @@ void Runtime::Run()
 
   // setup locals
   const long local_size = program->GetGlobal()->GetLocalCount();
-  Value* locals = new Value[local_size];
+  Value* locals = new Value[local_size + 1];
   memset(locals, local_size * sizeof(Value), 0);
   
   // initialize 'self'

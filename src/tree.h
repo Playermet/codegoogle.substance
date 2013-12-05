@@ -1,5 +1,5 @@
 /***************************************************************************
- * Language parse tree.
+ * Debugger parse tree.
  *
  * Copyright (c) 2013 Randy Hollines
  * All rights reserved.
@@ -407,7 +407,17 @@ namespace compiler {
 			calling_parameters = NULL;
     }
 	
-    Reference(const wstring &file_name, const unsigned int line_num, const wstring &n)
+    Reference(const wstring &file_name, const unsigned int line_num, const wstring &n, int v) 
+		 : Expression(file_name, line_num) {
+      name = n;
+		  id = v;
+      ref_type = REF_TYPE;
+      reference	= NULL;
+      indices = NULL;
+			calling_parameters = NULL;
+    }
+		
+	  Reference(const wstring &file_name, const unsigned int line_num, const wstring &n)
 		 : Expression(file_name, line_num) {
 			name = n;
 			id = -1;
@@ -479,10 +489,6 @@ namespace compiler {
 		bool IsMethodReference() {
 			return HasCallingParameters() || ref_type == NEW_OBJ_TYPE;
 		}
-
-    void SetId(int id) {
-		  this->id = id;
-	  }
 		
 	  int GetId() {
 		  return id;
@@ -515,7 +521,6 @@ namespace compiler {
 	  WHILE_STATEMENT,
     FOR_STATEMENT,
 		DECLARATION_STATEMENT,
-    DECLARATIONS_STATEMENT,
     RETURN_STATEMENT,
     DUMP_STATEMENT
   };
@@ -541,7 +546,6 @@ namespace compiler {
    ****************************/
   class StatementList : public ParseNode {
     friend class TreeFactory;
-    friend class Declarations;
     vector<Statement*> statements;
   
     StatementList(const wstring &file_name, const unsigned int line_num) : ParseNode(file_name, line_num) {
@@ -575,37 +579,6 @@ namespace compiler {
 		
     const StatementType GetStatementType() {
       return DECLARATION_STATEMENT;
-    }
-  };
-
-  /****************************
-   * Declaration statement
-   ****************************/
-  class Declarations : public Statement {
-    friend class TreeFactory;
-		StatementList* declarations;
-
-   public:
-		Declarations(const wstring &file_name, const unsigned int line_num) 
-			: Statement(file_name, line_num) {
-			this->declarations = new StatementList(file_name, line_num);
-    }
-
-    ~Declarations() {
-      delete this->declarations;
-      this->declarations = NULL;
-    }
-
-    void AddDeclaration(Declaration* declaration) {
-      declarations->AddStatement(declaration);
-    }
-		
-    StatementList* GetDeclarations() {
-      return declarations;
-    }
-
-    const StatementType GetStatementType() {
-      return DECLARATIONS_STATEMENT;
     }
   };
 
@@ -832,17 +805,14 @@ namespace compiler {
     ExpressionList* parameters;
     StatementList* statements;
     SymbolTable* symbol_table;
-    vector<Reference*> unidentified_references;
-    bool is_new;
 		
   public:
-	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name, bool is_new) 
-      : ParseNode(file_name, line_num) {
+	  ParsedFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
+                   ExpressionList* parameters, StatementList* statements) : ParseNode(file_name, line_num) {
 			this->name = name;
-      this->is_new = is_new;
-      this->parameters = NULL;
-      this->statements = NULL;
-      this->symbol_table = NULL;
+      this->parameters = parameters;
+      this->statements = statements;
+      symbol_table = NULL;
     }
 		
     ~ParsedFunction() {
@@ -856,28 +826,12 @@ namespace compiler {
 			return name;
 		}
 		
-    inline void SetParameters(ExpressionList* parameters) {
-      this->parameters = parameters;
-    }
-    
     inline ExpressionList* GetParameters() {
       return parameters;
     }
 
-    inline void SetStatements(StatementList* statements) {
-      this->statements = statements;
-    }
-
     inline StatementList* GetStatements() {
       return statements;
-    }
-
-    void AddUnidentifiedReference(Reference *reference) {
-      unidentified_references.push_back(reference);
-    }
-
-    vector<Reference*> GetUnidentifiedReferences() {
-      return unidentified_references;
     }
 
     void SetSymbolTable(SymbolTable* symbol_table) {
@@ -897,7 +851,7 @@ namespace compiler {
     SymbolTable* symbol_table;
     unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
-    Declarations* declarations;
+    StatementList* declarations;
     
   public:
     ParsedClass(const wstring &file_name, const unsigned int line_num, const wstring &name) : ParseNode(file_name, line_num) {
@@ -944,11 +898,11 @@ namespace compiler {
       return functions;
     }
 
-    void SetDeclarations(Declarations* declarations) {
+    void SetDeclarations(StatementList* declarations) {
       this->declarations = declarations;
     }
     
-    Declarations* GetDeclarations() {
+    StatementList* GetDeclarations() {
       return declarations;
     }
   };
@@ -961,7 +915,7 @@ namespace compiler {
     vector<ParsedClass*> klasses;
     unordered_map<wstring, ParsedFunction*> function_table;
     vector<ParsedFunction*> functions;
-    ParsedFunction* function;
+    StatementList* statements;
     SymbolTable* symbol_table;
 		
   public:
@@ -1026,12 +980,12 @@ namespace compiler {
       return functions;
     }
     
-    void SetGlobalFunction(ParsedFunction* function) {
-      this->function = function;
+    void SetGlobal(StatementList* statements) {
+      this->statements = statements;
     }
 
-    ParsedFunction* GetGlobalFunction() {
-      return this->function;
+    StatementList* GetGlobal() {
+      return statements;
     }
 
     void SetGlobalSymbolTable(SymbolTable* symbol_table) {
@@ -1163,20 +1117,15 @@ namespace compiler {
       return tmp;
     }
     
-    ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name, bool is_new) {
-      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, is_new);
+    ParsedFunction* MakeFunction(const wstring &file_name, const unsigned int line_num, const wstring &name,
+                                 ExpressionList* parameters, StatementList* statements) {
+      ParsedFunction* tmp = new ParsedFunction(file_name, line_num, name, parameters, statements);
       nodes.push_back(tmp);
       return tmp;
     }
 
 		Declaration* MakeDeclarationStatement(const wstring &file_name, const unsigned int line_num, const wstring &variable) {
       Declaration* tmp = new Declaration(file_name, line_num, variable);
-      statements.push_back(tmp);
-      return tmp;
-    }
-
-    Declarations* MakeDeclarations(const wstring &file_name, const unsigned int line_num) {
-      Declarations* tmp = new Declarations(file_name, line_num);
       statements.push_back(tmp);
       return tmp;
     }
@@ -1237,6 +1186,7 @@ namespace compiler {
       return tmp;
 	  }
 
+    // TODO: implement
     Reference* MakeNew(const wstring &file_name, const unsigned int line_num) {
       Reference* tmp = new Reference(file_name, line_num, NEW_OBJ_TYPE);
       tmp->SetNew(true);
@@ -1244,7 +1194,14 @@ namespace compiler {
       return tmp;
 	  }
 	
-    Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
+    Reference* MakeReference(const wstring &file_name, const unsigned int line_num, 
+													   const wstring &name, int id) {
+      Reference* tmp = new Reference(file_name, line_num, name, id);
+      references.push_back(tmp);
+      return tmp;
+    }
+		
+		Reference* MakeReference(const wstring &file_name, const unsigned int line_num, const wstring &name) {
       Reference* tmp = new Reference(file_name, line_num, name);
       references.push_back(tmp);
       return tmp;
