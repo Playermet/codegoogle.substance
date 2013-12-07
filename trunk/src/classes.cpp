@@ -174,7 +174,7 @@ void IntegerClass::Modulo(Value &left, Value &right, Value &result, vector<JitIn
     result.value.int_value = left.value.int_value % right.value.int_value;
     // record JIT instructions
     if(is_recording) {
-      jit_instrs.push_back(new JitInstruction(DIV_INT));
+      jit_instrs.push_back(new JitInstruction(MOD_INT));
     }
     break;
 
@@ -301,7 +301,7 @@ void IntegerClass::LessEqual(Value &left, Value &right, Value &result, vector<Ji
     result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value <= right.value.int_value;
     if(is_recording) {
-      jit_instrs.push_back(new JitInstruction(NEQL_INT));
+		jit_instrs.push_back(new JitInstruction(LES_EQL_INT));
     }    
     break;
 
@@ -310,7 +310,7 @@ void IntegerClass::LessEqual(Value &left, Value &right, Value &result, vector<Ji
     result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value <= right.value.float_value;
     if(is_recording) {
-      jit_instrs.push_back(new JitInstruction(NEQL_FLOAT));
+		jit_instrs.push_back(new JitInstruction(LES_EQL_FLOAT));
     } 
     break;
 
@@ -328,7 +328,7 @@ void IntegerClass::GreaterEqual(Value &left, Value &right, Value &result, vector
     result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value >= right.value.int_value;
     if(is_recording) {
-      jit_instrs.push_back(new JitInstruction(NEQL_INT));
+		jit_instrs.push_back(new JitInstruction(GTR_EQL_INT));
     }    
     break;
 
@@ -337,7 +337,7 @@ void IntegerClass::GreaterEqual(Value &left, Value &right, Value &result, vector
     result.klass = BooleanClass::Instance();
     result.value.int_value = left.value.int_value >= right.value.float_value;
     if(is_recording) {
-      jit_instrs.push_back(new JitInstruction(NEQL_FLOAT));
+		jit_instrs.push_back(new JitInstruction(GTR_EQL_FLOAT));
     } 
     break;
 
