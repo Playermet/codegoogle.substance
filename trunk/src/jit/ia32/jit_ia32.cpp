@@ -914,7 +914,7 @@ void JitCompiler::ProcessIntCalculation(JitInstruction* instruction) {
       RegisterHolder* holder = GetRegister();
       move_mem_reg(FRAME, EBP, holder->GetRegister());      
       add_imm_reg(left->GetOperand() + VALUE_OFFSET, holder->GetRegister());
-      move_mem_reg(0, holder->GetRegister(), holder->GetRegister());      
+      move_mem_reg(0, holder->GetRegister(), holder->GetRegister());     
       math_mem_reg(right->GetOperand(), holder->GetRegister(), instruction->GetType());
       working_stack.push_front(new RegInstr(holder));
     }
@@ -2349,6 +2349,13 @@ void JitCompiler::div_imm_reg(int32_t imm, Register reg, bool is_mod) {
 
 void JitCompiler::div_mem_reg(int32_t offset, Register src,
 															Register dest, bool is_mod) {
+  RegisterHolder* tmp = NULL;
+  if (src == EDX) {
+    tmp = GetRegister();
+    move_reg_reg(src, tmp->GetRegister());
+    src = tmp->GetRegister();
+  }
+
   if(is_mod) {
     if(dest != EDX) {
       move_reg_mem(EDX, TMP_REG_1, EBP);
@@ -2403,6 +2410,10 @@ void JitCompiler::div_mem_reg(int32_t offset, Register src,
     if(dest != EDX) {
       move_mem_reg(TMP_REG_1, EBP, EDX);
     }
+  }
+
+  if (tmp) {
+    ReleaseRegister(tmp);
   }
 }
 
