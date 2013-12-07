@@ -447,7 +447,7 @@ void Runtime::Run()
           else {
             jit_base_label++;
             const bool jump_taken = left.value.int_value ? true : false;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, (long)ip));
+            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, jump_taken, (long)ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
@@ -483,7 +483,7 @@ void Runtime::Run()
           }
           else {
             jit_base_label++;
-            const bool jump_taken = !left.value.int_value ? true : false;
+            const bool jump_taken = left.value.int_value ? true : false;
             jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, (long)ip));
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
