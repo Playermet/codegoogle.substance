@@ -53,12 +53,9 @@
 #include <unordered_map>
 using namespace stdext;
 #else
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <pthread.h>
 #include <stdint.h>
-namespace std {
-  using namespace tr1;
-}
 #endif
 
 using namespace std;
