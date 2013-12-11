@@ -405,7 +405,8 @@ void Runtime::Run()
               wcerr << L">>> Unable to JIT compile trace <<<" << endl;
               exit(1);
             }
-            jit_start_label->native_code = jit_fun;	
+            // jit_start_label->native_code = jit_fun;
+            jit_start_label->native_code = NULL;
             jit_start_label->operand3 = (INT_T)(ip + 1);
             // reset
             is_recording = first_jmp = false;

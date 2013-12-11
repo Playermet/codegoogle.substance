@@ -1,55 +1,15 @@
-#~
-a = [];
-a := [];
-~#
+i = 2;
+j = 3;
 
-
-a = {};
-a := {};
-
-
-#~
-# a[i] = 3;
-# -----------
-
-# a<i> = 10;
-
-
-i := 0;
-count := 0;
-while(i < 13) {
-  i += 0.5;
-  count += 1;
+while(i < 12) {
+	if(i % 2 == 0) {
+		j += 1;
+	} 
+	else {
+		j += 10;
+	};
+	i += 1;
 };
+
 dump i;
-dump count;
-
-func : Add(a,b) { 
-  if(a < 10) {
-    return 2;
-  };
-  
-  dump a + b;
-  return 23;
-}
-
-i *= 10;  
-var a := 113;
-if(i > 101) {
-  a := 100;
-};
-dump a;
-
-#	a := Bar->New();
-
-# Add(13,23);
-t := Add(11,2); dump t;
-  
-class Foo {
-  vars a = 7, b, c = 13;
-  
-  func : Sub(a, b, c) {
-    return a - b- c;
-  }
-}
-~#
+dump j;
