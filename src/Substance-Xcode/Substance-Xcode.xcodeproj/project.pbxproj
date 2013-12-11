@@ -201,6 +201,7 @@
 					"$(inherited)",
 				);
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
+					_DEBUG,
 					_X64,
 					"$(inherited)",
 				);
