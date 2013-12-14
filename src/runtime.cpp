@@ -361,7 +361,7 @@ void Runtime::Run()
           const INT_T guard_label = (*jit_fun)(locals, NULL, NULL);
           // TODO: manage error codes
           ip = guard_label == -1 ? instruction->operand3 : guard_label;
-
+          instruction->native_code = NULL;
         }
         else {
 #ifdef _DEBUG
@@ -405,8 +405,7 @@ void Runtime::Run()
               wcerr << L">>> Unable to JIT compile trace <<<" << endl;
               exit(1);
             }
-            // jit_start_label->native_code = jit_fun;
-            jit_start_label->native_code = NULL;
+            jit_start_label->native_code = jit_fun;	
             jit_start_label->operand3 = (INT_T)(ip + 1);
             // reset
             is_recording = first_jmp = false;
@@ -422,7 +421,7 @@ void Runtime::Run()
         break;
 
         // jump true
-      case JMP_TRUE:
+      case JMP_TRUE: {
 #ifdef _DEBUG
         wcout << L"JMP: true, to=" << instruction->operand1 << endl;
 #endif
@@ -432,6 +431,7 @@ void Runtime::Run()
           exit(1);
         }
         // update ip
+        const size_t nxt_ip = ip;
         if(left.value.int_value) {
           ip = GetLabelOffset(instruction->operand1);
         }
@@ -447,21 +447,20 @@ void Runtime::Run()
           }
           else {
             jit_base_label++;
-            const bool jump_taken = left.value.int_value ? true : false;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, jump_taken, (long)ip));
-            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
+            jit::JitInstruction* jit_instr = new jit::JitInstruction(jit::JMP, jit_base_label, left.value.int_value ? true : false, (long)ip);
+            jit_instr->SetOperand4(nxt_ip == ip ? GetLabelOffset(instruction->operand1) : nxt_ip);
+            jit_instrs.push_back(jit_instr);
+            jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));
           }
         }
 #endif
+      }
         break;
 
         // jump false
-      case JMP_FALSE:
+      case JMP_FALSE: {
 #ifdef _DEBUG
         wcout << L"JMP: false, to=" << instruction->operand1 << endl;
-        if(instruction->operand1 == -2147483646) {
-          wcout << L"Foo" << endl;
-        }
 #endif
         left = PopValue();
         if(left.type != BOOL_VALUE) {
@@ -469,6 +468,7 @@ void Runtime::Run()
           exit(1);
         }				
         // update ip
+        const size_t nxt_ip = ip;
         if(!left.value.int_value) {
           ip = GetLabelOffset(instruction->operand1);
         }
@@ -484,12 +484,14 @@ void Runtime::Run()
           }
           else {
             jit_base_label++;
-            const bool jump_taken = left.value.int_value ? true : false;
-            jit_instrs.push_back(new jit::JitInstruction(jit::JMP, jit_base_label, !jump_taken, (long)ip));
+            jit::JitInstruction* jit_instr = new jit::JitInstruction(jit::JMP, jit_base_label, left.value.int_value ? true : false, (long)ip);
+            jit_instr->SetOperand4(nxt_ip == ip ? GetLabelOffset(instruction->operand1) : nxt_ip);
+            jit_instrs.push_back(jit_instr);
             jit_instrs.push_back(new jit::JitInstruction(jit::LBL, jit_base_label));            
           }
         }
 #endif
+      }
         break;
       }
       break;
@@ -582,6 +584,14 @@ void Runtime::Run()
       wcout << L"DUMP" << endl;
 #endif
       left = PopValue();
+
+#ifndef _NO_JIT
+      // record JIT instructions
+      if (is_recording) {
+        wcout << "??? WTF ???" << endl;
+      }
+#endif
+
       switch(left.type) {
       case BOOL_VALUE:
         wcout << L"type=boolean, value=" << (left.value.int_value ? L"true" : L"false") << endl;

@@ -1,4 +1,4 @@
-topCandidate = 100;
+topCandidate = 15;
 candidate := 2;
 while(candidate <= topCandidate) {
 	trialDivisor := 2;
