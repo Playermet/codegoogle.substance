@@ -138,7 +138,8 @@ namespace jit {
     INT_T operand;
     INT_T operand2;
     INT_T operand3;
-    void* operand4;
+    INT_T operand4;
+    void* operand5;
     FLOAT_T float_operand;
     long native_offset;
   
@@ -148,7 +149,7 @@ namespace jit {
       operand = operand3 = native_offset = 0;
     }
 
-    JitInstruction(JitInstructionType t, long o) {
+    JitInstruction(JitInstructionType t, INT_T o) {
       type = t;
       operand = o;
       operand3 = native_offset = 0;
@@ -160,14 +161,14 @@ namespace jit {
       operand = operand3 = native_offset = 0;
     }
 
-    JitInstruction(JitInstructionType t, long o, long o2) {
+    JitInstruction(JitInstructionType t, INT_T o, INT_T o2) {
       type = t;
       operand = o;
       operand2 = o2;
       operand3 = native_offset = 0;
     }
 
-    JitInstruction(JitInstructionType t, long o, long o2, long o3) {
+    JitInstruction(JitInstructionType t, INT_T o, INT_T o2, INT_T o3) {
       type = t;
       operand = o;
       operand2 = o2;
@@ -175,9 +176,9 @@ namespace jit {
       native_offset = 0;
     }
 
-    JitInstruction(JitInstructionType t, void* o4) {
+    JitInstruction(JitInstructionType t, void* o5) {
       type = t;
-      operand4 = o4;
+      operand5 = o5;
     }
   
     ~JitInstruction() {
@@ -191,32 +192,40 @@ namespace jit {
       type = t;
     }
 
-    inline long GetOperand() const {
+    inline INT_T GetOperand() const {
       return operand;
     }
 
-    inline long GetOperand2() const {
+    inline INT_T GetOperand2() const {
       return operand2;
     }
 
-    inline long GetOperand3() const {
+    inline INT_T GetOperand3() const {
       return operand3;
     }
 
-    inline void* GetOperand4() const {
+    inline void* GetOperand5() const {
+      return operand5;
+    }
+
+    inline INT_T GetOperand4() const {
       return operand4;
     }
 
-    inline void SetOperand(long o) {
+    inline void SetOperand(INT_T o) {
       operand = o;
     }
 
-    inline void SetOperand2(long o2) {
+    inline void SetOperand2(INT_T o2) {
       operand2 = o2;
     }
 
-    inline void SetOperand3(long o3) {
+    inline void SetOperand3(INT_T o3) {
       operand3 = o3;
+    }
+
+    inline void SetOperand4(INT_T o4) {
+      operand4 = o4;
     }
 
     inline FLOAT_T GetFloatOperand() const {

@@ -366,8 +366,8 @@ void JitCompiler::ProcessInstructions() {
 			
 			// TODO:
 		default:
-      wcout << "???" << endl;
-			break;
+      wcerr << L"Unknown JIT instruction!" << endl;
+			exit(1);
     }
   }
 
@@ -1641,7 +1641,7 @@ bool JitCompiler::cond_jmp(jit::JitInstructionType type) {
 
     // add guard code if not jumping to the end-of-lopp
     if(next_instr->GetOperand() != end_label) {
-      Epilog(next_instr->GetOperand3() < 0 ? next_instr->GetOperand() : next_instr->GetOperand3());
+      Epilog(next_instr->GetOperand4());
     }
 
     return true;
