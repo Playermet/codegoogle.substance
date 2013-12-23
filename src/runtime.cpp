@@ -588,7 +588,7 @@ void Runtime::Run()
 #ifndef _NO_JIT
       // record JIT instructions
       if (is_recording) {
-        wcout << "??? WTF ???" << endl;
+        jit_instrs.push_back(new jit::JitInstruction(jit::TRAP, (long)1));
       }
 #endif
 

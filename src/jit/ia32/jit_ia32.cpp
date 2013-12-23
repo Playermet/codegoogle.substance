@@ -363,6 +363,10 @@ void JitCompiler::ProcessInstructions() {
 #endif
 			jump_labels[instr->GetOperand()] = instr;
 			break;
+
+    case TRAP:
+      ProcessTrap(instr);
+      break;
 			
 			// TODO:
 		default:
@@ -1261,6 +1265,29 @@ void JitCompiler::ProcessJump(JitInstruction* instr) {
 	else {
 		skip_jump = false;
 	}
+}
+
+void JitCompiler::ProcessTrap(JitInstruction* instr) {
+#ifdef _DEBUG
+  wcout << L"TRAP: id=" << instr->GetOperand() << endl;
+#endif
+
+  // if value is in register write back to memory; if intermediate value write to stack
+  const size_t num_params = (size_t)instr->GetOperand();
+  for(size_t i = 0; i < num_params; i++) {
+    RegInstr* instr = working_stack[i];
+    switch (instr->GetType()) {
+    case REG_INT:
+      break;
+
+    case REG_FLOAT:
+      break;
+    }
+  }
+
+  for(size_t i = 0; i < num_params; i++) {
+    working_stack.pop_front();
+  }
 }
 
 void JitCompiler::move_reg_reg(Register src, Register dest) {
