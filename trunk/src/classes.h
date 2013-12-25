@@ -33,11 +33,10 @@
 #define __CLASS_H__
 
 #include "common.h"
-#include "jit/jit_common.h"
 
 using namespace std;
 
-typedef void(*Operation)(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+typedef void(*Operation)(Value &left, Value &right, Value &result);
 typedef void(*Function)(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 
 /****************************
@@ -106,8 +105,8 @@ public:
     return instance;
   }
 
-  static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Equal(Value &left, Value &right, Value &result);
+  static void NotEqual(Value &left, Value &right, Value &result);
 };
 
 /****************************
@@ -147,17 +146,17 @@ public:
   }
 
   // operations
-  static void Add(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Divide(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Modulo(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Less(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Add(Value &left, Value &right, Value &result);
+  static void Subtract(Value &left, Value &right, Value &result);
+  static void Multiply(Value &left, Value &right, Value &result);
+  static void Divide(Value &left, Value &right, Value &result);
+  static void Modulo(Value &left, Value &right, Value &result);
+  static void Equal(Value &left, Value &right, Value &result);
+  static void NotEqual(Value &left, Value &right, Value &result);
+  static void Less(Value &left, Value &right, Value &result);
+  static void Greater(Value &left, Value &right, Value &result);
+  static void LessEqual(Value &left, Value &right, Value &result);
+  static void GreaterEqual(Value &left, Value &right, Value &result);
   
   // methods
   static void Abs(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
@@ -199,17 +198,17 @@ public:
   }
 
   // operations
-  static void Add(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Subtract(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Multiply(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Divide(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Modulo(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Equal(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void NotEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Less(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void Greater(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void LessEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
-  static void GreaterEqual(Value &left, Value &right, Value &result, vector<jit::JitInstruction*> &jit_instrs, bool is_recording);
+  static void Add(Value &left, Value &right, Value &result);
+  static void Subtract(Value &left, Value &right, Value &result);
+  static void Multiply(Value &left, Value &right, Value &result);
+  static void Divide(Value &left, Value &right, Value &result);
+  static void Modulo(Value &left, Value &right, Value &result);
+  static void Equal(Value &left, Value &right, Value &result);
+  static void NotEqual(Value &left, Value &right, Value &result);
+  static void Less(Value &left, Value &right, Value &result);
+  static void Greater(Value &left, Value &right, Value &result);
+  static void LessEqual(Value &left, Value &right, Value &result);
+  static void GreaterEqual(Value &left, Value &right, Value &result);
   // methods
   static void ToInteger(Value &self, Value* execution_stack, size_t &execution_stack_pos, INT_T arg_count);
 };
