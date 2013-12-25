@@ -70,15 +70,6 @@ namespace runtime {
     Frame** call_stack;
     size_t  call_stack_pos;
 
-		// tracing jit variables
-#ifndef _NO_JIT
-		INT_T current_jit_label;
-		bool first_jmp;
-		bool is_jump;
-#endif
-		vector<jit::JitInstruction*> jit_instrs;
-		bool is_recording;
-
     //
     // Calculation stack operations
     //
@@ -228,22 +219,6 @@ namespace runtime {
 #endif
       return call_stack[--call_stack_pos];
     }
-
-    //
-    // Clean up operations
-    // 
-		void ClearJitInstructions() {
-			for(size_t i = 0; i < jit_instrs.size(); i++) {
-				jit::JitInstruction* instr = jit_instrs[i];
-				delete instr;
-				instr = NULL;
-			}
-			jit_instrs.clear();
-			
-#ifdef _DEBUG
-			wcout << L"============ END RECORDING ============" << endl;
-#endif
-		}
 		
   #ifdef _DEBUG
 	  void DumpValue(Value* value, bool is_push) {
