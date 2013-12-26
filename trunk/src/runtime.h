@@ -112,7 +112,7 @@ namespace runtime {
 		}
 		
 		Value &PopValue() {
-			if(execution_stack_pos - 1 < 0) {
+			if(execution_stack_pos - 1 == std::numeric_limits<std::size_t>::max()) {
 				wcerr << ">>> stack bounds exceeded <<<" << endl;
 				exit(1);
 			}

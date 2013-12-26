@@ -15,7 +15,6 @@
 		256C07AC185668AE00B61DB1 /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 256C07A2185668AE00B61DB1 /* runtime.cpp */; };
 		256C07AD185668AE00B61DB1 /* scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 256C07A4185668AE00B61DB1 /* scanner.cpp */; };
 		256C07AE185668AE00B61DB1 /* tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 256C07A6185668AE00B61DB1 /* tree.cpp */; };
-		256C07B2185668D400B61DB1 /* jit_amd_lp64.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 256C07B0185668D400B61DB1 /* jit_amd_lp64.cpp */; };
 		256C07B418566A6200B61DB1 /* substance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 256C07B318566A6200B61DB1 /* substance.cpp */; };
 /* End PBXBuildFile section */
 
@@ -50,9 +49,6 @@
 		256C07A5185668AE00B61DB1 /* scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scanner.h; path = ../../scanner.h; sourceTree = "<group>"; };
 		256C07A6185668AE00B61DB1 /* tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tree.cpp; path = ../../tree.cpp; sourceTree = "<group>"; };
 		256C07A7185668AE00B61DB1 /* tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tree.h; path = ../../tree.h; sourceTree = "<group>"; };
-		256C07AF185668C400B61DB1 /* jit_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jit_common.h; path = ../../jit/jit_common.h; sourceTree = "<group>"; };
-		256C07B0185668D400B61DB1 /* jit_amd_lp64.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = jit_amd_lp64.cpp; path = ../../jit/amd64/posix/jit_amd_lp64.cpp; sourceTree = "<group>"; };
-		256C07B1185668D400B61DB1 /* jit_amd_lp64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = jit_amd_lp64.h; path = ../../jit/amd64/posix/jit_amd_lp64.h; sourceTree = "<group>"; };
 		256C07B318566A6200B61DB1 /* substance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = substance.cpp; path = ../../substance.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -87,9 +83,6 @@
 			isa = PBXGroup;
 			children = (
 				256C07B318566A6200B61DB1 /* substance.cpp */,
-				256C07B0185668D400B61DB1 /* jit_amd_lp64.cpp */,
-				256C07B1185668D400B61DB1 /* jit_amd_lp64.h */,
-				256C07AF185668C400B61DB1 /* jit_common.h */,
 				256C0799185668AE00B61DB1 /* classes.cpp */,
 				256C079A185668AE00B61DB1 /* classes.h */,
 				256C079B185668AE00B61DB1 /* common.h */,
@@ -168,7 +161,6 @@
 				256C07A8185668AE00B61DB1 /* classes.cpp in Sources */,
 				256C07AD185668AE00B61DB1 /* scanner.cpp in Sources */,
 				256C07AA185668AE00B61DB1 /* memory.cpp in Sources */,
-				256C07B2185668D400B61DB1 /* jit_amd_lp64.cpp in Sources */,
 				256C07AE185668AE00B61DB1 /* tree.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,6 +275,7 @@
 				256C07981856687200B61DB1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -257,7 +257,6 @@ void Runtime::Run()
           exit(1);
         }
         // update ip
-        const size_t nxt_ip = ip;
         if(left.value.int_value) {
           ip = GetLabelOffset(instruction->operand1);
         }
@@ -275,7 +274,6 @@ void Runtime::Run()
           exit(1);
         }				
         // update ip
-        const size_t nxt_ip = ip;
         if(!left.value.int_value) {
           ip = GetLabelOffset(instruction->operand1);
         }
