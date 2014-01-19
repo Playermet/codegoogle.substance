@@ -247,7 +247,7 @@ ParsedClass* Parser::ParseClass(int depth)
   NextToken();
 
   StatementList* declarations = TreeFactory::Instance()->MakeStatementList(file_name, line_num);
-  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VARS_ID) || Match(TOKEN_FUNC_ID))) {
+  while(!Match(TOKEN_END_OF_STREAM) && (Match(TOKEN_VARS_ID) || Match(TOKEN_FUNC_ID) || Match(TOKEN_NEW_ID))) {
     // variables
     if(Match(TOKEN_VARS_ID)) {
       NextToken();
@@ -304,21 +304,29 @@ ParsedFunction* Parser::ParseFunction(int depth)
 #ifdef _DEBUG
 	Show(L"Function", depth);
 #endif
-	
-	NextToken();
-	
-  if(!Match(TOKEN_COLON)) {
-		ProcessError(TOKEN_COLON);
-		return NULL;
-	}
-  NextToken();
 
-  if(!Match(TOKEN_IDENT)) {
-		ProcessError(TOKEN_IDENT);
-		return NULL;
-	}
-  const wstring &name = scanner->GetToken()->GetIdentifier();
+	bool is_new = Match(TOKEN_NEW_ID);
+	
 	NextToken();
+	
+	wstring name;
+	if(!is_new) {
+		if(Match(TOKEN_COLON)) {
+			NextToken();
+			// TODO: function meta data
+			
+		}
+		
+		if(!Match(TOKEN_IDENT)) {
+			ProcessError(TOKEN_IDENT);
+			return NULL;
+		}
+		name = scanner->GetToken()->GetIdentifier();
+		NextToken();
+	}
+	else {
+		name = L"new";
+	}
 
   symbol_table->NewScope();
 
@@ -330,7 +338,7 @@ ParsedFunction* Parser::ParseFunction(int depth)
 
   symbol_table->PreviousScope();
 
-  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements);
+  return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements, is_new);
 }
 
 /****************************
