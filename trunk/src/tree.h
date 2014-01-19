@@ -879,8 +879,9 @@ namespace compiler {
       return symbol_table;
     }
 
+		// TODO: append number of params to function name
     bool AddFunction(ParsedFunction* function) {
-			wstring name = function->GetName();
+			const wstring name = function->GetName() + L":" + IntToString(function->GetParameters()->GetExpressions().size());
 			unordered_map<wstring, ParsedFunction*>::iterator result = function_table.find(name);
 			if(result == function_table.end()) {
 				function_table.insert(pair<wstring, ParsedFunction*>(name, function));

@@ -337,7 +337,7 @@ ParsedFunction* Parser::ParseFunction(int depth)
   }
 
   symbol_table->PreviousScope();
-
+	
   return TreeFactory::Instance()->MakeFunction(file_name, line_num, name, parameters, statements, is_new);
 }
 
