@@ -80,7 +80,7 @@ Scanner::~Scanner()
  ****************************/
 void Scanner::LoadKeywords()
 {
-  ident_map[L"New"] = TOKEN_NEW_ID;
+  ident_map[L"new"] = TOKEN_NEW_ID;
 	ident_map[L"var"] = TOKEN_VAR_ID;
   ident_map[L"if"] = TOKEN_IF_ID;
   ident_map[L"else"] = TOKEN_ELSE_ID;

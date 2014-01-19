@@ -1,12 +1,11 @@
-c := C->New();
 
 class C {
-  New(x, y) {
+  new(x, y) {
     @a = 10;
     @b = 13;
   }
   
-  Foo(a, b) {
+  func foo(a, b) {
     @b := a * 2 * @b;
     dump @b;
    }

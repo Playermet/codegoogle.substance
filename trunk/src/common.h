@@ -53,9 +53,9 @@
 #include <unordered_map>
 using namespace stdext;
 #else
-#include <unordered_map>
 #include <pthread.h>
 #include <stdint.h>
+#include <unordered_map>
 #endif
 
 using namespace std;

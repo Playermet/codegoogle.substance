@@ -3,21 +3,15 @@ ARGS=-g -D_DEBUG -D_X64 -Wall -Wall -Wno-unused-function
 
 CC=g++
 SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 
-OBJ_LIBS=jit.a
-JIT_PATH=jit/amd64/posix
-EXE=subc
+EXE=sub
 
-$(EXE): $(SRC) $(OBJ_LIBS)
-	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
+$(EXE): $(SRC)
+	$(CC) -m64 -std=c++0x -o $(EXE) $(SRC) $(OBJ_LIBS) 
 #	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 
-jit.a:
-	cd $(JIT_PATH); make	
-	
 %.o: %.cpp
-	$(CC) -m64 $(ARGS) -c $< 
+	$(CC) -m64 -std=c++0x $(ARGS) -c $< 
 
 clean:
-	cd $(JIT_PATH); make clean
 	rm -f $(EXE).exe $(EXE) *.exe *.a *.o *~
 
