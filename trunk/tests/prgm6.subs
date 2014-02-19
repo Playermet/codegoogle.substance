@@ -1,9 +1,16 @@
 
+
 class C {
+  var g;
+  var q;
+  
   new(x, y) {
-    @a = 10;
+	var g;
+	@a = 10;
     @b = 13;
   }
+  
+  vars a, b;
   
   func foo(a, b) {
     @b := a * 2 * @b;

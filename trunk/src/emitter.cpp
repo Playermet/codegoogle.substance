@@ -90,6 +90,12 @@ ExecutableProgram* Emitter::Emit()
 #endif
   ExecutableProgram* executable_program = new ExecutableProgram;
   
+  // emit classes
+  vector<ParsedClass*> klasses = parsed_program->GetClasss();
+  for(size_t i = 0; i < klasses.size(); ++i) {
+    EmitClass(klasses[i]);
+  }
+
   // emit global statements
   vector<Instruction*>* block_instructions = new vector<Instruction*>;
   unordered_map<long, size_t>* jump_table = new unordered_map<long, size_t>;
@@ -115,6 +121,17 @@ ExecutableProgram* Emitter::Emit()
   if(NoErrors()) {
     return executable_program;
   }
+  return NULL;
+}
+
+ExecutableClass* Emitter::EmitClass(ParsedClass* parsed_klass)
+{
+  // emit global statements
+
+  // emit instance statements
+
+  // emit functions
+  
   return NULL;
 }
 

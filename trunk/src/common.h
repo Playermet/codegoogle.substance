@@ -176,8 +176,8 @@ class ExecutableFunction {
   int parameter_count;
   vector<Instruction*>* block_instructions; 
   unordered_map<long, size_t>* jump_table;
-  set<size_t> leaders;
   bool returns_value;
+  set<size_t> leaders;
 
 public:
   ExecutableFunction(const wstring &name, int local_count, int parameter_count, vector<Instruction*>* block_instructions, 
@@ -228,6 +228,20 @@ public:
   }
 };
 
+class ExecutableClass {
+  wstring name;
+  int cls_count;
+  vector<Instruction*>* cls_instructions;
+
+  int inst_count;
+  vector<Instruction*>* inst_instructions;
+
+  unordered_map<long, size_t>* jump_table;
+  
+public:
+	ExecutableClass() {}
+	~ExecutableClass() {}
+};
 /****************************
 * Local symbol table
 ****************************/
