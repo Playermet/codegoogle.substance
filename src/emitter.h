@@ -61,6 +61,7 @@ namespace compiler {
     void ProcessError(const wstring &msg);
     bool NoErrors();
 
+    ExecutableClass* EmitClass(ParsedClass* parsed_klass);
     ExecutableFunction* EmitFunction(ParsedFunction* parsed_function);
     void EmitFunction(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table, set<size_t> &leaders);
     void EmitBlock(StatementList* block_statements, vector<Instruction*>* block_instructions, unordered_map<long, size_t>* jump_table);
