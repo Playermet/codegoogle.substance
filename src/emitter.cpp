@@ -129,9 +129,17 @@ ExecutableClass* Emitter::EmitClass(ParsedClass* parsed_klass)
   // emit global statements
 
   // emit instance statements
+  vector<Statement*> instance_stmts = parsed_klass->GetDeclarations()->GetStatements();
+  for(size_t i = 0; i < instance_stmts.size(); ++i) {
+    // emit instance declaration
+  }
 
   // emit functions
-  
+  vector<ParsedFunction*> functions = parsed_klass->GetFunctions();
+  for(size_t i = 0; i < functions.size(); ++i) {
+    EmitFunction(functions[i]);
+  }
+
   return NULL;
 }
 

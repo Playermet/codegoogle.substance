@@ -1,8 +1,8 @@
 # a := 1 + 7;
 # b := 2;
-
 # foo(13,b);
 # foo2(3,7);
+
 c := foo2(3,7);
 d := foo2(foo2(3,7), 9);
 dump d;
@@ -11,7 +11,7 @@ function : foo2(a,b) {
 	if(a == 3) {
 		return a*b;
 	} 
-else {
+	else {
 		return 44;
 	};
 }
