@@ -5,21 +5,15 @@ ARGS=-g -D_DEBUG -D_NO_JIT -Wall -Wall -Wno-unused-function
 
 CC=g++
 SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 
-OBJ_LIBS=jit.a
-JIT_PATH=jit/ia32
 EXE=subc
 
-$(EXE): $(SRC) $(OBJ_LIBS)
+$(EXE): $(SRC)
 	$(CC) -m32 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 #	$(CC) -m32 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 
-jit.a:
-	cd $(JIT_PATH); make	
-	
 %.o: %.cpp
 	$(CC) -m32 $(ARGS) -c $< 
 
 clean:
-	cd $(JIT_PATH); make clean
 	rm -f $(EXE).exe $(EXE) *.exe *.a *.o *~
 

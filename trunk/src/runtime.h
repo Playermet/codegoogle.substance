@@ -112,7 +112,7 @@ namespace runtime {
 		}
 		
 		Value &PopValue() {
-			if (execution_stack_pos - 1 == SIZE_MAX) {
+			if (execution_stack_pos - 1 == sizeof(size_t)) {
 				wcerr << ">>> stack bounds exceeded <<<" << endl;
 				exit(1);
 			}

@@ -1,16 +1,18 @@
-# ARGS=-O3 -D_X64 -pthread -Wall -Wno-unused-function
-ARGS=-g -D_DEBUG -D_X64 -Wall -Wall -Wno-unused-function
+# ARGS=-O3 -pthread -Wall -Wno-unused-function
+# ARGS=-O3 -D_NO_JIT -pthread -Wall -Wno-unused-function
+# ARGS=-g -D_DEBUG -Wall -Wall -Wno-unused-function
+ARGS=-g -D_DEBUG -D_NO_JIT -Wall -Wall -Wno-unused-function
 
 CC=g++
 SRC=classes.o parser.o scanner.o tree.o emitter.o runtime.o substance.o 
-EXE=sub
+EXE=subc
 
 $(EXE): $(SRC)
-	$(CC) -m64 -std=c++0x -o $(EXE) $(SRC) $(OBJ_LIBS) 
+	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 #	$(CC) -m64 -o $(EXE) $(SRC) $(OBJ_LIBS) 
 
 %.o: %.cpp
-	$(CC) -m64 -std=c++0x $(ARGS) -c $< 
+	$(CC) -m64 $(ARGS) -c $< 
 
 clean:
 	rm -f $(EXE).exe $(EXE) *.exe *.a *.o *~
