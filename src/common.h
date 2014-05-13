@@ -52,10 +52,18 @@
 #include <process.h>
 #include <unordered_map>
 using namespace stdext;
-#else
+#elif _OSX
 #include <pthread.h>
 #include <stdint.h>
 #include <unordered_map>
+#else
+#include <tr1/unordered_map>
+#include <pthread.h>
+#include <stdint.h>
+namespace std {
+  using namespace tr1;
+}
+#include <dlfcn.h>
 #endif
 
 using namespace std;
